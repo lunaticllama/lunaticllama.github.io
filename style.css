@@ -14,7 +14,7 @@ border-right:10px solid #21618C;
 body:after,
 body:before{
 content:"";
-
+position:fixed;
 background:#21618C;
 left:0;
 right:0;
