@@ -9,15 +9,6 @@
 <title>Phil's Dashboard</title>
 <script src="https://use.typekit.net/nuf8fse.js"></script>
 <script>try{Typekit.load({ async: true });}catch(e){}</script>
-
-<script type="text/javascript" src="http://www.google.com/jsapi">
-	
-	
-</script>
-<script type="text/javascript">
-   google.load("feeds", "1")
-</script>
-	
 	
 <link rel="stylesheet" href="style.css">
 </head>
@@ -40,35 +31,63 @@
 			</div>	
 			
 			<h1>RSS Feeds Demonstration</h1>
-			<div id="feed"></div>
 			<script type="text/javascript">
-			var feedcontainer=document.getElementById("feed")
-			var feedurl="https://rss.nytimes.com/services/xml/rss/nyt/World.xml"
-			var feedlimit=10
-			var rssoutput="<h2>Latest NPR Business News:</h2><ul>"
+    var content = document.getElementById('content');
 
-			function rssfeedsetup(){
-			var feedpointer=new google.feeds.Feed(feedurl)
-			feedpointer.setNumEntries(feedlimit)
-			feedpointer.load(displayfeed)
-			}
-				
-			function displayfeed(result){
-			if (!result.error){
-			var thefeeds=result.feed.entries
-			for (var i=0; i<thefeeds.length; i++)
-			rssoutput+="<li><a href='" + thefeeds[i].link + "'>" + thefeeds[i].title + "</a></li>"
-			rssoutput+="</ul>"
-			feedcontainer.innerHTML=rssoutput
-			}
-			else
-			alert("Error fetching feeds!")
-			}
+    var xhr = new XMLHttpRequest();
 
-			window.onload=function(){
-			rssfeedsetup()
-			}
-			</script>
+    xhr.onreadystatechange = function(){
+        if (xhr.readyState==4 && xhr.status==200)
+        {
+            var data = JSON.parse(xhr.responseText);
+            var itemsContainer = document.createElement('DIV');
+
+            if(data.status == 'ok'){
+
+
+                for( var i=0,t = data.items.length ; i < t ; ++i ){
+                    var item = data.items[i];
+                    var itemContainer = document.createElement('DIV');
+
+                    var itemTitleElement = document.createElement('H2');
+                    var itemLinkElement = document.createElement('A');
+                    var itemDescriptionElement = document.createElement('P');
+
+
+                    itemLinkElement.setAttribute('href' , item.link);
+                    itemLinkElement.innerText = item.title;
+                    itemTitleElement.appendChild(itemLinkElement);
+
+                    // note : make sure the content is XSS safe before using innerHTML
+                    itemDescriptionElement.innerHTML = item.description;
+
+                    itemContainer.appendChild(itemTitleElement);
+                    itemContainer.appendChild(itemDescriptionElement);
+
+                    itemsContainer.appendChild(itemContainer);
+
+                }
+
+
+
+                var titleElement = document.createElement('H1');
+                titleElement.innerText = data.feed.title;
+
+                content.appendChild(titleElement);
+                content.appendChild(itemsContainer);
+
+
+            }
+        }
+    };
+    xhr.open(
+        'GET',
+        'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fnews.ycombinator.com%2Frss',
+        true
+    );
+    xhr.send();
+
+</script>
 		
 		
 	</div>
