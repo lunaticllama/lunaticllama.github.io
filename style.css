@@ -76,14 +76,11 @@ a{color:#F39C12}
 #index p:nth-child(5) 
 a:hover{border-bottom-color:#F39C12}
 
-.column {
-  float: left;
-  width: 50%;
+#lcontent {
+  float: right ;
+  width: 50% ;
 }
-
-/* Clear floats after the columns */
-.row:after {
-  content: "";
-  display: table;
-  clear: both;
+#rcontent {
+  float: right;
+  width: 50%;
 }
