@@ -13,109 +13,22 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-	
-
-
-	
 	<div class="container">	
-    			<div class="text" id="index">
+    		<div class="text" id="index">
 				
     			<h1>Phil's Dashboard</h1>
 				
 			<div style="width: 210px;"><iframe style="display: block;" src="https://cdnres.willyweather.com/widget/loadView.html?id=118512" width="210" height="228" frameborder="0" scrolling="no"></iframe><a style="margin: -20px 0 0 0;text-indent: -9999em;position: relative;display: block;z-index: 1;height: 20px" href="https://www.willyweather.com/nj/hudson-county/hoboken.html" rel="nofollow">Up to date weather for Hoboken</a></div>
 			
-				<p>TO DO</p>
+			<p>TO DO</p>
 			
 				<iframe src="https://docs.google.com/document/d/e/2PACX-1vQDs5cQaIf_2yn5OATDb2McqdwzeTPACp4uGEmh_wQYIiyYYFAcz4VfPNKiymRfTCD1qwn7mUA1hml-/pub?embedded=true" width="450" height="325" align="right"></iframe>
 			
-			</div>	
 			
-			<h1>RSS Feeds Demonstration</h1>
-<script type="text/javascript">
-    var content = document.getElementById('content');
-
-    function showFeed(data){
-        var itemsContainer = document.createElement('DIV');
-
-        if(data.status == 'ok'){
-
-
-            for( var i=0,t = data.items.length ; i < t ; ++i ){
-                var item = data.items[i];
-                var itemContainer = document.createElement('DIV');
-
-                var itemTitleElement = document.createElement('H2');
-                var itemLinkElement = document.createElement('A');
-                var itemDescriptionElement = document.createElement('P');
-
-
-                itemLinkElement.setAttribute('href' , item.link);
-                itemLinkElement.innerText = item.title;
-                itemTitleElement.appendChild(itemLinkElement);
-
-                // note : make sure the content is XSS safe before using innerHTML
-                itemDescriptionElement.innerHTML = item.description;
-
-                itemContainer.appendChild(itemTitleElement);
-                itemContainer.appendChild(itemDescriptionElement);
-
-                itemsContainer.appendChild(itemContainer);
-
-            }
-
-
-
-            var titleElement = document.createElement('H1');
-            titleElement.innerText = data.feed.title;
-
-            content.appendChild(titleElement);
-            content.appendChild(itemsContainer);
-
-
-        }
-
-    }
-</script>
-<script type="text/javascript" src="https://api.rss2json.com/v1/api.json?callback=showFeed&rss_url=https%3A%2F%2Fgithub.com%2Flaravel%2Flaravel%2Freleases.atom"></script>
-	
-	<script src="https://code.jquery.com/jquery-3.1.0.js"></script>
-    <script>
-      $(function(){
-
-        var url = 'http://feeds.bbci.co.uk/news/world/rss.xml';
-        var news = $('.noticia');
-
-        function dateFormat(pubDate) {
-          var date = new Date(pubDate);
-          var months = Array("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre");
-          return date.getDate() + " " + months[date.getMonth()] + " " + date.getFullYear()
-        }
-
-        function loadNews(url) {
-          $.ajax({
-            url: url,
-            type: 'GET',
-            dataType: "xml"
-          })
-          .done(function(xml) {
-            var self = $(xml).find('channel item').first();
-            var url = $(self).find('link').text();
-            var title = $(self).find('title').text();
-            var text = $(self).find('description').text();
-            var date = $(self).find('pubDate').text();
-
-            news.html('<h2>' + title + '</h2><p>' + dateFormat(date) + '</p><p>' + text + '</p><a href="' + url + '">Link</a>');
-          })
-          .fail(function(){
-            news.hide();
-          });
-        }
-
-        loadNews(url);
-
-      });
-    </script>
-	
+			<p>RSS Feeds Demonstration</p>
+			<script src="//rss.bloople.net/?url=https%3A%2F%2Ffeeds.bbci.co.uk%2Fnews%2Fworld%2Frss.xml&limit=5&showtitle=false&type=js"></script>
+		
+		</div>	
 	</div>
 </body>
 </html>
