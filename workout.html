@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workout Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --surface2: #f0efe9;
+      --border: rgba(0,0,0,0.1);
+      --border-mid: rgba(0,0,0,0.18);
+      --text: #1a1a18;
+      --text-muted: #7a7a74;
+      --text-faint: #aaa9a2;
+      --push: #534AB7;
+      --push-light: #EEEDFE;
+      --push-mid: #7F77DD;
+      --push-dark: #3C3489;
+      --pull: #0F6E56;
+      --pull-light: #E1F5EE;
+      --pull-mid: #1D9E75;
+      --pull-dark: #085041;
+      --radius: 10px;
+      --radius-lg: 14px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+    }
+
+    header {
+      margin-bottom: 1.75rem;
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    header p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .day-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1.25rem;
+    }
+
+    .day-tab {
+      flex: 1;
+      padding: 11px;
+      border: 1px solid var(--border-mid);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+
+    .day-tab:hover { background: var(--surface2); }
+
+    .day-tab.active-push {
+      background: var(--push-light);
+      border-color: var(--push-mid);
+      color: var(--push-dark);
+    }
+
+    .day-tab.active-pull {
+      background: var(--pull-light);
+      border-color: var(--pull-mid);
+      color: var(--pull-dark);
+    }
+
+    .progress-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .progress-bar-wrap {
+      background: var(--surface2);
+      border-radius: 100px;
+      height: 4px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 4px;
+      border-radius: 100px;
+      background: var(--push-mid);
+      width: 0%;
+      transition: width 0.35s ease;
+    }
+
+    .progress-bar-fill.pull { background: var(--pull-mid); }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      margin: 1.25rem 0 0.6rem;
+    }
+
+    .exercise-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 13px 15px;
+      margin-bottom: 8px;
+      transition: opacity 0.2s;
+    }
+
+    .exercise-card.all-done { opacity: 0.5; }
+
+    .ex-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 11px;
+    }
+
+    .sets-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .set-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .set-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border-mid);
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+    }
+
+    .set-circle.done-push { background: var(--push-light); border-color: var(--push-mid); color: var(--push-dark); }
+    .set-circle.done-pull { background: var(--pull-light); border-color: var(--pull-mid); color: var(--pull-dark); }
+
+    .set-label {
+      font-size: 10px;
+      color: var(--text-faint);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .weight-input {
+      margin-left: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 3px;
+    }
+
+    .weight-input label {
+      font-size: 10px;
+      color: var(--text-faint);
+    }
+
+    .weight-input input {
+      width: 74px;
+      height: 38px;
+      border: 1px solid var(--border-mid);
+      border-radius: var(--radius);
+      background: var(--surface2);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      text-align: center;
+      padding: 0 8px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .weight-input input:focus { border-color: var(--push-mid); }
+    .weight-input input.pull-focus:focus { border-color: var(--pull-mid); }
+
+    .extra-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 11px 14px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+
+    .extra-card:hover { background: #e8e7e0; }
+
+    .extra-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border-mid);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .extra-check.done-push { background: var(--push-mid); border-color: var(--push-mid); }
+    .extra-check.done-pull { background: var(--pull-mid); border-color: var(--pull-mid); }
+
+    .extra-check svg { display: none; }
+    .extra-check.done-push svg,
+    .extra-check.done-pull svg { display: block; }
+
+    .extra-name {
+      font-size: 14px;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+
+    .extra-name.done {
+      color: var(--text-faint);
+      text-decoration: line-through;
+    }
+
+    .reset-btn {
+      width: 100%;
+      margin-top: 1.75rem;
+      padding: 11px;
+      border: 1px solid var(--border-mid);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+
+    .reset-btn:hover { background: var(--surface2); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Workout Tracker</h1>
+      <p>Tap sets to mark complete. Log your weights below each exercise.</p>
+    </header>
+
+    <div class="day-tabs">
+      <button class="day-tab active-push" id="tab-push" onclick="switchDay('push')">Push Day</button>
+      <button class="day-tab" id="tab-pull" onclick="switchDay('pull')">Pull Day</button>
+    </div>
+
+    <div class="progress-label" id="progress-label">0 of 8 main exercises complete</div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+
+    <div id="workout-content"></div>
+
+    <button class="reset-btn" onclick="resetDay()">Reset workout</button>
+  </div>
+
+  <script>
+    const workouts = {
+      push: {
+        main: [
+          "Bar squat",
+          "DB incline press",
+          "DB shoulder press",
+          "Flys",
+          "Dips",
+          "Cable crossover",
+          "Tricep push downs",
+          "Lateral raises"
+        ],
+        extra: [
+          "Pistol squats to failure",
+          "Leg raises",
+          "Around the world (kettlebell)",
+          "Farmer's carries"
+        ]
+      },
+      pull: {
+        main: [
+          "Deadlift",
+          "Wide low back cable row",
+          "Close grip cable lat pull down",
+          "Close grip cable straight arm push down",
+          "Cable face pull",
+          "DB pullover",
+          "Pullups to failure + assisted sets",
+          "DB curl"
+        ],
+        extra: [
+          "Monkey bars",
+          "Bar hangs",
+          "Kettlebell swings",
+          "Kettlebell windmills"
+        ]
+      }
+    };
+
+    let currentDay = 'push';
+    let state = {
+      push: { sets: {}, weights: {}, extras: {} },
+      pull: { sets: {}, weights: {}, extras: {} }
+    };
+
+    workouts.push.main.forEach(e => { state.push.sets[e] = [false,false,false]; state.push.weights[e] = ''; });
+    workouts.push.extra.forEach(e => { state.push.extras[e] = false; });
+    workouts.pull.main.forEach(e => { state.pull.sets[e] = [false,false,false]; state.pull.weights[e] = ''; });
+    workouts.pull.extra.forEach(e => { state.pull.extras[e] = false; });
+
+    function switchDay(day) {
+      currentDay = day;
+      document.getElementById('tab-push').className = 'day-tab' + (day === 'push' ? ' active-push' : '');
+      document.getElementById('tab-pull').className = 'day-tab' + (day === 'pull' ? ' active-pull' : '');
+      render();
+    }
+
+    function toggleSet(exName, setIdx) {
+      state[currentDay].sets[exName][setIdx] = !state[currentDay].sets[exName][setIdx];
+      render();
+    }
+
+    function toggleExtra(exName) {
+      state[currentDay].extras[exName] = !state[currentDay].extras[exName];
+      render();
+    }
+
+    function updateWeight(exName, val) {
+      state[currentDay].weights[exName] = val;
+    }
+
+    function resetDay() {
+      const d = currentDay;
+      workouts[d].main.forEach(e => { state[d].sets[e] = [false,false,false]; state[d].weights[e] = ''; });
+      workouts[d].extra.forEach(e => { state[d].extras[e] = false; });
+      render();
+    }
+
+    function render() {
+      const day = currentDay;
+      const wo = workouts[day];
+      const st = state[day];
+      const doneClass = 'done-' + day;
+
+      const totalSets = wo.main.length * 3;
+      const completedSets = wo.main.reduce((acc, e) => acc + st.sets[e].filter(Boolean).length, 0);
+      const mainDone = wo.main.filter(e => st.sets[e].every(Boolean)).length;
+
+      const pct = Math.round((completedSets / totalSets) * 100);
+      document.getElementById('progress-fill').style.width = pct + '%';
+      document.getElementById('progress-fill').className = 'progress-bar-fill' + (day === 'pull' ? ' pull' : '');
+      document.getElementById('progress-label').textContent = mainDone + ' of ' + wo.main.length + ' main exercises complete';
+
+      let html = '<div class="section-label">Main exercises — 3 sets × 8–10 reps</div>';
+
+      wo.main.forEach(exName => {
+        const sets = st.sets[exName];
+        const weight = st.weights[exName];
+        const allDone = sets.every(Boolean);
+        const safe = exName.replace(/'/g, "\\'");
+        html += `<div class="exercise-card${allDone ? ' all-done' : ''}">
+          <div class="ex-name">${exName}</div>
+          <div class="sets-row">
+            ${sets.map((done, i) => `
+              <button class="set-btn" onclick="toggleSet('${safe}', ${i})">
+                <div class="set-circle ${done ? doneClass : ''}">${done ? '✓' : i+1}</div>
+                <span class="set-label">Set ${i+1}</span>
+              </button>
+            `).join('')}
+            <div class="weight-input">
+              <label>Weight (lbs)</label>
+              <input type="number" min="0" step="2.5" placeholder="—" value="${weight}"
+                class="${day === 'pull' ? 'pull-focus' : ''}"
+                oninput="updateWeight('${safe}', this.value)" />
+            </div>
+          </div>
+        </div>`;
+      });
+
+      html += '<div class="section-label">Extras</div>';
+
+      wo.extra.forEach(exName => {
+        const done = st.extras[exName];
+        const safe = exName.replace(/'/g, "\\'");
+        html += `<div class="extra-card" onclick="toggleExtra('${safe}')">
+          <div class="extra-check ${done ? doneClass : ''}">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="extra-name ${done ? 'done' : ''}">${exName}</span>
+        </div>`;
+      });
+
+      document.getElementById('workout-content').innerHTML = html;
+    }
+
+    render();
+  </script>
+</body>
+</html>
