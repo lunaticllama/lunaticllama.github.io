@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Date Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #0f1117;
+      --paper: #f5f2eb;
+      --cream: #ede9df;
+      --rule: #d4cfc4;
+      --accent: #c94f2a;
+      --accent-soft: #f0ebe4;
+      --muted: #7a7468;
+      --white: #ffffff;
+      --radius: 3px;
+      --shadow: 0 2px 12px rgba(15,17,23,0.08), 0 1px 3px rgba(15,17,23,0.05);
+      --shadow-lg: 0 8px 40px rgba(15,17,23,0.12), 0 2px 8px rgba(15,17,23,0.06);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 20px 80px;
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 27px,
+          rgba(180,175,165,0.12) 27px,
+          rgba(180,175,165,0.12) 28px
+        );
+    }
+
+    /* ── Header ── */
+    .site-header {
+      width: 100%;
+      max-width: 780px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 48px;
+    }
+
+    .logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .logo span { color: var(--accent); }
+
+    .header-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      border: 1px solid var(--rule);
+      border-radius: 2px;
+      padding: 4px 10px;
+    }
+
+    /* ── Page title ── */
+    .page-title {
+      width: 100%;
+      max-width: 780px;
+      margin-bottom: 36px;
+    }
+    .page-title h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+    .page-title p {
+      margin-top: 10px;
+      font-size: 0.95rem;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.5;
+    }
+
+    /* ── Tab switcher ── */
+    .tabs {
+      width: 100%;
+      max-width: 780px;
+      display: flex;
+      gap: 2px;
+      margin-bottom: 28px;
+      background: var(--cream);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      padding: 4px;
+    }
+    .tab-btn {
+      flex: 1;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+      background: transparent;
+      border: none;
+      border-radius: 2px;
+      padding: 9px 6px;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      background: var(--white);
+      color: var(--ink);
+      box-shadow: var(--shadow);
+    }
+    .tab-btn:hover:not(.active) { color: var(--ink); }
+
+    /* ── Card ── */
+    .card {
+      width: 100%;
+      max-width: 780px;
+      background: var(--white);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-inner {
+      padding: 36px 40px;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── Section labels ── */
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--rule);
+    }
+
+    /* ── Form grid ── */
+    .form-row {
+      display: grid;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+    .form-row.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .form-row.cols-1 { grid-template-columns: 1fr; }
+
+    .field label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+
+    input[type="number"],
+    input[type="date"],
+    select {
+      width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem;
+      color: var(--ink);
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    input[type="number"]:focus,
+    input[type="date"]:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(201,79,42,0.1);
+      background: var(--white);
+    }
+
+    /* Number input spinners hidden */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type=number] { -moz-appearance: textfield; }
+
+    /* ── Toggle ── */
+    .toggle-group {
+      display: flex;
+      background: var(--cream);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .toggle-group label {
+      flex: 1;
+      text-align: center;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin: 0 !important;
+      text-transform: none !important;
+      letter-spacing: normal !important;
+    }
+    .toggle-group input { display: none; }
+    .toggle-group input:checked + label {
+      background: var(--ink);
+      color: var(--white);
+    }
+    .toggle-group label:hover { color: var(--ink); }
+
+    /* ── Action row ── */
+    .action-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-top: 8px;
+    }
+
+    .btn-calculate {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--white);
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      padding: 13px 32px;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-calculate:hover { background: #b0431f; }
+    .btn-calculate:active { transform: translateY(1px); }
+
+    .btn-reset {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      background: none;
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-reset:hover { color: var(--ink); border-color: var(--ink); }
+
+    /* ── Divider ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--rule);
+      margin: 32px 0;
+    }
+
+    /* ── Result ── */
+    .result-box {
+      display: none;
+      background: var(--accent-soft);
+      border: 1px solid rgba(201,79,42,0.2);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      animation: slideUp 0.25s ease;
+    }
+    .result-box.visible { display: block; }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-main {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      color: var(--accent);
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+    .result-sub {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+    .result-breakdown {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .breakdown-chip {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      background: rgba(201,79,42,0.1);
+      color: var(--accent);
+      border: 1px solid rgba(201,79,42,0.2);
+      border-radius: 2px;
+      padding: 5px 12px;
+    }
+
+    /* Repeat results */
+    .repeat-results { margin-top: 20px; }
+    .repeat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(201,79,42,0.12);
+      font-size: 0.85rem;
+    }
+    .repeat-row:last-child { border-bottom: none; }
+    .repeat-label { color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.72rem; }
+    .repeat-value { font-weight: 600; color: var(--ink); }
+    .repeat-day { color: var(--muted); font-size: 0.75rem; margin-left: 8px; font-weight: 400; }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .card-inner { padding: 24px 20px; }
+      .form-row.cols-3,
+      .form-row.cols-4 { grid-template-columns: 1fr 1fr; }
+      .form-row.cols-2 { grid-template-columns: 1fr; }
+      .tab-btn { font-size: 0.7rem; padding: 8px 4px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Page Title -->
+  <div class="page-title">
+    <h1>Date Calculator</h1>
+    <p>Add or subtract days, weeks, months, and years from any date — or calculate the duration between two dates.</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" onclick="switchTab('add')" role="tab">➕ Add / Subtract from Date</button>
+    <button class="tab-btn" onclick="switchTab('diff')" role="tab">📏 Duration Between Dates</button>
+  </div>
+
+  <!-- Card -->
+  <div class="card">
+    <div class="card-inner">
+
+      <!-- ══════════ PANEL 1: ADD/SUBTRACT ══════════ -->
+      <div class="panel active" id="panel-add">
+
+        <div class="section-label">Start Date</div>
+        <div class="form-row cols-2">
+          <div class="field">
+            <label>Date</label>
+            <input type="date" id="add-start-date" />
+          </div>
+          <div class="field" style="display:flex;align-items:flex-end;">
+            <button class="btn-reset" onclick="setToday('add-start-date')" style="width:auto;">Use Today</button>
+          </div>
+        </div>
+
+        <div class="section-label">Operation</div>
+        <div class="form-row cols-1" style="margin-bottom:16px;">
+          <div class="field">
+            <label>Add or Subtract</label>
+            <div class="toggle-group">
+              <input type="radio" name="add-op" id="op-add" value="add" checked />
+              <label for="op-add">( + ) Add</label>
+              <input type="radio" name="add-op" id="op-sub" value="subtract" />
+              <label for="op-sub">( − ) Subtract</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row cols-4">
+          <div class="field">
+            <label>Years</label>
+            <input type="number" id="add-years" min="0" value="0" />
+          </div>
+          <div class="field">
+            <label>Months</label>
+            <input type="number" id="add-months" min="0" value="0" />
+          </div>
+          <div class="field">
+            <label>Weeks</label>
+            <input type="number" id="add-weeks" min="0" value="0" />
+          </div>
+          <div class="field">
+            <label>Days</label>
+            <input type="number" id="add-days" min="0" value="0" />
+          </div>
+        </div>
+
+        <div class="form-row cols-2">
+          <div class="field">
+            <label>Repeat</label>
+            <input type="number" id="add-repeat" min="1" max="25" value="1" title="Calculate multiple times in sequence" />
+          </div>
+          <div class="field" style="display:flex;align-items:flex-end;">
+            <span style="font-size:0.78rem;color:var(--muted);padding-bottom:12px;">Show up to 25 sequential results</span>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn-calculate" onclick="calculateAdd()">Calculate</button>
+          <button class="btn-reset" onclick="resetAdd()">Clear</button>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="result-box" id="add-result">
+          <div class="result-main" id="add-result-date"></div>
+          <div class="result-sub" id="add-result-sub"></div>
+          <div class="result-breakdown" id="add-result-chips"></div>
+          <div class="repeat-results" id="add-repeat-list"></div>
+        </div>
+      </div>
+
+      <!-- ══════════ PANEL 2: DURATION ══════════ -->
+      <div class="panel" id="panel-diff">
+
+        <div class="section-label">Date Range</div>
+        <div class="form-row cols-2">
+          <div class="field">
+            <label>Start Date</label>
+            <input type="date" id="diff-start" />
+          </div>
+          <div class="field">
+            <label>End Date</label>
+            <input type="date" id="diff-end" />
+          </div>
+        </div>
+
+        <div class="form-row cols-2">
+          <div class="field" style="display:flex;align-items:flex-end;gap:8px;">
+            <button class="btn-reset" onclick="setToday('diff-start')">Start = Today</button>
+            <button class="btn-reset" onclick="setToday('diff-end')">End = Today</button>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn-calculate" onclick="calculateDiff()">Calculate Duration</button>
+          <button class="btn-reset" onclick="resetDiff()">Clear</button>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="result-box" id="diff-result">
+          <div class="result-main" id="diff-result-main"></div>
+          <div class="result-sub" id="diff-result-sub"></div>
+          <div class="result-breakdown" id="diff-chips"></div>
+        </div>
+      </div>
+
+    </div><!-- /card-inner -->
+  </div><!-- /card -->
+
+  <script>
+    // ── Helpers ──────────────────────────────────────
+
+    const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    function fmt(date) {
+      return date.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    }
+
+    function parseDateInput(id) {
+      const val = document.getElementById(id).value;
+      if (!val) return null;
+      const [y, m, d] = val.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function setToday(id) {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2,'0');
+      const d = String(now.getDate()).padStart(2,'0');
+      document.getElementById(id).value = `${y}-${m}-${d}`;
+    }
+
+    function chip(text) {
+      const el = document.createElement('div');
+      el.className = 'breakdown-chip';
+      el.textContent = text;
+      return el;
+    }
+
+    function addPeriod(date, years, months, weeks, days) {
+      let d = new Date(date);
+      d.setFullYear(d.getFullYear() + years);
+      d.setMonth(d.getMonth() + months);
+      d.setDate(d.getDate() + weeks * 7 + days);
+      return d;
+    }
+
+    function subtractPeriod(date, years, months, weeks, days) {
+      let d = new Date(date);
+      d.setFullYear(d.getFullYear() - years);
+      d.setMonth(d.getMonth() - months);
+      d.setDate(d.getDate() - weeks * 7 - days);
+      return d;
+    }
+
+    function ordinal(n) {
+      const s = ['th','st','nd','rd'], v = n % 100;
+      return n + (s[(v-20)%10] || s[v] || s[0]);
+    }
+
+    // ── Tab ───────────────────────────────────────────
+
+    function switchTab(tab) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('panel-' + tab).classList.add('active');
+      event.currentTarget.classList.add('active');
+    }
+
+    // ── Panel 1: Add / Subtract ───────────────────────
+
+    function calculateAdd() {
+      const start = parseDateInput('add-start-date');
+      if (!start) { alert('Please enter a start date.'); return; }
+
+      const years  = parseInt(document.getElementById('add-years').value)  || 0;
+      const months = parseInt(document.getElementById('add-months').value) || 0;
+      const weeks  = parseInt(document.getElementById('add-weeks').value)  || 0;
+      const days   = parseInt(document.getElementById('add-days').value)   || 0;
+      const repeat = Math.min(25, Math.max(1, parseInt(document.getElementById('add-repeat').value) || 1));
+      const op     = document.querySelector('input[name="add-op"]:checked').value;
+      const isAdd  = op === 'add';
+
+      const resultBox    = document.getElementById('add-result');
+      const resultDate   = document.getElementById('add-result-date');
+      const resultSub    = document.getElementById('add-result-sub');
+      const resultChips  = document.getElementById('add-result-chips');
+      const repeatList   = document.getElementById('add-repeat-list');
+
+      resultChips.innerHTML = '';
+      repeatList.innerHTML  = '';
+
+      // First result
+      const result = isAdd
+        ? addPeriod(start, years, months, weeks, days)
+        : subtractPeriod(start, years, months, weeks, days);
+
+      resultDate.textContent = fmt(result);
+
+      const totalDays = Math.round(Math.abs(result - start) / 86400000);
+      const direction = isAdd ? 'after' : 'before';
+      resultSub.textContent = `${totalDays.toLocaleString()} day${totalDays !== 1 ? 's' : ''} ${direction} ${fmt(start)}`;
+
+      // Chips
+      if (years)  resultChips.appendChild(chip(`${years} year${years!==1?'s':''}`));
+      if (months) resultChips.appendChild(chip(`${months} month${months!==1?'s':''}`));
+      if (weeks)  resultChips.appendChild(chip(`${weeks} week${weeks!==1?'s':''}`));
+      if (days)   resultChips.appendChild(chip(`${days} day${days!==1?'s':''}`));
+      if (totalDays > 0) resultChips.appendChild(chip(`${totalDays.toLocaleString()} total days`));
+
+      // Repeat rows
+      if (repeat > 1) {
+        const header = document.createElement('div');
+        header.style.cssText = 'font-size:0.72rem;font-family:DM Mono,monospace;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;margin-top:16px;';
+        header.textContent = `Sequence (×${repeat})`;
+        repeatList.appendChild(header);
+
+        let cur = start;
+        for (let i = 1; i <= repeat; i++) {
+          cur = isAdd
+            ? addPeriod(cur, years, months, weeks, days)
+            : subtractPeriod(cur, years, months, weeks, days);
+
+          const row = document.createElement('div');
+          row.className = 'repeat-row';
+          row.innerHTML = `
+            <span class="repeat-label">${ordinal(i)} result</span>
+            <span class="repeat-value">
+              ${cur.toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'})}
+              <span class="repeat-day">${DAY_NAMES[cur.getDay()]}</span>
+            </span>`;
+          repeatList.appendChild(row);
+        }
+      }
+
+      resultBox.classList.add('visible');
+    }
+
+    function resetAdd() {
+      document.getElementById('add-start-date').value = '';
+      ['add-years','add-months','add-weeks','add-days'].forEach(id => document.getElementById(id).value = '0');
+      document.getElementById('add-repeat').value = '1';
+      document.getElementById('op-add').checked = true;
+      document.getElementById('add-result').classList.remove('visible');
+    }
+
+    // ── Panel 2: Duration ─────────────────────────────
+
+    function calculateDiff() {
+      const start = parseDateInput('diff-start');
+      const end   = parseDateInput('diff-end');
+      if (!start || !end) { alert('Please enter both dates.'); return; }
+
+      const resultBox  = document.getElementById('diff-result');
+      const resultMain = document.getElementById('diff-result-main');
+      const resultSub  = document.getElementById('diff-result-sub');
+      const chips      = document.getElementById('diff-chips');
+
+      chips.innerHTML = '';
+
+      const from = start < end ? start : end;
+      const to   = start < end ? end   : start;
+
+      const totalMs   = to - from;
+      const totalDays = Math.round(totalMs / 86400000);
+      const totalWeeks = Math.floor(totalDays / 7);
+      const remDays   = totalDays % 7;
+
+      // Y/M/D breakdown
+      let y = to.getFullYear() - from.getFullYear();
+      let m = to.getMonth()    - from.getMonth();
+      let d = to.getDate()     - from.getDate();
+      if (d < 0) { m--; const prevMonth = new Date(to.getFullYear(), to.getMonth(), 0); d += prevMonth.getDate(); }
+      if (m < 0) { y--; m += 12; }
+
+      // Build label
+      const parts = [];
+      if (y) parts.push(`${y} year${y!==1?'s':''}`);
+      if (m) parts.push(`${m} month${m!==1?'s':''}`);
+      if (d) parts.push(`${d} day${d!==1?'s':''}`);
+      resultMain.textContent = parts.length ? parts.join(', ') : '0 days';
+      resultSub.textContent  = `From ${fmt(from)} to ${fmt(to)}`;
+
+      // Chips
+      chips.appendChild(chip(`${totalDays.toLocaleString()} total days`));
+      chips.appendChild(chip(`${totalWeeks.toLocaleString()} weeks + ${remDays} days`));
+      chips.appendChild(chip(`${Math.round(totalMs/3600000).toLocaleString()} hours`));
+      chips.appendChild(chip(`${to < new Date() ? 'In the past' : 'In the future'}`));
+
+      resultBox.classList.add('visible');
+    }
+
+    function resetDiff() {
+      document.getElementById('diff-start').value = '';
+      document.getElementById('diff-end').value = '';
+      document.getElementById('diff-result').classList.remove('visible');
+    }
+
+    // ── Init: pre-fill today ───────────────────────────
+    (function() {
+      setToday('add-start-date');
+      setToday('diff-start');
+    })();
+  </script>
+</body>
+</html>
