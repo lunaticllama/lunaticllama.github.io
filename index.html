@@ -1,25 +1,178 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
-<meta name="description" content="Philip M. Taylor's Personal Website">
-<meta name="author" content 'Philip M. Taylor'>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Philip M. Taylor</title>
-<script src="https://use.typekit.net/nuf8fse.js"></script>
-<script>try{Typekit.load({ async: true });}catch(e){}</script>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Philip M. Taylor — Attorney">
+  <meta name="author" content="Philip M. Taylor">
+  <title>Philip M. Taylor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      font-weight: 300;
+      background: linear-gradient(135deg, #0d2a4a 0%, #1a4a7a 40%, #0a1f3d 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card-wrapper {
+      width: 100%;
+      max-width: 520px;
+      opacity: 0;
+      transform: translateY(18px);
+      animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+    }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card {
+      background: #f7f5f1;
+      border-radius: 10px;
+      border-left: 4px solid #bfae8e;
+      border-bottom: 4px solid #bfae8e;
+      padding: 3rem 3rem 2.75rem;
+    }
+
+    .name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(36px, 8vw, 46px);
+      font-weight: 400;
+      color: #1a1a1a;
+      line-height: 1.1;
+      margin-bottom: 0.5rem;
+      opacity: 0;
+      animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards;
+    }
+
+    .subtitle {
+      font-size: 11px;
+      color: #1a4a7a;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 400;
+      margin-bottom: 2.75rem;
+      opacity: 0;
+      animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.45s forwards;
+    }
+
+    .link-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      opacity: 0;
+      animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.55s forwards;
+    }
+
+    .section-label {
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #999;
+      border-bottom: 0.5px solid #ddd;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 14px;
+      color: #555;
+      text-decoration: none;
+      padding: 0.38rem 0;
+      transition: color 0.2s ease;
+      font-weight: 300;
+      letter-spacing: 0.02em;
+    }
+
+    .nav-link:hover {
+      color: #1a4a7a;
+    }
+
+    .arrow {
+      font-size: 12px;
+      color: #1a4a7a;
+      display: inline-block;
+      transition: transform 0.2s ease;
+      line-height: 1;
+    }
+
+    .nav-link:hover .arrow {
+      transform: translateX(3px);
+    }
+
+    .domain {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.3);
+      text-align: right;
+      margin-top: 1.25rem;
+      font-family: 'Jost', sans-serif;
+      font-weight: 300;
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        padding: 2.25rem 2rem 2rem;
+      }
+      .link-grid {
+        grid-template-columns: 1fr;
+        gap: 1.75rem;
+      }
+    }
+  </style>
 </head>
 <body>
-	<div class="container">	
-    			<div class="text" id="index">
-    			<h1>Philip M. Taylor</h1>
-				<!--<p>I'm a generally <a href="/about">normal person</a>.</p>-->
-				<p>I'm an <a href="http://www.windelsmarx.com/attorney_detail.cfm?id=208">attorney</a>.</p>
-				<p>I sometimes <a href="https://medium.com/@lunaticllama">write</a> on this or that.</p>
-				<p>Feel free to <a href="mailto:philiptaylor14@gmail.com">contact me</a>.</p>
-				</div>	
-	</div>
+  <div class="card-wrapper">
+    <div class="card">
+      <h1 class="name">Philip M. Taylor</h1>
+      <p class="subtitle">Attorney at Law</p>
+      <div class="link-grid">
+        <div>
+          <p class="section-label">Professional</p>
+          <a class="nav-link" href="http://www.windelsmarx.com/attorney_detail.cfm?id=208" target="_blank" rel="noopener">
+            <span class="arrow">→</span> Windels Marx
+          </a>
+          <a class="nav-link" href="https://www.linkedin.com/in/philipmtaylor14/" target="_blank" rel="noopener">
+            <span class="arrow">→</span> LinkedIn
+          </a>
+        </div>
+        <div>
+          <p class="section-label">Personal</p>
+          <a class="nav-link" href="/workout.html">
+            <span class="arrow">→</span> Workout
+          </a>
+          <a class="nav-link" href="/date-calculator">
+            <span class="arrow">→</span> Date Calculator
+          </a>
+        </div>
+      </div>
+    </div>
+    <span class="domain">philipmtaylor.com</span>
+  </div>
 </body>
 </html>
