@@ -198,8 +198,8 @@
       padding: 10px 14px;
       outline: none;
       transition: border-color 0.15s, box-shadow 0.15s;
-      appearance: none;
       -webkit-appearance: none;
+      appearance: none;
     }
     input[type="number"]:focus,
     input[type="date"]:focus,
@@ -212,7 +212,10 @@
     /* Number input spinners hidden */
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
-    input[type=number] { -moz-appearance: textfield; }
+    input[type=number] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
 
     /* ── Toggle ── */
     .toggle-group {
