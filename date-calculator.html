@@ -356,11 +356,17 @@
         `Result:      ${fmt(result)}\n` +
         `(${totalDays.toLocaleString()} days ${direction} start date)`;
 
+      history.replaceState(null, '', '?' + new URLSearchParams({
+        tab: 'add',
+        start: document.getElementById('add-start-date').value,
+        op, years, months, weeks, days, repeat
+      }).toString());
       resultBox.classList.add('visible');
     }
 
     function resetAdd() {
       addCopyText = '';
+      history.replaceState(null, '', location.pathname);
       document.getElementById('add-start-date').value = '';
       ['add-years','add-months','add-weeks','add-days'].forEach(id => document.getElementById(id).value = '0');
       document.getElementById('add-repeat').value = '1';
@@ -422,11 +428,13 @@
         `Duration: ${parts.length ? parts.join(', ') : '0 days'}\n` +
         `Total:    ${totalDays.toLocaleString()} days (${totalWeeks.toLocaleString()} weeks + ${remDays} days)`;
 
+      history.replaceState(null, '', '?tab=diff&from=' + document.getElementById('diff-start').value + '&to=' + document.getElementById('diff-end').value);
       resultBox.classList.add('visible');
     }
 
     function resetDiff() {
       diffCopyText = '';
+      history.replaceState(null, '', location.pathname);
       document.getElementById('diff-start').value = '';
       document.getElementById('diff-end').value = '';
       document.getElementById('diff-result').classList.remove('visible');
@@ -451,10 +459,33 @@
       });
     }
 
-    // ── Init: pre-fill today ───────────────────────────
+    // ── Init from URL (or pre-fill today) ────────────
     (function() {
-      setToday('add-start-date');
-      setToday('diff-start');
+      const p   = new URLSearchParams(location.search);
+      const tab = p.get('tab');
+      if (tab === 'diff') {
+        document.querySelectorAll('.panel').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('panel-diff').classList.add('active');
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        const from = p.get('from'), to = p.get('to');
+        if (from) document.getElementById('diff-start').value = from;
+        if (to)   document.getElementById('diff-end').value   = to;
+        if (from && to) calculateDiff();
+      } else if (tab === 'add') {
+        const start = p.get('start');
+        if (start)                    document.getElementById('add-start-date').value = start;
+        if (p.get('op') === 'subtract') document.getElementById('op-sub').checked = true;
+        if (p.get('years'))           document.getElementById('add-years').value  = p.get('years');
+        if (p.get('months'))          document.getElementById('add-months').value = p.get('months');
+        if (p.get('weeks'))           document.getElementById('add-weeks').value  = p.get('weeks');
+        if (p.get('days'))            document.getElementById('add-days').value   = p.get('days');
+        if (p.get('repeat'))          document.getElementById('add-repeat').value = p.get('repeat');
+        if (start) calculateAdd();
+      } else {
+        setToday('add-start-date');
+        setToday('diff-start');
+      }
     })();
   </script>
 </body>

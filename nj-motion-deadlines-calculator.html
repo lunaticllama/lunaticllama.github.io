@@ -202,6 +202,7 @@
     function onMotionTypeChange() {
       document.getElementById('result-box').classList.remove('visible');
       copyText = '';
+      history.replaceState(null, '', location.pathname);
     }
 
     // ── Build a single row ────────────────────────────
@@ -327,6 +328,7 @@
         `Last Day to File & Serve Opposition:  ${fmtShort(adjOpposition)} (${DAY_NAMES[adjOpposition.getDay()]})\n` +
         `Last Day to File & Serve Reply:       ${fmtShort(adjReply)} (${DAY_NAMES[adjReply.getDay()]})`;
 
+      history.replaceState(null, '', '?type=' + motionType + '&date=' + document.getElementById('return-date-select').value);
       document.getElementById('result-box').classList.add('visible');
     }
 
@@ -349,11 +351,23 @@
     // ── Reset ─────────────────────────────────────────
     function reset() {
       copyText = '';
+      history.replaceState(null, '', location.pathname);
       document.getElementById('return-date-select').value = '';
       document.getElementById('type-regular').checked = true;
       document.getElementById('result-box').classList.remove('visible');
       document.getElementById('return-date-error').classList.remove('visible');
     }
+
+    // ── Init from URL ─────────────────────────────────
+    (function() {
+      const p    = new URLSearchParams(location.search);
+      const type = p.get('type');
+      const date = p.get('date');
+      if (!date) return;
+      if (type === 'sj') document.getElementById('type-sj').checked = true;
+      document.getElementById('return-date-select').value = date;
+      calculate();
+    })();
   </script>
 </body>
 </html>

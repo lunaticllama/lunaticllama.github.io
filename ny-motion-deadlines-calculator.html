@@ -342,6 +342,7 @@
         `Opposition Due:   ${fmtShort(adjOpposition)} (${DAY_NAMES[adjOpposition.getDay()]})\n` +
         `Reply Due:        ${fmtShort(adjReply)} (${DAY_NAMES[adjReply.getDay()]})`;
 
+      history.replaceState(null, '', '?tab=return&date=' + document.getElementById('return-date-input').value);
       document.getElementById('return-result').classList.add('visible');
     }
 
@@ -430,6 +431,7 @@
           `Reply Due:             ${fmtShort(adjReply)} (${DAY_NAMES[adjReply.getDay()]})`;
       }
 
+      history.replaceState(null, '', '?tab=filing&date=' + document.getElementById('filing-date-input').value);
       document.getElementById('filing-result').classList.add('visible');
     }
 
@@ -453,6 +455,7 @@
 
     function resetPanel(panel) {
       copyText = '';
+      history.replaceState(null, '', location.pathname);
       if (panel === 'return') {
         document.getElementById('return-date-input').value = '';
         document.getElementById('return-result').classList.remove('visible');
@@ -466,6 +469,21 @@
         document.getElementById('filing-date-error').classList.remove('visible');
       }
     }
+    // ── Init from URL ─────────────────────────────────
+    (function() {
+      const p    = new URLSearchParams(location.search);
+      const tab  = p.get('tab');
+      const date = p.get('date');
+      if (!tab || !date) return;
+      if (tab === 'filing') {
+        switchTab('filing', document.getElementById('tab-filing'));
+        document.getElementById('filing-date-input').value = date;
+        calculateFromFiling();
+      } else {
+        document.getElementById('return-date-input').value = date;
+        calculateFromReturn();
+      }
+    })();
   </script>
 </body>
 </html>
