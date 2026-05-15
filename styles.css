@@ -33,6 +33,31 @@ body {
     );
 }
 
+/* ── Site nav ── */
+.site-nav {
+  width: 100%;
+  max-width: 780px;
+  margin-bottom: 24px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 8px;
+}
+.site-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.site-nav a:hover { color: var(--ink); }
+.site-nav-sep { color: var(--rule); }
+.site-nav-current { color: var(--rule); }
+.site-nav-home { margin-left: auto; }
+
 /* ── Page title ── */
 .page-title {
   width: 100%;
