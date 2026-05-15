@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d2a4a"/>
+      <stop offset="45%" style="stop-color:#1a4a7a"/>
+      <stop offset="100%" style="stop-color:#0a1f3d"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="4" fill="url(#bg)"/>
+  <rect x="4" y="4" width="24" height="24" rx="2" fill="none" stroke="#bfae8e" stroke-width="1"/>
+  <text x="16" y="22" font-family="Georgia, 'Times New Roman', serif" font-size="14" font-weight="400" fill="#f7f5f1" text-anchor="middle" letter-spacing="0.5">PT</text>
+</svg>

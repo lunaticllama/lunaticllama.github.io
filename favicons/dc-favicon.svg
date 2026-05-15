@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- Background tile -->
+  <rect x="0" y="0" width="120" height="120" rx="22" fill="#f5f2eb"/>
+
+  <!-- Calendar body -->
+  <rect x="16" y="28" width="88" height="74" rx="7" fill="#ffffff" stroke="#d4cfc4" stroke-width="2"/>
+
+  <!-- Calendar header bar -->
+  <rect x="16" y="28" width="88" height="26" rx="7" fill="#c94f2a"/>
+  <rect x="16" y="44" width="88" height="10" fill="#c94f2a"/>
+
+  <!-- Ring posts -->
+  <rect x="36" y="18" width="8" height="18" rx="4" fill="#c94f2a"/>
+  <rect x="76" y="18" width="8" height="18" rx="4" fill="#c94f2a"/>
+
+  <!-- Calendar grid dots (top row) -->
+  <circle cx="34" cy="68" r="4" fill="#e8e3da"/>
+  <circle cx="52" cy="68" r="4" fill="#e8e3da"/>
+  <circle cx="70" cy="68" r="4" fill="#e8e3da"/>
+
+  <!-- Calendar grid dots (bottom row, partial — checkmark covers bottom-right) -->
+  <circle cx="34" cy="84" r="4" fill="#e8e3da"/>
+  <circle cx="52" cy="84" r="4" fill="#e8e3da"/>
+
+  <!-- Checkmark badge -->
+  <circle cx="82" cy="84" r="13" fill="#c94f2a"/>
+  <path d="M74 84 L80 90.5 L91 76" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
