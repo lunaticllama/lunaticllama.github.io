@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NJ Motion Deadlines Calculator — NJ Court Rules</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #0f1117;
+      --paper: #f5f2eb;
+      --cream: #ede9df;
+      --rule: #d4cfc4;
+      --accent: #c94f2a;
+      --accent-soft: #f0ebe4;
+      --muted: #7a7468;
+      --white: #ffffff;
+      --radius: 3px;
+      --shadow: 0 2px 12px rgba(15,17,23,0.08), 0 1px 3px rgba(15,17,23,0.05);
+      --shadow-lg: 0 8px 40px rgba(15,17,23,0.12), 0 2px 8px rgba(15,17,23,0.06);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 20px 80px;
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 27px,
+          rgba(180,175,165,0.12) 27px,
+          rgba(180,175,165,0.12) 28px
+        );
+    }
+
+    /* ── Page title ── */
+    .page-title {
+      width: 100%;
+      max-width: 780px;
+      margin-bottom: 36px;
+    }
+    .page-title h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+    .page-title p {
+      margin-top: 10px;
+      font-size: 0.95rem;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.5;
+    }
+    .page-title .statute-tag {
+      display: inline-block;
+      margin-top: 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      border: 1px solid rgba(201,79,42,0.3);
+      border-radius: 2px;
+      padding: 4px 10px;
+      margin-right: 6px;
+    }
+
+    /* ── Card ── */
+    .card {
+      width: 100%;
+      max-width: 780px;
+      background: var(--white);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-inner { padding: 36px 40px; }
+
+    /* ── Section labels ── */
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--rule);
+    }
+
+    /* ── Form grid ── */
+    .form-row {
+      display: grid;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+    .form-row.cols-1 { grid-template-columns: 1fr; }
+
+    .field label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+
+    input[type="date"],
+    select {
+      width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem;
+      color: var(--ink);
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    input[type="date"]:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(201,79,42,0.1);
+      background: var(--white);
+    }
+
+    /* Select arrow */
+    .select-wrapper {
+      position: relative;
+    }
+    .select-wrapper::after {
+      content: '▾';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.85rem;
+      color: var(--muted);
+      pointer-events: none;
+    }
+    .select-wrapper select {
+      padding-right: 32px;
+    }
+
+    /* ── Toggle ── */
+    .toggle-group {
+      display: flex;
+      background: var(--cream);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .toggle-group label {
+      flex: 1;
+      text-align: center;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin: 0 !important;
+      text-transform: none !important;
+      letter-spacing: normal !important;
+      display: block;
+    }
+    .toggle-group input { display: none; }
+    .toggle-group input:checked + label {
+      background: var(--ink);
+      color: var(--white);
+    }
+    .toggle-group label:hover { color: var(--ink); }
+
+    /* ── Action row ── */
+    .action-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-top: 8px;
+    }
+
+    .btn-calculate {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--white);
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      padding: 13px 32px;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-calculate:hover { background: #b0431f; }
+    .btn-calculate:active { transform: translateY(1px); }
+
+    .btn-reset {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      background: none;
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-reset:hover { color: var(--ink); border-color: var(--ink); }
+
+    /* ── Divider ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--rule);
+      margin: 32px 0;
+    }
+
+    /* ── Result box ── */
+    .result-box {
+      display: none;
+      animation: slideUp 0.25s ease;
+    }
+    .result-box.visible { display: block; }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Deadline grid ── */
+    .deadline-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .deadline-row {
+      display: flex;
+      align-items: stretch;
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .deadline-row.is-input {
+      border-color: rgba(201,79,42,0.35);
+      box-shadow: 0 0 0 1px rgba(201,79,42,0.12);
+    }
+
+    .deadline-marker {
+      width: 6px;
+      flex-shrink: 0;
+      background: var(--rule);
+    }
+    .deadline-row.filing          .deadline-marker { background: #4a7fcb; }
+    .deadline-row.opposition      .deadline-marker { background: #b07d2a; }
+    .deadline-row.reply           .deadline-marker { background: #6a9e6a; }
+    .deadline-row.return          .deadline-marker { background: var(--accent); }
+    .deadline-row.is-input        .deadline-marker { background: var(--accent); }
+
+    .deadline-body {
+      flex: 1;
+      padding: 16px 20px;
+      background: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .deadline-row.is-input .deadline-body { background: var(--accent-soft); }
+
+    .deadline-name {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+    .deadline-row.filing     .deadline-name { color: #4a7fcb; }
+    .deadline-row.opposition .deadline-name { color: #b07d2a; }
+    .deadline-row.reply      .deadline-name { color: #4a7d4a; }
+    .deadline-row.return     .deadline-name { color: var(--accent); }
+    .deadline-row.is-input   .deadline-name { color: var(--accent); }
+
+    .deadline-rule {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    .deadline-date-group { text-align: right; flex-shrink: 0; }
+    .deadline-date {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.25rem;
+      color: var(--ink);
+      line-height: 1.1;
+    }
+    .deadline-row.is-input .deadline-date { color: var(--accent); }
+
+    .deadline-dow {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .deadline-dow.adjusted { color: #4a7d4a; font-weight: 500; }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-radius: 2px;
+      padding: 2px 7px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .badge-input    { color: #fff; background: var(--accent); }
+    .badge-adjusted { color: #fff; background: #4a7d4a; }
+
+    /* ── Notes ── */
+    .statute-note {
+      margin-top: 16px;
+      padding: 14px 18px;
+      background: var(--cream);
+      border-left: 3px solid var(--rule);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .statute-note strong { font-weight: 600; color: var(--ink); }
+
+    .gcl-note {
+      display: none;
+      margin-top: 12px;
+      padding: 14px 18px;
+      background: #f2f7f2;
+      border-left: 3px solid #4a7d4a;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.78rem;
+      color: #2a4a2a;
+      line-height: 1.65;
+    }
+    .gcl-note.visible { display: block; }
+    .gcl-note strong { font-weight: 600; color: #2a5a2a; }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .card-inner { padding: 24px 20px; }
+      .form-row.cols-2 { grid-template-columns: 1fr; }
+      .deadline-body { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .deadline-date-group { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Page Title -->
+  <div class="page-title">
+    <h1>NJ Motion Deadlines Calculator</h1>
+    <p>Select a motion type and a scheduled return date to calculate all filing deadlines under the New Jersey Court Rules.</p>
+    <span class="statute-tag">R. 1:6-3(a) — Regular Motions</span>
+    <span class="statute-tag">R. 4:46-1 — Summary Judgment</span>
+  </div>
+
+  <!-- Card -->
+  <div class="card">
+    <div class="card-inner">
+
+      <!-- Motion Type -->
+      <div class="section-label">Motion Type</div>
+      <div class="form-row cols-1" style="margin-bottom:24px;">
+        <div class="field">
+          <label>Select Motion Type</label>
+          <div class="toggle-group">
+            <input type="radio" name="motion-type" id="type-regular" value="regular" checked onchange="onMotionTypeChange()" />
+            <label for="type-regular">Regular Motion</label>
+            <input type="radio" name="motion-type" id="type-sj" value="sj" onchange="onMotionTypeChange()" />
+            <label for="type-sj">Summary Judgment Motion</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Return Date -->
+      <div class="section-label">Return Date</div>
+      <div class="form-row cols-1">
+        <div class="field">
+          <label>Select a Scheduled NJ Superior Court Motion Date</label>
+          <div class="select-wrapper">
+            <select id="return-date-select">
+              <option value="">— Select a motion date —</option>
+              <optgroup label="2025–2026 Court Year (remaining)">
+                <option value="2026-06-05">Friday, June 5, 2026</option>
+                <option value="2026-06-18">Thursday, June 18, 2026</option>
+              </optgroup>
+              <optgroup label="2026–2027 Court Year">
+                <option value="2026-07-02">Thursday, July 2, 2026</option>
+                <option value="2026-07-17">Friday, July 17, 2026</option>
+                <option value="2026-07-31">Friday, July 31, 2026</option>
+                <option value="2026-08-14">Friday, August 14, 2026</option>
+                <option value="2026-08-28">Friday, August 28, 2026</option>
+                <option value="2026-09-11">Friday, September 11, 2026</option>
+                <option value="2026-09-25">Friday, September 25, 2026</option>
+                <option value="2026-10-09">Friday, October 9, 2026</option>
+                <option value="2026-10-23">Friday, October 23, 2026</option>
+                <option value="2026-11-06">Friday, November 6, 2026</option>
+                <option value="2026-11-20">Friday, November 20, 2026</option>
+                <option value="2026-12-04">Friday, December 4, 2026</option>
+                <option value="2026-12-18">Friday, December 18, 2026</option>
+                <option value="2027-01-08">Friday, January 8, 2027</option>
+                <option value="2027-01-22">Friday, January 22, 2027</option>
+                <option value="2027-02-05">Friday, February 5, 2027</option>
+                <option value="2027-02-19">Friday, February 19, 2027</option>
+                <option value="2027-03-05">Friday, March 5, 2027</option>
+                <option value="2027-03-19">Friday, March 19, 2027</option>
+                <option value="2027-04-02">Friday, April 2, 2027</option>
+                <option value="2027-04-16">Friday, April 16, 2027</option>
+                <option value="2027-04-30">Friday, April 30, 2027</option>
+                <option value="2027-05-14">Friday, May 14, 2027</option>
+                <option value="2027-05-28">Friday, May 28, 2027</option>
+                <option value="2027-06-10">Thursday, June 10, 2027</option>
+                <option value="2027-06-25">Friday, June 25, 2027</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-calculate" onclick="calculate()">Calculate Deadlines</button>
+        <button class="btn-reset" onclick="reset()">Clear</button>
+      </div>
+
+      <hr class="divider" />
+
+      <div class="result-box" id="result-box">
+        <div class="deadline-grid" id="deadline-grid"></div>
+        <div class="gcl-note" id="gcl-note">
+          <strong>Note on Weekend / Holiday Adjustments —</strong> When any period of time ends on a Saturday, Sunday, or public holiday, the act may be done on the next succeeding business day. See <em>R. 1:3-1</em> (incorporating N.J.S.A. 1:1-2 and Gen. Construction principles). Where a deadline falls on a non-court day, the deadline shown above has been advanced to the next business day.
+        </div>
+        <div class="statute-note" id="statute-note-text"></div>
+      </div>
+
+    </div><!-- /card-inner -->
+  </div><!-- /card -->
+
+  <script>
+    // ── NJ Court Rules ────────────────────────────────
+    // Regular Motion (R. 1:6-3(a))
+    const REG_FILING_BEFORE_RETURN     = 16;
+    const REG_OPPOSITION_BEFORE_RETURN =  8;
+    const REG_REPLY_BEFORE_RETURN      =  4;
+
+    // Summary Judgment (R. 4:46-1)
+    const SJ_FILING_BEFORE_RETURN      = 28;
+    const SJ_OPPOSITION_BEFORE_RETURN  = 10;
+    const SJ_REPLY_BEFORE_RETURN       =  4;
+
+    const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+    // ── NJ/Federal holidays ───────────────────────────
+    function getHolidaysForYear(year) {
+      const h = new Set();
+      function ymd(d) {
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      }
+      function fixedObs(month, day) {
+        const d = new Date(year, month - 1, day);
+        const dow = d.getDay();
+        if (dow === 0) d.setDate(d.getDate() + 1);
+        if (dow === 6) d.setDate(d.getDate() - 1);
+        return d;
+      }
+      function nthWeekday(month, weekday, n) {
+        const d = new Date(year, month - 1, 1);
+        let count = 0;
+        while (true) {
+          if (d.getDay() === weekday) { if (++count === n) return new Date(d); }
+          d.setDate(d.getDate() + 1);
+        }
+      }
+      function lastWeekday(month, weekday) {
+        const d = new Date(year, month, 0);
+        while (d.getDay() !== weekday) d.setDate(d.getDate() - 1);
+        return d;
+      }
+      h.add(ymd(fixedObs(1, 1)));
+        h.add(ymd(nthWeekday(1, 1, 3)));
+      h.add(ymd(nthWeekday(2, 1, 3)));
+      h.add(ymd(lastWeekday(5, 1)));
+      h.add(ymd(fixedObs(6, 19)));
+      h.add(ymd(fixedObs(7, 4)));
+      h.add(ymd(nthWeekday(9, 1, 1)));
+      h.add(ymd(nthWeekday(10, 1, 2)));
+      h.add(ymd(fixedObs(11, 11)));
+      h.add(ymd(nthWeekday(11, 4, 4)));
+      h.add(ymd(fixedObs(12, 25)));
+      return h;
+    }
+
+    function dateKey(d) {
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    function isHoliday(d) { return getHolidaysForYear(d.getFullYear()).has(dateKey(d)); }
+    function isWeekend(d) { return d.getDay() === 0 || d.getDay() === 6; }
+    function isNonBusiness(d) { return isWeekend(d) || isHoliday(d); }
+
+    function nonBusinessReason(d) {
+      if (d.getDay() === 6) return 'Saturday';
+      if (d.getDay() === 0) return 'Sunday';
+      if (isHoliday(d))    return 'Holiday';
+      return null;
+    }
+
+    function nextBusiness(d) {
+      let x = new Date(d);
+      while (isNonBusiness(x)) x.setDate(x.getDate() + 1);
+      return x;
+    }
+
+    function subtractDays(d, n) {
+      const x = new Date(d);
+      x.setDate(x.getDate() - n);
+      return x;
+    }
+
+    function fmtShort(d) {
+      return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    // ── Motion type change ────────────────────────────
+    function onMotionTypeChange() {
+      document.getElementById('result-box').classList.remove('visible');
+    }
+
+    // ── Build a single row ────────────────────────────
+    function buildRow({ className, name, rule, rawDate, displayDate, isInput, wasAdjusted }) {
+      const reason = nonBusinessReason(rawDate);
+      const row = document.createElement('div');
+      let cls = `deadline-row ${className}`;
+      if (isInput) cls += ' is-input';
+      row.className = cls;
+
+      let badges = '';
+      if (isInput)    badges += '<span class="badge badge-input">Return Date</span>';
+      if (wasAdjusted) badges += '<span class="badge badge-adjusted">Adjusted</span>';
+
+      let dowHtml = '';
+      if (wasAdjusted && !isInput) {
+        dowHtml = `<div class="deadline-dow adjusted">Advanced to ${DAY_NAMES[displayDate.getDay()]} (was ${reason})</div>`;
+      } else {
+        dowHtml = `<div class="deadline-dow">${DAY_NAMES[displayDate.getDay()]}</div>`;
+      }
+
+      row.innerHTML = `
+        <div class="deadline-marker"></div>
+        <div class="deadline-body">
+          <div class="deadline-label-group">
+            <div class="deadline-name">${name}${badges}</div>
+            <div class="deadline-rule">${rule}</div>
+          </div>
+          <div class="deadline-date-group">
+            <div class="deadline-date">${fmtShort(displayDate)}</div>
+            ${dowHtml}
+          </div>
+        </div>`;
+      return row;
+    }
+
+    // ── Main calculate ────────────────────────────────
+    function calculate() {
+      const val = document.getElementById('return-date-select').value;
+      if (!val) { alert('Please select a return date.'); return; }
+
+      const [y, m, d] = val.split('-').map(Number);
+      const returnDate = new Date(y, m - 1, d);
+
+      const motionType = document.querySelector('input[name="motion-type"]:checked').value;
+      const isSJ = motionType === 'sj';
+
+      const filingDays     = isSJ ? SJ_FILING_BEFORE_RETURN     : REG_FILING_BEFORE_RETURN;
+      const oppositionDays = isSJ ? SJ_OPPOSITION_BEFORE_RETURN : REG_OPPOSITION_BEFORE_RETURN;
+      const replyDays      = isSJ ? SJ_REPLY_BEFORE_RETURN      : REG_REPLY_BEFORE_RETURN;
+
+      const rawFiling     = subtractDays(returnDate, filingDays);
+      const rawOpposition = subtractDays(returnDate, oppositionDays);
+      const rawReply      = subtractDays(returnDate, replyDays);
+
+      const adjFiling     = nextBusiness(rawFiling);
+      const adjOpposition = nextBusiness(rawOpposition);
+      const adjReply      = nextBusiness(rawReply);
+
+      const grid = document.getElementById('deadline-grid');
+      grid.innerHTML = '';
+
+      const filingRule = isSJ
+        ? `Served and filed not later than ${filingDays} days before return date (R. 4:46-1)`
+        : `Filed and served not later than ${filingDays} days before return date (R. 1:6-3(a))`;
+      const oppositionRule = isSJ
+        ? `Opposing papers served and filed not later than ${oppositionDays} days before return date (R. 4:46-1)`
+        : `Opposing papers filed and served not later than ${oppositionDays} days before return date (R. 1:6-3(a))`;
+      const replyRule = isSJ
+        ? `Reply papers served and filed not later than ${replyDays} days before return date (R. 4:46-1)`
+        : `Reply papers filed and served not later than ${replyDays} days before return date (R. 1:6-3(a))`;
+
+      grid.appendChild(buildRow({
+        className: 'filing', name: 'Last Day to File & Serve Motion',
+        rule: filingRule,
+        rawDate: rawFiling, displayDate: adjFiling,
+        wasAdjusted: rawFiling.getTime() !== adjFiling.getTime()
+      }));
+      grid.appendChild(buildRow({
+        className: 'opposition', name: 'Last Day to File & Serve Opposition',
+        rule: oppositionRule,
+        rawDate: rawOpposition, displayDate: adjOpposition,
+        wasAdjusted: rawOpposition.getTime() !== adjOpposition.getTime()
+      }));
+      grid.appendChild(buildRow({
+        className: 'reply', name: 'Last Day to File & Serve Reply',
+        rule: replyRule,
+        rawDate: rawReply, displayDate: adjReply,
+        wasAdjusted: rawReply.getTime() !== adjReply.getTime()
+      }));
+      grid.appendChild(buildRow({
+        className: 'return', name: 'Return Date',
+        rule: 'NJ Superior Court scheduled motion day',
+        rawDate: returnDate, displayDate: returnDate,
+        isInput: true
+      }));
+
+      // GCL note
+      const anyAdjusted =
+        rawFiling.getTime()     !== adjFiling.getTime()     ||
+        rawOpposition.getTime() !== adjOpposition.getTime() ||
+        rawReply.getTime()      !== adjReply.getTime();
+      const gclNote = document.getElementById('gcl-note');
+      anyAdjusted ? gclNote.classList.add('visible') : gclNote.classList.remove('visible');
+
+      // Statute note
+      const statuteEl = document.getElementById('statute-note-text');
+      if (isSJ) {
+        statuteEl.innerHTML = `<strong>R. 4:46-1 — Summary Judgment.</strong> A motion for summary judgment shall be served and filed not later than 28 days before the time specified for the return date; opposing affidavits, certifications, briefs, and cross-motions for summary judgment, if any, shall be served and filed not later than 10 days before the return date; and answers or responses to such opposing papers or to cross-motions shall be served and filed not later than four days before the return date. No other papers may be filed without leave of court.`;
+      } else {
+        statuteEl.innerHTML = `<strong>R. 1:6-3(a) — Motions Generally.</strong> A notice of motion shall be filed and served not later than 16 days before the specified return date. Opposing affidavits, certifications or objections shall be filed and served not later than 8 days before the return date. Reply papers shall be filed and served not later than 4 days before the return date. No other papers may be filed without leave of court.`;
+      }
+
+      document.getElementById('result-box').classList.add('visible');
+    }
+
+    // ── Reset ─────────────────────────────────────────
+    function reset() {
+      document.getElementById('return-date-select').value = '';
+      document.getElementById('type-regular').checked = true;
+      document.getElementById('result-box').classList.remove('visible');
+    }
+  </script>
+</body>
+</html>
