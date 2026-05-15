@@ -41,36 +41,6 @@
         );
     }
 
-    /* ── Header ── */
-    .site-header {
-      width: 100%;
-      max-width: 780px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 48px;
-    }
-
-    .logo {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.2rem;
-      color: var(--ink);
-      letter-spacing: -0.01em;
-    }
-    .logo span { color: var(--accent); }
-
-    .header-tag {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-      border: 1px solid var(--rule);
-      border-radius: 2px;
-      padding: 4px 10px;
-    }
-
     /* ── Page title ── */
     .page-title {
       width: 100%;
@@ -348,6 +318,32 @@
     .repeat-value { font-weight: 600; color: var(--ink); }
     .repeat-day { color: var(--muted); font-size: 0.75rem; margin-left: 8px; font-weight: 400; }
 
+    /* ── Field errors ── */
+    .field-error {
+      font-size: 0.72rem;
+      color: #c0392b;
+      margin-top: 5px;
+      display: none;
+    }
+    .field-error.visible { display: block; }
+
+    /* ── Copy button ── */
+    .copy-row { margin-top: 20px; }
+    .btn-copy {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+      background: none;
+      border: 1px solid rgba(201,79,42,0.3);
+      border-radius: var(--radius);
+      padding: 9px 18px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-copy:hover { color: var(--ink); border-color: rgba(201,79,42,0.6); }
+    .btn-copy.copied { color: #4a7d4a; border-color: #4a7d4a; }
+
     /* ── Responsive ── */
     @media (max-width: 600px) {
       .card-inner { padding: 24px 20px; }
@@ -383,7 +379,8 @@
         <div class="form-row cols-2">
           <div class="field">
             <label>Date</label>
-            <input type="date" id="add-start-date" />
+            <input type="date" id="add-start-date" oninput="document.getElementById('add-start-error').classList.remove('visible')" />
+            <div class="field-error" id="add-start-error"></div>
           </div>
           <div class="field" style="display:flex;align-items:flex-end;">
             <button class="btn-reset" onclick="setToday('add-start-date')" style="width:auto;">Use Today</button>
@@ -444,6 +441,9 @@
           <div class="result-sub" id="add-result-sub"></div>
           <div class="result-breakdown" id="add-result-chips"></div>
           <div class="repeat-results" id="add-repeat-list"></div>
+          <div class="copy-row">
+            <button class="btn-copy" onclick="copyResult('add', this)">Copy Result</button>
+          </div>
         </div>
       </div>
 
@@ -454,11 +454,13 @@
         <div class="form-row cols-2">
           <div class="field">
             <label>Start Date</label>
-            <input type="date" id="diff-start" />
+            <input type="date" id="diff-start" oninput="document.getElementById('diff-start-error').classList.remove('visible')" />
+            <div class="field-error" id="diff-start-error"></div>
           </div>
           <div class="field">
             <label>End Date</label>
-            <input type="date" id="diff-end" />
+            <input type="date" id="diff-end" oninput="document.getElementById('diff-end-error').classList.remove('visible')" />
+            <div class="field-error" id="diff-end-error"></div>
           </div>
         </div>
 
@@ -480,6 +482,9 @@
           <div class="result-main" id="diff-result-main"></div>
           <div class="result-sub" id="diff-result-sub"></div>
           <div class="result-breakdown" id="diff-chips"></div>
+          <div class="copy-row">
+            <button class="btn-copy" onclick="copyResult('diff', this)">Copy Result</button>
+          </div>
         </div>
       </div>
 
@@ -491,6 +496,7 @@
 
     const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
     const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    let addCopyText = '', diffCopyText = '';
 
     function fmt(date) {
       return date.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
@@ -552,7 +558,12 @@
 
     function calculateAdd() {
       const start = parseDateInput('add-start-date');
-      if (!start) { alert('Please enter a start date.'); return; }
+      if (!start) {
+        const err = document.getElementById('add-start-error');
+        err.textContent = 'Please enter a start date.';
+        err.classList.add('visible');
+        return;
+      }
 
       const years  = parseInt(document.getElementById('add-years').value)  || 0;
       const months = parseInt(document.getElementById('add-months').value) || 0;
@@ -614,15 +625,29 @@
         }
       }
 
+      const copyParts = [];
+      if (years)  copyParts.push(`${years} year${years!==1?'s':''}`);
+      if (months) copyParts.push(`${months} month${months!==1?'s':''}`);
+      if (weeks)  copyParts.push(`${weeks} week${weeks!==1?'s':''}`);
+      if (days)   copyParts.push(`${days} day${days!==1?'s':''}`);
+      addCopyText =
+        `Date Calculation\n\n` +
+        `Start Date:  ${fmt(start)}\n` +
+        `Operation:   ${isAdd ? 'Add' : 'Subtract'} ${copyParts.join(', ') || '0 days'}\n` +
+        `Result:      ${fmt(result)}\n` +
+        `(${totalDays.toLocaleString()} days ${direction} start date)`;
+
       resultBox.classList.add('visible');
     }
 
     function resetAdd() {
+      addCopyText = '';
       document.getElementById('add-start-date').value = '';
       ['add-years','add-months','add-weeks','add-days'].forEach(id => document.getElementById(id).value = '0');
       document.getElementById('add-repeat').value = '1';
       document.getElementById('op-add').checked = true;
       document.getElementById('add-result').classList.remove('visible');
+      document.getElementById('add-start-error').classList.remove('visible');
     }
 
     // ── Panel 2: Duration ─────────────────────────────
@@ -630,7 +655,11 @@
     function calculateDiff() {
       const start = parseDateInput('diff-start');
       const end   = parseDateInput('diff-end');
-      if (!start || !end) { alert('Please enter both dates.'); return; }
+      if (!start || !end) {
+        if (!start) { const e = document.getElementById('diff-start-error'); e.textContent = 'Please enter a start date.'; e.classList.add('visible'); }
+        if (!end)   { const e = document.getElementById('diff-end-error');   e.textContent = 'Please enter an end date.';   e.classList.add('visible'); }
+        return;
+      }
 
       const resultBox  = document.getElementById('diff-result');
       const resultMain = document.getElementById('diff-result-main');
@@ -668,13 +697,40 @@
       chips.appendChild(chip(`${Math.round(totalMs/3600000).toLocaleString()} hours`));
       chips.appendChild(chip(`${to < new Date() ? 'In the past' : 'In the future'}`));
 
+      diffCopyText =
+        `Date Duration\n\n` +
+        `From:     ${fmt(from)}\n` +
+        `To:       ${fmt(to)}\n` +
+        `Duration: ${parts.length ? parts.join(', ') : '0 days'}\n` +
+        `Total:    ${totalDays.toLocaleString()} days (${totalWeeks.toLocaleString()} weeks + ${remDays} days)`;
+
       resultBox.classList.add('visible');
     }
 
     function resetDiff() {
+      diffCopyText = '';
       document.getElementById('diff-start').value = '';
       document.getElementById('diff-end').value = '';
       document.getElementById('diff-result').classList.remove('visible');
+      document.getElementById('diff-start-error').classList.remove('visible');
+      document.getElementById('diff-end-error').classList.remove('visible');
+    }
+
+    // ── Copy ──────────────────────────────────────────
+    function copyResult(panel, btn) {
+      const text = panel === 'add' ? addCopyText : diffCopyText;
+      if (!text) return;
+      const write = () => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy Result'; btn.classList.remove('copied'); }, 2000);
+      };
+      navigator.clipboard.writeText(text).then(write).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        write();
+      });
     }
 
     // ── Init: pre-fill today ───────────────────────────

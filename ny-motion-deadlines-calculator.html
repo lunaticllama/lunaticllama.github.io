@@ -392,6 +392,32 @@
     .impermissible-box.visible { display: block; }
     .impermissible-box strong { font-weight: 600; color: #c0392b; }
 
+    /* ── Field errors ── */
+    .field-error {
+      font-size: 0.72rem;
+      color: #c0392b;
+      margin-top: 5px;
+      display: none;
+    }
+    .field-error.visible { display: block; }
+
+    /* ── Copy button ── */
+    .copy-row { margin-top: 16px; }
+    .btn-copy {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+      background: none;
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      padding: 9px 18px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-copy:hover { color: var(--ink); border-color: var(--ink); }
+    .btn-copy.copied { color: #4a7d4a; border-color: #4a7d4a; }
+
     /* ── Responsive ── */
     @media (max-width: 600px) {
       .card-inner { padding: 24px 20px; }
@@ -428,7 +454,8 @@
         <div class="form-row cols-2">
           <div class="field">
             <label>Return Date (Argument / Appearance)</label>
-            <input type="date" id="return-date-input" title="Enter Return Date"/>
+            <input type="date" id="return-date-input" title="Enter Return Date" oninput="document.getElementById('return-date-error').classList.remove('visible')"/>
+            <div class="field-error" id="return-date-error"></div>
           </div>
           <div class="field" style="display:flex;align-items:flex-end;">
             <button class="btn-reset" onclick="setToday('return-date-input')" style="width:auto;">Use Today</button>
@@ -444,6 +471,9 @@
 
         <div class="result-box" id="return-result">
           <div class="deadline-grid" id="return-deadline-grid"></div>
+          <div class="copy-row">
+            <button class="btn-copy" onclick="copyDeadlines(this)">Copy Deadlines</button>
+          </div>
           <div class="gcl-note" id="return-gcl-note">
             <strong>Gen. Construction Law § 25-a —</strong> Public holiday, Saturday or Sunday in statutes; extension of time where performance of act is due on Saturday, Sunday or public holiday. 1. When any period of time, computed from a certain day, within which or after which or before which an act is authorized or required to be done, ends on a Saturday, Sunday or a public holiday, such act may be done on the next succeeding business day and if the period ends at a specified hour, such act may be done at or before the same hour of such next succeeding business day, except that where a period of time specified by contract ends on a Saturday, Sunday or a public holiday, the extension of such period is governed by section twenty-five of this chapter.
           </div>
@@ -460,7 +490,8 @@
         <div class="form-row cols-2">
           <div class="field">
             <label>Filing Date (Date Motion is Served)</label>
-            <input type="date" id="filing-date-input" title="Enter Filing Date"/>
+            <input type="date" id="filing-date-input" title="Enter Filing Date" oninput="document.getElementById('filing-date-error').classList.remove('visible')"/>
+            <div class="field-error" id="filing-date-error"></div>
           </div>
           <div class="field" style="display:flex;align-items:flex-end;">
             <button class="btn-reset" onclick="setToday('filing-date-input')" style="width:auto;">Use Today</button>
@@ -476,6 +507,9 @@
 
         <div class="result-box" id="filing-result">
           <div class="deadline-grid" id="filing-deadline-grid"></div>
+          <div class="copy-row">
+            <button class="btn-copy" onclick="copyDeadlines(this)">Copy Deadlines</button>
+          </div>
           <div class="impermissible-box" id="filing-impermissible-box"></div>
           <div class="gcl-note" id="filing-gcl-note">
             <strong>Gen. Construction Law § 25-a —</strong> Public holiday, Saturday or Sunday in statutes; extension of time where performance of act is due on Saturday, Sunday or public holiday. 1. When any period of time, computed from a certain day, within which or after which or before which an act is authorized or required to be done, ends on a Saturday, Sunday or a public holiday, such act may be done on the next succeeding business day and if the period ends at a specified hour, such act may be done at or before the same hour of such next succeeding business day, except that where a period of time specified by contract ends on a Saturday, Sunday or a public holiday, the extension of such period is governed by section twenty-five of this chapter.
@@ -493,6 +527,7 @@
     // ── Constants ─────────────────────────────────────
 
     const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    let copyText = '';
     const FILING_BEFORE_RETURN     = 16;
     const OPPOSITION_BEFORE_RETURN =  7;
     const REPLY_BEFORE_RETURN      =  1;
@@ -661,7 +696,12 @@
 
     function calculateFromReturn() {
       const returnDate = parseDate('return-date-input');
-      if (!returnDate) { alert('Please enter a return date.'); return; }
+      if (!returnDate) {
+        const err = document.getElementById('return-date-error');
+        err.textContent = 'Please enter a return date.';
+        err.classList.add('visible');
+        return;
+      }
 
       const rawFiling     = subtractDays(returnDate, FILING_BEFORE_RETURN);
       const rawOpposition = subtractDays(returnDate, OPPOSITION_BEFORE_RETURN);
@@ -707,6 +747,13 @@
       const gclNote = document.getElementById('return-gcl-note');
       anyAdjusted ? gclNote.classList.add('visible') : gclNote.classList.remove('visible');
 
+      copyText =
+        `NY Motion Deadlines (CPLR § 2214)\n\n` +
+        `Return Date:      ${fmtShort(returnDate)} (${DAY_NAMES[returnDate.getDay()]})\n` +
+        `Filing Deadline:  ${fmtShort(adjFiling)} (${DAY_NAMES[adjFiling.getDay()]})\n` +
+        `Opposition Due:   ${fmtShort(adjOpposition)} (${DAY_NAMES[adjOpposition.getDay()]})\n` +
+        `Reply Due:        ${fmtShort(adjReply)} (${DAY_NAMES[adjReply.getDay()]})`;
+
       document.getElementById('return-result').classList.add('visible');
     }
 
@@ -714,7 +761,12 @@
 
     function calculateFromFiling() {
       const filingDate = parseDate('filing-date-input');
-      if (!filingDate) { alert('Please enter a filing date.'); return; }
+      if (!filingDate) {
+        const err = document.getElementById('filing-date-error');
+        err.textContent = 'Please enter a filing date.';
+        err.classList.add('visible');
+        return;
+      }
 
       const rawReturn = addDays(filingDate, FILING_BEFORE_RETURN);
 
@@ -742,6 +794,11 @@
           `Return dates must fall on court days. Please select a permissible return date (the next available court day) ` +
           `and use the <strong>"Based On the Return Date"</strong> tab to calculate your deadlines.`;
         impermissibleBox.classList.add('visible');
+
+        copyText =
+          `NY Motion Deadlines (CPLR § 2214)\n\n` +
+          `Filing Date: ${fmtShort(filingDate)} (${DAY_NAMES[filingDate.getDay()]})\n\n` +
+          `Note: The ${FILING_BEFORE_RETURN}-day calculation lands on ${fmtShort(rawReturn)} (${reason}), which is not a court day.`;
 
       } else {
         // Valid return date — compute all deadlines
@@ -778,23 +835,49 @@
           rawOpposition.getTime() !== adjOpposition.getTime() ||
           rawReply.getTime()      !== adjReply.getTime();
         if (anyAdjusted) gclNote.classList.add('visible');
+
+        copyText =
+          `NY Motion Deadlines (CPLR § 2214)\n\n` +
+          `Filing Date:           ${fmtShort(filingDate)} (${DAY_NAMES[filingDate.getDay()]})\n` +
+          `Earliest Return Date:  ${fmtShort(rawReturn)} (${DAY_NAMES[rawReturn.getDay()]})\n` +
+          `Opposition Due:        ${fmtShort(adjOpposition)} (${DAY_NAMES[adjOpposition.getDay()]})\n` +
+          `Reply Due:             ${fmtShort(adjReply)} (${DAY_NAMES[adjReply.getDay()]})`;
       }
 
       document.getElementById('filing-result').classList.add('visible');
     }
 
+    // ── Copy ──────────────────────────────────────────
+    function copyDeadlines(btn) {
+      if (!copyText) return;
+      const write = () => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy Deadlines'; btn.classList.remove('copied'); }, 2000);
+      };
+      navigator.clipboard.writeText(copyText).then(write).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = copyText; ta.style.cssText = 'position:fixed;opacity:0;';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        write();
+      });
+    }
+
     // ── Reset ─────────────────────────────────────────
 
     function resetPanel(panel) {
+      copyText = '';
       if (panel === 'return') {
         document.getElementById('return-date-input').value = '';
         document.getElementById('return-result').classList.remove('visible');
         document.getElementById('return-gcl-note').classList.remove('visible');
+        document.getElementById('return-date-error').classList.remove('visible');
       } else {
         document.getElementById('filing-date-input').value = '';
         document.getElementById('filing-result').classList.remove('visible');
         document.getElementById('filing-impermissible-box').classList.remove('visible');
         document.getElementById('filing-gcl-note').classList.remove('visible');
+        document.getElementById('filing-date-error').classList.remove('visible');
       }
     }
   </script>

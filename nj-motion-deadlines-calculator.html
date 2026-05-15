@@ -168,6 +168,15 @@
       padding-right: 32px;
     }
 
+    /* ── Field errors ── */
+    .field-error {
+      font-size: 0.72rem;
+      color: #c0392b;
+      margin-top: 5px;
+      display: none;
+    }
+    .field-error.visible { display: block; }
+
     /* ── Toggle ── */
     .toggle-group {
       display: flex;
@@ -376,6 +385,23 @@
     .gcl-note.visible { display: block; }
     .gcl-note strong { font-weight: 600; color: #2a5a2a; }
 
+    /* ── Copy button ── */
+    .copy-row { margin-top: 16px; }
+    .btn-copy {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+      background: none;
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      padding: 9px 18px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-copy:hover { color: var(--ink); border-color: var(--ink); }
+    .btn-copy.copied { color: #4a7d4a; border-color: #4a7d4a; }
+
     /* ── Responsive ── */
     @media (max-width: 600px) {
       .card-inner { padding: 24px 20px; }
@@ -419,7 +445,7 @@
         <div class="field">
           <label>Select a Scheduled NJ Superior Court Motion Date</label>
           <div class="select-wrapper">
-            <select id="return-date-select" title="Select a scheduled NJ Superior Court motion date">
+            <select id="return-date-select" title="Select a scheduled NJ Superior Court motion date" onchange="document.getElementById('return-date-error').classList.remove('visible')">
               <option value="">— Select a motion date —</option>
               <optgroup label="2025–2026 Court Year (remaining)">
                 <option value="2026-06-05">Friday, June 5, 2026</option>
@@ -455,6 +481,7 @@
               </optgroup>
             </select>
           </div>
+          <div class="field-error" id="return-date-error"></div>
         </div>
       </div>
 
@@ -467,6 +494,9 @@
 
       <div class="result-box" id="result-box">
         <div class="deadline-grid" id="deadline-grid"></div>
+        <div class="copy-row">
+          <button class="btn-copy" onclick="copyDeadlines(this)">Copy Deadlines</button>
+        </div>
         <div class="gcl-note" id="gcl-note">
           <strong>Note on Weekend / Holiday Adjustments —</strong> When any period of time ends on a Saturday, Sunday, or public holiday, the act may be done on the next succeeding business day. See <em>R. 1:3-1</em> (incorporating N.J.S.A. 1:1-2 and Gen. Construction principles). Where a deadline falls on a non-court day, the deadline shown above has been advanced to the next business day.
         </div>
@@ -562,8 +592,10 @@
     }
 
     // ── Motion type change ────────────────────────────
+    let copyText = '';
     function onMotionTypeChange() {
       document.getElementById('result-box').classList.remove('visible');
+      copyText = '';
     }
 
     // ── Build a single row ────────────────────────────
@@ -603,7 +635,12 @@
     // ── Main calculate ────────────────────────────────
     function calculate() {
       const val = document.getElementById('return-date-select').value;
-      if (!val) { alert('Please select a return date.'); return; }
+      if (!val) {
+        const err = document.getElementById('return-date-error');
+        err.textContent = 'Please select a return date.';
+        err.classList.add('visible');
+        return;
+      }
 
       const [y, m, d] = val.split('-').map(Number);
       const returnDate = new Date(y, m - 1, d);
@@ -677,14 +714,40 @@
         statuteEl.innerHTML = `<strong>R. 1:6-3(a) — Motions Generally.</strong> A notice of motion shall be filed and served not later than 16 days before the specified return date. Opposing affidavits, certifications or objections shall be filed and served not later than 8 days before the return date. Reply papers shall be filed and served not later than 4 days before the return date. No other papers may be filed without leave of court.`;
       }
 
+      const motionLabel = isSJ ? 'Summary Judgment Motion' : 'Regular Motion';
+      copyText =
+        `NJ Motion Deadlines — ${motionLabel}\n\n` +
+        `Return Date:                          ${fmtShort(returnDate)} (${DAY_NAMES[returnDate.getDay()]})\n` +
+        `Last Day to File & Serve Motion:      ${fmtShort(adjFiling)} (${DAY_NAMES[adjFiling.getDay()]})\n` +
+        `Last Day to File & Serve Opposition:  ${fmtShort(adjOpposition)} (${DAY_NAMES[adjOpposition.getDay()]})\n` +
+        `Last Day to File & Serve Reply:       ${fmtShort(adjReply)} (${DAY_NAMES[adjReply.getDay()]})`;
+
       document.getElementById('result-box').classList.add('visible');
+    }
+
+    // ── Copy ──────────────────────────────────────────
+    function copyDeadlines(btn) {
+      if (!copyText) return;
+      const write = () => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy Deadlines'; btn.classList.remove('copied'); }, 2000);
+      };
+      navigator.clipboard.writeText(copyText).then(write).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = copyText; ta.style.cssText = 'position:fixed;opacity:0;';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        write();
+      });
     }
 
     // ── Reset ─────────────────────────────────────────
     function reset() {
+      copyText = '';
       document.getElementById('return-date-select').value = '';
       document.getElementById('type-regular').checked = true;
       document.getElementById('result-box').classList.remove('visible');
+      document.getElementById('return-date-error').classList.remove('visible');
     }
   </script>
 </body>
