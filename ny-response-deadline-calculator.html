@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NY Answer Deadlines Calculator</title>
+  <link rel="icon" type="image/x-icon" href="/favicons/dc-favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/favicons/dc-favicon.svg">
+  <link rel="apple-touch-icon" href="/favicons/dc-apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .result-label {
+      font-family: 'DM Mono', monospace;
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: .35rem;
+    }
+    .result-date {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.75rem;
+      line-height: 1.2;
+      color: var(--ink);
+      margin-bottom: .5rem;
+    }
+    .result-breakdown {
+      font-size: .875rem;
+      color: var(--muted);
+      margin-bottom: 0;
+    }
+    .adjustment-note {
+      margin-top: .75rem;
+      font-size: .8125rem;
+      color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+      border-radius: 6px;
+      padding: .5rem .75rem;
+    }
+    .adjustment-note.hidden { display: none; }
+    .affidavit-row { transition: opacity .15s; }
+    .affidavit-row.hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Site Nav -->
+  <nav class="site-nav">
+    <a href="date-calculator.html">Date Calculator</a>
+    <span class="site-nav-sep">·</span>
+    <a href="ny-motion-deadlines-calculator.html">NY Motion Deadlines</a>
+    <span class="site-nav-sep">·</span>
+    <a href="nj-motion-deadlines-calculator.html">NJ Motion Deadlines</a>
+    <span class="site-nav-sep">·</span>
+    <span class="site-nav-current">NY Answer Deadlines</span>
+    <a href="https://www.philipmtaylor.com" class="site-nav-home">philipmtaylor.com</a>
+  </nav>
+
+  <!-- Page Title -->
+  <div class="page-title">
+    <h1>NY Answer Deadlines</h1>
+    <p>Calculate the deadline for a defendant to respond to a Summons and Complaint in New York State court based on the method of service.</p>
+    <div class="statute-tag">CPLR § 320 — Defendant's appearance</div>
+    <div class="statute-tag" style="margin-left:8px;">CPLR § 308 — Personal service upon a natural person</div>
+  </div>
+
+  <!-- Card -->
+  <div class="card">
+    <div class="card-inner">
+      <div class="panel active" id="panel-main">
+
+        <div class="section-label">Service Details</div>
+
+        <div class="form-row cols-2">
+          <div class="field">
+            <label for="service-method">Service Method</label>
+            <div class="select-wrapper">
+              <select id="service-method" onchange="onMethodChange()">
+                <option value="1">§ 308(1) — Personal Service (20 days)</option>
+                <option value="2">§ 308(2) — Service on Household Member (30 days + affidavit)</option>
+                <option value="3">§ 308(3) — Service on Agent (30 days)</option>
+                <option value="4">§ 308(4) — Nail and Mail (30 days + affidavit)</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="service-date">Date of Service</label>
+            <input type="date" id="service-date" title="Date of Service"
+              oninput="document.getElementById('service-date-error').classList.remove('visible')">
+            <span class="field-error" id="service-date-error"></span>
+          </div>
+        </div>
+
+        <div class="form-row cols-2 affidavit-row hidden" id="affidavit-row">
+          <div class="field">
+            <label for="affidavit-date">Date of Filing of Affidavit of Service</label>
+            <input type="date" id="affidavit-date" title="Date Affidavit of Service Was Filed"
+              oninput="document.getElementById('affidavit-date-error').classList.remove('visible')">
+            <span class="field-error" id="affidavit-date-error"></span>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn-calculate" onclick="calculate()">Calculate Deadline</button>
+          <button class="btn-reset" onclick="reset()">Clear</button>
+        </div>
+
+        <hr class="divider">
+
+        <div class="result-box" id="result-box">
+          <div class="result-label">Response Deadline</div>
+          <div class="result-date" id="result-date"></div>
+          <div class="result-breakdown" id="result-breakdown"></div>
+          <div class="adjustment-note hidden" id="adjustment-note"></div>
+          <div class="copy-row">
+            <button class="btn-copy" onclick="copyResult(this)">Copy Result</button>
+          </div>
+        </div>
+
+        <div class="statute-note" id="statute-note" style="display:none;">
+          <strong>CPLR § 320(a)</strong> — The defendant appears by serving an answer or a notice of appearance, or by making a motion which has the effect of extending the time to answer. An appearance shall be made within twenty days after service of the summons, except that if the summons was served pursuant to section 308(2), 308(4), or 313, the appearance shall be made within thirty days after service is complete.
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Date helpers ──────────────────────────────────────
+
+    function parseDateInput(id) {
+      const val = document.getElementById(id).value;
+      if (!val) return null;
+      const [y, m, d] = val.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function addDays(date, n) {
+      const d = new Date(date);
+      d.setDate(d.getDate() + n);
+      return d;
+    }
+
+    function dateKey(date) {
+      return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    }
+
+    function formatFull(date) {
+      return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function formatShort(date) {
+      return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+
+    // ── Federal holidays (observed) ───────────────────────
+
+    function getFederalHolidaysForYear(year) {
+      const holidays = new Set();
+
+      function ymd(d) {
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      }
+      function fixedObs(month, day) {
+        const d = new Date(year, month - 1, day);
+        const dow = d.getDay();
+        if (dow === 0) d.setDate(d.getDate() + 1);
+        if (dow === 6) d.setDate(d.getDate() - 1);
+        return d;
+      }
+      function nthWeekday(month, weekday, n) {
+        const d = new Date(year, month - 1, 1);
+        let count = 0;
+        while (true) {
+          if (d.getDay() === weekday) { if (++count === n) return new Date(d); }
+          d.setDate(d.getDate() + 1);
+        }
+      }
+      function lastWeekday(month, weekday) {
+        const d = new Date(year, month, 0);
+        while (d.getDay() !== weekday) d.setDate(d.getDate() - 1);
+        return d;
+      }
+
+      holidays.add(ymd(fixedObs(1, 1)));        // New Year's Day
+      holidays.add(ymd(nthWeekday(1, 1, 3)));   // MLK Day
+      holidays.add(ymd(nthWeekday(2, 1, 3)));   // Presidents' Day
+      holidays.add(ymd(lastWeekday(5, 1)));      // Memorial Day
+      holidays.add(ymd(fixedObs(6, 19)));        // Juneteenth
+      holidays.add(ymd(fixedObs(7, 4)));         // Independence Day
+      holidays.add(ymd(nthWeekday(9, 1, 1)));    // Labor Day
+      holidays.add(ymd(nthWeekday(10, 1, 2)));   // Columbus Day
+      holidays.add(ymd(fixedObs(11, 11)));       // Veterans Day
+      holidays.add(ymd(nthWeekday(11, 4, 4)));   // Thanksgiving
+      holidays.add(ymd(fixedObs(12, 25)));       // Christmas
+
+      return holidays;
+    }
+
+    function isFederalHoliday(date) {
+      return getFederalHolidaysForYear(date.getFullYear()).has(dateKey(date));
+    }
+
+    function isWeekend(date) {
+      return date.getDay() === 0 || date.getDay() === 6;
+    }
+
+    function isNonBusinessDay(date) {
+      return isWeekend(date) || isFederalHoliday(date);
+    }
+
+    function nonBusinessReason(date) {
+      if (date.getDay() === 6) return 'Saturday';
+      if (date.getDay() === 0) return 'Sunday';
+      if (isFederalHoliday(date)) return 'Federal Holiday';
+      return null;
+    }
+
+    function nextBusinessDay(date) {
+      let d = new Date(date);
+      while (isNonBusinessDay(d)) d.setDate(d.getDate() + 1);
+      return d;
+    }
+
+    // ── UI ────────────────────────────────────────────────
+
+    function onMethodChange() {
+      const method = document.getElementById('service-method').value;
+      const needsAffidavit = method === '2' || method === '4';
+      document.getElementById('affidavit-row').classList.toggle('hidden', !needsAffidavit);
+      if (!needsAffidavit) {
+        document.getElementById('affidavit-date').value = '';
+        const err = document.getElementById('affidavit-date-error');
+        err.textContent = '';
+        err.classList.remove('visible');
+      }
+      document.getElementById('result-box').classList.remove('visible');
+      document.getElementById('statute-note').style.display = 'none';
+    }
+
+    function calculate() {
+      ['service-date-error', 'affidavit-date-error'].forEach(id => {
+        const el = document.getElementById(id);
+        el.textContent = '';
+        el.classList.remove('visible');
+      });
+
+      const serviceDate = parseDateInput('service-date');
+      if (!serviceDate) {
+        const err = document.getElementById('service-date-error');
+        err.textContent = 'Please enter the date of service.';
+        err.classList.add('visible');
+        return;
+      }
+
+      const method = document.getElementById('service-method').value;
+      let rawDeadline, basis;
+
+      if (method === '1') {
+        rawDeadline = addDays(serviceDate, 20);
+        basis = `20 days from date of service (${formatShort(serviceDate)})`;
+      } else if (method === '3') {
+        rawDeadline = addDays(serviceDate, 30);
+        basis = `30 days from date of service (${formatShort(serviceDate)})`;
+      } else {
+        const affDate = parseDateInput('affidavit-date');
+        if (!affDate) {
+          const err = document.getElementById('affidavit-date-error');
+          err.textContent = 'Please enter the date the affidavit of service was filed.';
+          err.classList.add('visible');
+          return;
+        }
+        const methodLabel = method === '2' ? '308(2)' : '308(4)';
+        rawDeadline = addDays(affDate, 40);
+        basis = `40 days from affidavit filing (${formatShort(affDate)})`;
+      }
+
+      const adjDeadline = nextBusinessDay(rawDeadline);
+      const wasAdjusted = rawDeadline.getTime() !== adjDeadline.getTime();
+
+      document.getElementById('result-date').textContent = formatFull(adjDeadline);
+      document.getElementById('result-breakdown').textContent = basis;
+
+      const adjNote = document.getElementById('adjustment-note');
+      if (wasAdjusted) {
+        const reason = nonBusinessReason(rawDeadline);
+        adjNote.textContent = `Raw deadline was ${formatShort(rawDeadline)} (${reason}) — advanced to the next business day per General Construction Law § 25-a.`;
+        adjNote.classList.remove('hidden');
+      } else {
+        adjNote.classList.add('hidden');
+      }
+
+      document.getElementById('result-box').classList.add('visible');
+      document.getElementById('statute-note').style.display = '';
+
+      const params = { method, service: document.getElementById('service-date').value };
+      if (method === '2' || method === '4') {
+        params.affidavit = document.getElementById('affidavit-date').value;
+      }
+      history.replaceState(null, '', '?' + new URLSearchParams(params).toString());
+    }
+
+    function reset() {
+      document.getElementById('service-date').value = '';
+      document.getElementById('affidavit-date').value = '';
+      document.getElementById('service-method').value = '1';
+      document.getElementById('affidavit-row').classList.add('hidden');
+      document.getElementById('result-box').classList.remove('visible');
+      document.getElementById('statute-note').style.display = 'none';
+      ['service-date-error', 'affidavit-date-error'].forEach(id => {
+        const el = document.getElementById(id);
+        el.textContent = '';
+        el.classList.remove('visible');
+      });
+      history.replaceState(null, '', location.pathname);
+    }
+
+    function copyResult(btn) {
+      const date = document.getElementById('result-date').textContent;
+      const breakdown = document.getElementById('result-breakdown').textContent;
+      const adjNote = document.getElementById('adjustment-note');
+      let text = `Response Deadline: ${date}\n${breakdown}`;
+      if (!adjNote.classList.contains('hidden')) {
+        text += `\n${adjNote.textContent}`;
+      }
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => flashBtn(btn));
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        flashBtn(btn);
+      }
+    }
+
+    function flashBtn(btn) {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = orig, 1500);
+    }
+
+    // ── Init from URL ─────────────────────────────────────
+
+    (function () {
+      const p = new URLSearchParams(location.search);
+      const method = p.get('method');
+      const service = p.get('service');
+      const affidavit = p.get('affidavit');
+
+      if (method && ['1','2','3','4'].includes(method)) {
+        document.getElementById('service-method').value = method;
+        onMethodChange();
+      }
+      if (service) document.getElementById('service-date').value = service;
+      if (affidavit) document.getElementById('affidavit-date').value = affidavit;
+
+      if (service) {
+        const m = method || '1';
+        if ((m === '2' || m === '4') && affidavit) calculate();
+        else if (m === '1' || m === '3') calculate();
+      }
+    })();
+  </script>
+
+</body>
+</html>
