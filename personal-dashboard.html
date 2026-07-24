@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Work Dashboard</title>
+  <link rel="icon" type="image/x-icon" href="/favicons/dc-favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/favicons/dc-favicon.svg">
+  <link rel="apple-touch-icon" href="/favicons/dc-apple-touch-icon.png">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1e293b;
+      min-height: 100vh;
+      padding: 28px 24px;
+    }
+
+    .dashboard {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 20px;
+    }
+    .dash-title {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+    .dash-date {
+      font-size: .9rem;
+      color: #64748b;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.04);
+      padding: 22px 24px;
+    }
+    .card-label {
+      font-size: .62rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-bottom: 16px;
+    }
+
+    /* ── Top grid ── */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr 1.5fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    /* ── Weather ── */
+    .weather-temp {
+      font-size: 3rem;
+      font-weight: 200;
+      line-height: 1;
+      letter-spacing: -.02em;
+      color: #0f172a;
+      margin-bottom: 6px;
+    }
+    .weather-emoji {
+      font-size: 1.6rem;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+    .weather-condition {
+      font-size: .95rem;
+      color: #475569;
+      margin-bottom: 14px;
+    }
+    .weather-detail {
+      font-size: .82rem;
+      color: #64748b;
+      line-height: 2;
+    }
+    .weather-loading, .weather-error,
+    .headlines-loading, .headlines-error {
+      font-size: .83rem;
+      color: #94a3b8;
+      padding: 8px 0;
+    }
+
+    /* ── Calendar ── */
+    .cal-month {
+      font-size: .88rem;
+      font-weight: 600;
+      color: #0f172a;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+    .cal-day-name {
+      font-size: .6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #94a3b8;
+      text-align: center;
+      padding-bottom: 6px;
+    }
+    .cal-day {
+      font-size: .78rem;
+      text-align: center;
+      padding: 5px 0;
+      border-radius: 6px;
+      color: #475569;
+      cursor: default;
+    }
+    .cal-day.today {
+      background: #2563eb;
+      color: #fff;
+      font-weight: 600;
+    }
+    .cal-day.empty { visibility: hidden; }
+
+    /* ── Headlines ── */
+    .headlines-list {
+      list-style: none;
+    }
+    .headlines-list li {
+      padding: 9px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .headlines-list li:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .headline-link {
+      font-size: .85rem;
+      color: #1e293b;
+      text-decoration: none;
+      line-height: 1.45;
+      display: block;
+    }
+    .headline-link:hover { color: #2563eb; }
+    .headline-time {
+      font-size: .68rem;
+      color: #94a3b8;
+      margin-top: 3px;
+    }
+
+    /* ── Quick Links ── */
+    .links-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: .85rem;
+      font-family: inherit;
+      color: #334155;
+      text-decoration: none;
+      transition: background .13s, border-color .13s, color .13s;
+    }
+    .link-btn:hover {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #fff;
+    }
+    .link-arrow {
+      font-size: .72rem;
+      opacity: .45;
+    }
+    .link-btn:hover .link-arrow { opacity: 1; }
+
+    /* ── Responsive ── */
+    @media (max-width: 800px) {
+      .dash-grid { grid-template-columns: 1fr 1fr; }
+      .headlines-card { grid-column: 1 / -1; }
+    }
+    @media (max-width: 520px) {
+      body { padding: 16px 12px; }
+      .dash-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+
+    <header class="dash-header">
+      <div class="dash-title">Work Dashboard</div>
+      <div class="dash-date" id="dash-date"></div>
+    </header>
+
+    <div class="dash-grid">
+
+      <!-- Weather -->
+      <div class="card">
+        <div class="card-label">New York City</div>
+        <div id="weather-content">
+          <div class="weather-loading">Loading weather…</div>
+        </div>
+      </div>
+
+      <!-- Calendar -->
+      <div class="card">
+        <div class="card-label">Calendar</div>
+        <div class="cal-month" id="cal-month"></div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+
+      <!-- WSJ Headlines -->
+      <div class="card headlines-card">
+        <div class="card-label">Wall Street Journal</div>
+        <div id="headlines-content">
+          <div class="headlines-loading">Loading headlines…</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Quick Links -->
+    <div class="card">
+      <div class="card-label">Quick Links</div>
+      <div class="links-grid">
+        <a class="link-btn" href="https://lastpass.com/login/" target="_blank" rel="noopener">
+          LastPass <span class="link-arrow">↗</span>
+        </a>
+        <a class="link-btn" href="https://vault.netvoyage.com/neWeb2/home" target="_blank" rel="noopener">
+          NetVoyage <span class="link-arrow">↗</span>
+        </a>
+        <a class="link-btn" href="https://web.auth.surepoint.cloud/" target="_blank" rel="noopener">
+          SurePoint <span class="link-arrow">↗</span>
+        </a>
+        <a class="link-btn" href="https://1.next.westlaw.com/Search/Home.html?transitionType=Default&contextData=(sc.Default)&bhcp=1" target="_blank" rel="noopener">
+          Westlaw <span class="link-arrow">↗</span>
+        </a>
+        <a class="link-btn" href="https://philipmtaylor.com/date-calculator.html" target="_blank" rel="noopener">
+          Date Calculator <span class="link-arrow">↗</span>
+        </a>
+        <a class="link-btn" href="https://iapps.courts.state.ny.us/nyscef/HomePage" target="_blank" rel="noopener">
+          NYSCEF <span class="link-arrow">↗</span>
+        </a>
+        <a class="link-btn" href="http://www.judiciary.state.nj.us/" target="_blank" rel="noopener">
+          NJ Courts <span class="link-arrow">↗</span>
+        </a>
+        <a class="link-btn" href="https://pacer.uscourts.gov/file-case/court-cmecf-lookup" target="_blank" rel="noopener">
+          PACER <span class="link-arrow">↗</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+  <script>
+    // ── Date header ───────────────────────────────────────
+
+    document.getElementById('dash-date').textContent =
+      new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    // ── Calendar ──────────────────────────────────────────
+
+    (function () {
+      const now   = new Date();
+      const year  = now.getFullYear();
+      const month = now.getMonth();
+      const today = now.getDate();
+      const MONTHS = ['January','February','March','April','May','June',
+                      'July','August','September','October','November','December'];
+
+      document.getElementById('cal-month').textContent = `${MONTHS[month]} ${year}`;
+
+      const grid = document.getElementById('cal-grid');
+      ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(n => {
+        const el = document.createElement('div');
+        el.className = 'cal-day-name';
+        el.textContent = n;
+        grid.appendChild(el);
+      });
+
+      const firstDow    = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 0; i < firstDow; i++) {
+        const el = document.createElement('div');
+        el.className = 'cal-day empty';
+        grid.appendChild(el);
+      }
+      for (let d = 1; d <= daysInMonth; d++) {
+        const el = document.createElement('div');
+        el.className = 'cal-day' + (d === today ? ' today' : '');
+        el.textContent = d;
+        grid.appendChild(el);
+      }
+    })();
+
+    // ── Weather (Open-Meteo, no key required) ─────────────
+
+    const WMO = {
+      0:  ['Clear',            '☀️'],
+      1:  ['Mainly Clear',     '🌤️'],
+      2:  ['Partly Cloudy',    '⛅'],
+      3:  ['Overcast',         '☁️'],
+      45: ['Foggy',            '🌫️'],
+      48: ['Freezing Fog',     '🌫️'],
+      51: ['Light Drizzle',    '🌦️'],
+      53: ['Drizzle',          '🌦️'],
+      55: ['Heavy Drizzle',    '🌦️'],
+      61: ['Light Rain',       '🌧️'],
+      63: ['Rain',             '🌧️'],
+      65: ['Heavy Rain',       '🌧️'],
+      71: ['Light Snow',       '🌨️'],
+      73: ['Snow',             '🌨️'],
+      75: ['Heavy Snow',       '❄️'],
+      77: ['Snow Grains',      '❄️'],
+      80: ['Rain Showers',     '🌦️'],
+      81: ['Rain Showers',     '🌧️'],
+      82: ['Heavy Showers',    '🌧️'],
+      85: ['Snow Showers',     '🌨️'],
+      86: ['Heavy Snow',       '❄️'],
+      95: ['Thunderstorm',     '⛈️'],
+      96: ['Thunderstorm',     '⛈️'],
+      99: ['Thunderstorm',     '⛈️'],
+    };
+
+    async function loadWeather() {
+      const url = 'https://api.open-meteo.com/v1/forecast'
+        + '?latitude=40.7128&longitude=-74.0060'
+        + '&current=temperature_2m,apparent_temperature,weather_code'
+        + '&daily=temperature_2m_max,temperature_2m_min'
+        + '&temperature_unit=fahrenheit'
+        + '&timezone=America%2FNew_York'
+        + '&forecast_days=1';
+      try {
+        const data = await fetch(url).then(r => r.json());
+        const cur  = data.current;
+        const day  = data.daily;
+        const [condition, emoji] = WMO[cur.weather_code] || ['—', '🌡️'];
+        const el = document.getElementById('weather-content');
+        el.innerHTML = '';
+
+        const temp = document.createElement('div');
+        temp.className = 'weather-temp';
+        temp.innerHTML = `<span class="weather-emoji">${emoji}</span>${Math.round(cur.temperature_2m)}°F`;
+        el.appendChild(temp);
+
+        const cond = document.createElement('div');
+        cond.className = 'weather-condition';
+        cond.textContent = condition;
+        el.appendChild(cond);
+
+        const detail = document.createElement('div');
+        detail.className = 'weather-detail';
+        detail.innerHTML =
+          `Feels like ${Math.round(cur.apparent_temperature)}°F<br>` +
+          `H: ${Math.round(day.temperature_2m_max[0])}°&nbsp;&nbsp;·&nbsp;&nbsp;` +
+          `L: ${Math.round(day.temperature_2m_min[0])}°`;
+        el.appendChild(detail);
+      } catch {
+        document.getElementById('weather-content').innerHTML =
+          '<div class="weather-error">Unable to load weather.</div>';
+      }
+    }
+
+    // ── WSJ Headlines (CORS proxy + native XML parse) ────
+
+    async function loadHeadlines() {
+      const rss = 'https://feeds.wsj.com/wsj/xml/rss/3_7085.xml';
+      const url = `https://api.allorigins.win/get?url=${encodeURIComponent(rss)}`;
+      try {
+        const json = await fetch(url).then(r => r.json());
+        if (!json.contents) throw new Error('No contents from proxy');
+
+        const parser = new DOMParser();
+        const xml    = parser.parseFromString(json.contents, 'text/xml');
+        if (xml.querySelector('parsererror')) throw new Error('XML parse error');
+        const items  = Array.from(xml.querySelectorAll('item')).slice(0, 5);
+        if (!items.length) throw new Error();
+
+        const container = document.getElementById('headlines-content');
+        container.innerHTML = '';
+        const list = document.createElement('ul');
+        list.className = 'headlines-list';
+
+        items.forEach(item => {
+          const title   = item.querySelector('title')?.textContent || '';
+          const link    = item.querySelector('link')?.textContent
+                       || item.querySelector('guid')?.textContent || '#';
+          const pubDate = item.querySelector('pubDate')?.textContent || '';
+
+          const li = document.createElement('li');
+          const a  = document.createElement('a');
+          a.className   = 'headline-link';
+          a.href        = link.trim();
+          a.target      = '_blank';
+          a.rel         = 'noopener';
+          a.textContent = title;
+
+          const time = document.createElement('div');
+          time.className = 'headline-time';
+          if (pubDate) {
+            const pub = new Date(pubDate);
+            time.textContent = pub.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+              + ' · ' + pub.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+          }
+
+          li.appendChild(a);
+          li.appendChild(time);
+          list.appendChild(li);
+        });
+
+        container.appendChild(list);
+      } catch {
+        document.getElementById('headlines-content').innerHTML =
+          '<div class="headlines-error">Unable to load headlines.</div>';
+      }
+    }
+
+    loadWeather();
+    loadHeadlines();
+  </script>
+</body>
+</html>
