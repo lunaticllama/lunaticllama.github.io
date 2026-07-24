@@ -4,7 +4,8 @@
       "Bash(ls \"C:\\\\Users\\\\Phil\\\\Documents\\\\GitHub\")",
       "Read(//c/Users/Phil/Documents/GitHub/**)",
       "Skill(run)",
-      "Skill(run:*)"
+      "Skill(run:*)",
+      "WebSearch"
     ]
   }
 }
