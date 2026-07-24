@@ -378,44 +378,32 @@
       }
     }
 
-    // ── WSJ Headlines (CORS proxy + native XML parse) ────
+    // ── WSJ Headlines (read from daily-updated local JSON) ─
 
     async function loadHeadlines() {
-      const rss = 'https://feeds.wsj.com/wsj/xml/rss/3_7085.xml';
-      const url = `https://api.allorigins.win/get?url=${encodeURIComponent(rss)}`;
       try {
-        const json = await fetch(url).then(r => r.json());
-        if (!json.contents) throw new Error('No contents from proxy');
-
-        const parser = new DOMParser();
-        const xml    = parser.parseFromString(json.contents, 'text/xml');
-        if (xml.querySelector('parsererror')) throw new Error('XML parse error');
-        const items  = Array.from(xml.querySelectorAll('item')).slice(0, 5);
-        if (!items.length) throw new Error();
+        const data = await fetch('/data/wsj-headlines.json').then(r => r.json());
+        if (!data.items?.length) throw new Error('empty');
 
         const container = document.getElementById('headlines-content');
         container.innerHTML = '';
+
         const list = document.createElement('ul');
         list.className = 'headlines-list';
 
-        items.forEach(item => {
-          const title   = item.querySelector('title')?.textContent || '';
-          const link    = item.querySelector('link')?.textContent
-                       || item.querySelector('guid')?.textContent || '#';
-          const pubDate = item.querySelector('pubDate')?.textContent || '';
-
+        data.items.forEach(item => {
           const li = document.createElement('li');
           const a  = document.createElement('a');
           a.className   = 'headline-link';
-          a.href        = link.trim();
+          a.href        = item.link || '#';
           a.target      = '_blank';
           a.rel         = 'noopener';
-          a.textContent = title;
+          a.textContent = item.title;
 
           const time = document.createElement('div');
           time.className = 'headline-time';
-          if (pubDate) {
-            const pub = new Date(pubDate);
+          if (item.pubDate) {
+            const pub = new Date(item.pubDate);
             time.textContent = pub.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
               + ' · ' + pub.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
           }
@@ -426,9 +414,19 @@
         });
 
         container.appendChild(list);
+
+        if (data.updated) {
+          const updated = document.createElement('div');
+          updated.className = 'headline-time';
+          updated.style.cssText = 'margin-top:10px;text-align:right;';
+          const d = new Date(data.updated);
+          updated.textContent = 'As of ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            + ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+          container.appendChild(updated);
+        }
       } catch {
         document.getElementById('headlines-content').innerHTML =
-          '<div class="headlines-error">Unable to load headlines.</div>';
+          '<div class="headlines-error">Headlines not yet available — check back after 7 AM.</div>';
       }
     }
 
