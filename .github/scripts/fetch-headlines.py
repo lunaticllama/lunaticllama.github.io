@@ -29,22 +29,13 @@ def parse(xml_bytes):
 
 def main():
     os.makedirs('data', exist_ok=True)
-    try:
-        xml_bytes = fetch()
-        items     = parse(xml_bytes)
-        payload   = {
-            'updated': datetime.now(timezone.utc).isoformat(),
-            'items':   items,
-        }
-        print(f"Fetched {len(items)} headlines")
-    except Exception as e:
-        print(f"Error fetching headlines: {e}")
-        # Preserve existing file on failure rather than wiping it
-        if os.path.exists(OUTPUT):
-            print("Keeping existing headlines file.")
-            return
-        payload = {'updated': None, 'items': []}
-
+    xml_bytes = fetch()
+    items     = parse(xml_bytes)
+    print(f"Fetched {len(items)} headlines")
+    payload = {
+        'updated': datetime.now(timezone.utc).isoformat(),
+        'items':   items,
+    }
     with open(OUTPUT, 'w') as f:
         json.dump(payload, f, indent=2)
 
