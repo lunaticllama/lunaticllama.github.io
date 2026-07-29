@@ -15,16 +15,22 @@ def fetch():
     with urllib.request.urlopen(req, timeout=30) as r:
         return r.read()
 
+SKIP_TITLES = ['print edition']
+
 def parse(xml_bytes):
     root = ET.fromstring(xml_bytes)
-    items = root.findall('.//item')[:5]
     headlines = []
-    for item in items:
+    for item in root.findall('.//item'):
         title    = (item.findtext('title') or '').strip()
         link     = (item.findtext('link')  or '').strip()
         pub_date = (item.findtext('pubDate') or '').strip()
-        if title:
-            headlines.append({'title': title, 'link': link, 'pubDate': pub_date})
+        if not title:
+            continue
+        if any(skip in title.lower() for skip in SKIP_TITLES):
+            continue
+        headlines.append({'title': title, 'link': link, 'pubDate': pub_date})
+        if len(headlines) == 5:
+            break
     return headlines
 
 def main():
