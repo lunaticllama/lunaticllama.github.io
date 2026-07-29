@@ -4,7 +4,7 @@ import json
 import os
 from datetime import datetime, timezone
 
-RSS_URL = 'https://feeds.wsj.com/wsj/xml/rss/3_7085.xml'
+RSS_URL = 'https://news.google.com/rss/search?q=site:wsj.com&hl=en-US&gl=US&ceid=US:en'
 OUTPUT  = 'data/wsj-headlines.json'
 
 def fetch():

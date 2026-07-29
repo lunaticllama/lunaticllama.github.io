@@ -13,9 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Test WSJ RSS reachability
-        run: curl -sI -A "Mozilla/5.0" "https://feeds.wsj.com/wsj/xml/rss/3_7085.xml" | head -5
-
       - name: Fetch WSJ headlines
         run: python3 .github/scripts/fetch-headlines.py
 
