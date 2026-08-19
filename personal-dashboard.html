@@ -581,49 +581,38 @@
       ta.addEventListener('input', () => localStorage.setItem('dashboard-notes', ta.value));
     })();
 
-    // ── Market Snapshot (Yahoo Finance) ──────────────────
+    // ── Market Snapshot (read from daily-updated local JSON) ─
 
     async function loadMarket() {
-      const SYMBOLS = [
-        { key: '%5EGSPC', label: 'S&P 500' },
-        { key: '%5EDJI',  label: 'Dow'     },
-        { key: '%5EIXIC', label: 'Nasdaq'  },
-      ];
-      const url = 'https://query1.finance.yahoo.com/v6/finance/quote?symbols='
-        + SYMBOLS.map(s => s.key).join('%2C');
       try {
-        const data   = await fetch(url).then(r => r.json());
-        const quotes = data.quoteResponse?.result;
-        if (!quotes?.length) throw new Error();
+        const data = await fetch('/data/market.json').then(r => r.json());
+        if (!data.items?.length) throw new Error('empty');
 
         const container = document.getElementById('market-content');
         container.innerHTML = '';
 
-        SYMBOLS.forEach((sym, i) => {
-          const q    = quotes[i];
-          const chg  = q.regularMarketChange;
-          const pct  = q.regularMarketChangePercent;
-          const isUp = chg >= 0;
+        data.items.forEach(q => {
+          const isUp = q.change >= 0;
 
           const row = document.createElement('div');
           row.className = 'market-row';
 
           const name = document.createElement('div');
           name.className   = 'market-name';
-          name.textContent = sym.label;
+          name.textContent = q.label;
 
           const right = document.createElement('div');
           right.className = 'market-right';
 
           const price = document.createElement('div');
           price.className   = 'market-price';
-          price.textContent = q.regularMarketPrice.toLocaleString('en-US',
+          price.textContent = q.price.toLocaleString('en-US',
             { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
           const change = document.createElement('div');
           change.className   = 'market-change ' + (isUp ? 'up' : 'down');
-          change.textContent = (isUp ? '+' : '') + chg.toFixed(2)
-            + '  (' + (isUp ? '+' : '') + pct.toFixed(2) + '%)';
+          change.textContent = (isUp ? '+' : '') + q.change.toFixed(2)
+            + '  (' + (isUp ? '+' : '') + q.changePct.toFixed(2) + '%)';
 
           right.appendChild(price);
           right.appendChild(change);
@@ -633,8 +622,13 @@
         });
 
         const status = document.createElement('div');
-        status.className   = 'market-status';
-        status.textContent = quotes[0].marketState === 'REGULAR' ? 'Market open' : 'Market closed';
+        status.className = 'market-status';
+        const isOpen = data.items[0].state === 'REGULAR';
+        if (data.updated) {
+          const d = new Date(data.updated);
+          status.textContent = (isOpen ? 'Market open · ' : 'As of ')
+            + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        }
         container.appendChild(status);
 
       } catch {

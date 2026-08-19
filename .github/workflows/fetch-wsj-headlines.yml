@@ -2,7 +2,8 @@ name: Fetch WSJ Headlines
 
 on:
   schedule:
-    - cron: '0 12 * * *'   # 7 AM ET (approx) every day
+    - cron: '0 12 * * *'    # 7 AM ET — morning headlines + pre-market
+    - cron: '30 21 * * 1-5' # 4:30 PM ET weekdays — closing prices
   workflow_dispatch:         # Allow manual trigger from GitHub Actions tab
 
 jobs:
@@ -20,7 +21,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/wsj-headlines.json
+          git add data/wsj-headlines.json data/market.json
           git diff --staged --quiet || git commit -m "Update WSJ headlines [skip ci]"
           git pull --rebase
           git push
