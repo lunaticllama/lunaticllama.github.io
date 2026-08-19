@@ -190,14 +190,109 @@
     }
     .link-btn:hover .link-arrow { opacity: 1; }
 
+    /* ── Bottom grid ── */
+    .dash-grid-bottom {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1.2fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    /* ── Clock ── */
+    .clock-time {
+      font-size: 2.6rem;
+      font-weight: 200;
+      letter-spacing: -.02em;
+      color: #0f172a;
+      line-height: 1;
+      margin-bottom: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+    .clock-ampm {
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: #94a3b8;
+      margin-left: 3px;
+    }
+    .clock-sub {
+      font-size: .75rem;
+      color: #94a3b8;
+      margin-top: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Quick Notes ── */
+    .notes-textarea {
+      width: 100%;
+      height: 116px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: .85rem;
+      color: #1e293b;
+      resize: vertical;
+      outline: none;
+      line-height: 1.55;
+      background: #f8fafc;
+      transition: border-color .13s, box-shadow .13s;
+    }
+    .notes-textarea:focus {
+      border-color: #2563eb;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+    }
+    .notes-textarea::placeholder { color: #cbd5e1; }
+
+    /* ── Market Snapshot ── */
+    .market-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .market-row:last-of-type { border-bottom: none; }
+    .market-name {
+      font-size: .82rem;
+      font-weight: 600;
+      color: #334155;
+    }
+    .market-right { text-align: right; }
+    .market-price {
+      font-size: .88rem;
+      color: #0f172a;
+      font-variant-numeric: tabular-nums;
+    }
+    .market-change {
+      font-size: .72rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .market-change.up   { color: #16a34a; }
+    .market-change.down { color: #dc2626; }
+    .market-status {
+      font-size: .65rem;
+      color: #94a3b8;
+      margin-top: 10px;
+      text-align: right;
+    }
+    .market-loading, .market-error {
+      font-size: .83rem;
+      color: #94a3b8;
+      padding: 8px 0;
+    }
+
     /* ── Responsive ── */
     @media (max-width: 800px) {
       .dash-grid { grid-template-columns: 1fr 1fr; }
       .headlines-card { grid-column: 1 / -1; }
+      .dash-grid-bottom { grid-template-columns: 1fr 1fr; }
+      .notes-card { grid-column: 1 / -1; }
     }
     @media (max-width: 520px) {
       body { padding: 16px 12px; }
       .dash-grid { grid-template-columns: 1fr; }
+      .dash-grid-bottom { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -231,6 +326,34 @@
         <div class="card-label">Wall Street Journal</div>
         <div id="headlines-content">
           <div class="headlines-loading">Loading headlines…</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Clock · Quick Notes · Market -->
+    <div class="dash-grid-bottom">
+
+      <!-- Clock -->
+      <div class="card">
+        <div class="card-label">New York Time</div>
+        <div class="clock-time">
+          <span id="clock-hm"></span><span class="clock-ampm" id="clock-ampm"></span>
+        </div>
+        <div class="clock-sub" id="clock-sub"></div>
+      </div>
+
+      <!-- Quick Notes -->
+      <div class="card notes-card">
+        <div class="card-label">Quick Notes</div>
+        <textarea class="notes-textarea" id="quick-notes" placeholder="Jot something down…"></textarea>
+      </div>
+
+      <!-- Market Snapshot -->
+      <div class="card">
+        <div class="card-label">Markets</div>
+        <div id="market-content">
+          <div class="market-loading">Loading…</div>
         </div>
       </div>
 
@@ -430,8 +553,99 @@
       }
     }
 
+    // ── Live Clock ────────────────────────────────────────
+
+    (function () {
+      function updateClock() {
+        const now = new Date();
+        const full = now.toLocaleTimeString('en-US', {
+          hour: 'numeric', minute: '2-digit', second: '2-digit',
+          hour12: true, timeZone: 'America/New_York'
+        });
+        const m = full.match(/^(\d+:\d+):(\d+)\s*(AM|PM)$/i);
+        if (m) {
+          document.getElementById('clock-hm').textContent  = m[1];
+          document.getElementById('clock-ampm').textContent = ' ' + m[3];
+          document.getElementById('clock-sub').textContent  = ':' + m[2] + ' ET';
+        }
+      }
+      updateClock();
+      setInterval(updateClock, 1000);
+    })();
+
+    // ── Quick Notes ───────────────────────────────────────
+
+    (function () {
+      const ta = document.getElementById('quick-notes');
+      ta.value = localStorage.getItem('dashboard-notes') || '';
+      ta.addEventListener('input', () => localStorage.setItem('dashboard-notes', ta.value));
+    })();
+
+    // ── Market Snapshot (Yahoo Finance) ──────────────────
+
+    async function loadMarket() {
+      const SYMBOLS = [
+        { key: '%5EGSPC', label: 'S&P 500' },
+        { key: '%5EDJI',  label: 'Dow'     },
+        { key: '%5EIXIC', label: 'Nasdaq'  },
+      ];
+      const url = 'https://query1.finance.yahoo.com/v6/finance/quote?symbols='
+        + SYMBOLS.map(s => s.key).join('%2C');
+      try {
+        const data   = await fetch(url).then(r => r.json());
+        const quotes = data.quoteResponse?.result;
+        if (!quotes?.length) throw new Error();
+
+        const container = document.getElementById('market-content');
+        container.innerHTML = '';
+
+        SYMBOLS.forEach((sym, i) => {
+          const q    = quotes[i];
+          const chg  = q.regularMarketChange;
+          const pct  = q.regularMarketChangePercent;
+          const isUp = chg >= 0;
+
+          const row = document.createElement('div');
+          row.className = 'market-row';
+
+          const name = document.createElement('div');
+          name.className   = 'market-name';
+          name.textContent = sym.label;
+
+          const right = document.createElement('div');
+          right.className = 'market-right';
+
+          const price = document.createElement('div');
+          price.className   = 'market-price';
+          price.textContent = q.regularMarketPrice.toLocaleString('en-US',
+            { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+          const change = document.createElement('div');
+          change.className   = 'market-change ' + (isUp ? 'up' : 'down');
+          change.textContent = (isUp ? '+' : '') + chg.toFixed(2)
+            + '  (' + (isUp ? '+' : '') + pct.toFixed(2) + '%)';
+
+          right.appendChild(price);
+          right.appendChild(change);
+          row.appendChild(name);
+          row.appendChild(right);
+          container.appendChild(row);
+        });
+
+        const status = document.createElement('div');
+        status.className   = 'market-status';
+        status.textContent = quotes[0].marketState === 'REGULAR' ? 'Market open' : 'Market closed';
+        container.appendChild(status);
+
+      } catch {
+        document.getElementById('market-content').innerHTML =
+          '<div class="market-error">Market data unavailable.</div>';
+      }
+    }
+
     loadWeather();
     loadHeadlines();
+    loadMarket();
   </script>
 </body>
 </html>
