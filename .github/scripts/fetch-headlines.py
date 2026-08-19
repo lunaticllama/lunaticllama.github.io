@@ -4,7 +4,7 @@ import json
 import os
 from datetime import datetime, timezone
 
-# ── Headlines ─────────────────────────────────────────────
+# -- Headlines -------------------------------------------------
 
 RSS_URL          = 'https://news.google.com/rss/search?q=site:wsj.com&hl=en-US&gl=US&ceid=US:en'
 HEADLINES_OUTPUT = 'data/wsj-headlines.json'
@@ -34,16 +34,20 @@ def parse_headlines(xml_bytes):
             break
     return headlines
 
-# ── Market data ───────────────────────────────────────────
+# -- Market data (Yahoo Finance v8 chart, one request per symbol) --
 
-MARKET_URL    = ('https://query1.finance.yahoo.com/v6/finance/quote'
-                 '?symbols=%5EGSPC%2C%5EDJI%2C%5EIXIC')
-MARKET_OUTPUT = 'data/market.json'
-MARKET_LABELS = ['S&P 500', 'Dow', 'Nasdaq']
+MARKET_OUTPUT  = 'data/market.json'
+MARKET_SYMBOLS = [
+    ('%5EGSPC', 'S&P 500'),
+    ('%5EDJI',  'Dow'),
+    ('%5EIXIC', 'Nasdaq'),
+]
 
-def fetch_market():
+def fetch_one_quote(encoded_symbol):
+    url = ('https://query1.finance.yahoo.com/v8/finance/chart/'
+           + encoded_symbol + '?interval=1d&range=1d')
     req = urllib.request.Request(
-        MARKET_URL,
+        url,
         headers={
             'User-Agent': 'Mozilla/5.0 (compatible; dashboard-bot/1.0)',
             'Accept': 'application/json',
@@ -52,38 +56,45 @@ def fetch_market():
     with urllib.request.urlopen(req, timeout=30) as r:
         return json.loads(r.read())
 
-def parse_market(data):
-    quotes = data['quoteResponse']['result']
+def fetch_market():
     items = []
-    for i, q in enumerate(quotes):
+    for symbol, label in MARKET_SYMBOLS:
+        data = fetch_one_quote(symbol)
+        meta  = data['chart']['result'][0]['meta']
+        price = meta['regularMarketPrice']
+        prev  = meta.get('chartPreviousClose') or meta.get('previousClose') or price
+        change = price - prev
+        pct    = (change / prev * 100) if prev else 0
         items.append({
-            'label':     MARKET_LABELS[i],
-            'price':     q['regularMarketPrice'],
-            'change':    q['regularMarketChange'],
-            'changePct': q['regularMarketChangePercent'],
-            'state':     q.get('marketState', ''),
+            'label':     label,
+            'price':     price,
+            'change':    change,
+            'changePct': pct,
+            'state':     meta.get('marketState', ''),
         })
     return items
 
-# ── Main ──────────────────────────────────────────────────
+# -- Main ------------------------------------------------------
 
 def main():
     os.makedirs('data', exist_ok=True)
     now = datetime.now(timezone.utc).isoformat()
 
-    # Headlines
+    # Headlines (fail loudly — this is the primary purpose)
     xml_bytes = fetch_rss()
     headlines = parse_headlines(xml_bytes)
     print(f"Fetched {len(headlines)} headlines")
     with open(HEADLINES_OUTPUT, 'w') as f:
         json.dump({'updated': now, 'items': headlines}, f, indent=2)
 
-    # Market data
-    market_data = fetch_market()
-    quotes = parse_market(market_data)
-    print(f"Fetched {len(quotes)} market quotes")
-    with open(MARKET_OUTPUT, 'w') as f:
-        json.dump({'updated': now, 'items': quotes}, f, indent=2)
+    # Market data (fail softly — keep old file if fetch fails)
+    try:
+        quotes = fetch_market()
+        print(f"Fetched {len(quotes)} market quotes")
+        with open(MARKET_OUTPUT, 'w') as f:
+            json.dump({'updated': now, 'items': quotes}, f, indent=2)
+    except Exception as e:
+        print(f"WARNING: market fetch failed ({e}), keeping existing data")
 
 if __name__ == '__main__':
     main()
