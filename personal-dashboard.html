@@ -301,7 +301,6 @@
 
     <header class="dash-header">
       <div class="dash-title">Work Dashboard</div>
-      <div class="dash-date" id="dash-date"></div>
     </header>
 
     <!-- Weather · Calendar · Clock -->
@@ -393,10 +392,6 @@
 
   </div>
   <script>
-    // ── Date header ───────────────────────────────────────
-
-    document.getElementById('dash-date').textContent =
-      new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
     // ── Calendar ──────────────────────────────────────────
 
