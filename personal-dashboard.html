@@ -61,7 +61,7 @@
     /* ── Top grid ── */
     .dash-grid {
       display: grid;
-      grid-template-columns: 1fr 1.1fr 1.5fr;
+      grid-template-columns: 1fr 1.3fr 1fr;
       gap: 16px;
       margin-bottom: 16px;
     }
@@ -193,7 +193,7 @@
     /* ── Bottom grid ── */
     .dash-grid-bottom {
       display: grid;
-      grid-template-columns: 1fr 2fr 1.2fr;
+      grid-template-columns: 1fr 1.3fr 1fr;
       gap: 16px;
       margin-bottom: 16px;
     }
@@ -285,8 +285,8 @@
     /* ── Responsive ── */
     @media (max-width: 800px) {
       .dash-grid { grid-template-columns: 1fr 1fr; }
-      .headlines-card { grid-column: 1 / -1; }
       .dash-grid-bottom { grid-template-columns: 1fr 1fr; }
+      .headlines-card { grid-column: 1 / -1; }
       .notes-card { grid-column: 1 / -1; }
     }
     @media (max-width: 520px) {
@@ -304,6 +304,7 @@
       <div class="dash-date" id="dash-date"></div>
     </header>
 
+    <!-- Weather · Calendar · Clock -->
     <div class="dash-grid">
 
       <!-- Weather -->
@@ -321,19 +322,6 @@
         <div class="cal-grid" id="cal-grid"></div>
       </div>
 
-      <!-- WSJ Headlines -->
-      <div class="card headlines-card">
-        <div class="card-label">Wall Street Journal</div>
-        <div id="headlines-content">
-          <div class="headlines-loading">Loading headlines…</div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Clock · Quick Notes · Market -->
-    <div class="dash-grid-bottom">
-
       <!-- Clock -->
       <div class="card">
         <div class="card-label">New York Time</div>
@@ -343,10 +331,23 @@
         <div class="clock-sub" id="clock-sub"></div>
       </div>
 
+    </div>
+
+    <!-- Quick Notes · WSJ Headlines · Market -->
+    <div class="dash-grid-bottom">
+
       <!-- Quick Notes -->
       <div class="card notes-card">
         <div class="card-label">Quick Notes</div>
         <textarea class="notes-textarea" id="quick-notes" placeholder="Jot something down…"></textarea>
+      </div>
+
+      <!-- WSJ Headlines -->
+      <div class="card headlines-card">
+        <div class="card-label">Wall Street Journal</div>
+        <div id="headlines-content">
+          <div class="headlines-loading">Loading headlines…</div>
+        </div>
       </div>
 
       <!-- Market Snapshot -->
