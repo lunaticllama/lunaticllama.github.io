@@ -41,6 +41,7 @@ MARKET_SYMBOLS = [
     ('%5EGSPC', 'S&P 500'),
     ('%5EDJI',  'Dow'),
     ('%5EIXIC', 'Nasdaq'),
+    ('VTSAX',   'VTSAX'),
 ]
 
 def fetch_one_quote(encoded_symbol):
