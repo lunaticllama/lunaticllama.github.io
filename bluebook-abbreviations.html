@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bluebook Word Abbreviations</title>
+  <link rel="icon" type="image/x-icon" href="/favicons/dc-favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/favicons/dc-favicon.svg">
+  <link rel="apple-touch-icon" href="/favicons/dc-apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .search-field input[type="text"] {
+      width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      color: var(--ink);
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .search-field input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(201,79,42,0.1);
+      background: var(--white);
+    }
+    .result-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin: 10px 0 4px;
+      min-height: 1em;
+    }
+    .abbr-group-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--accent);
+      margin: 26px 0 8px;
+    }
+    .abbr-group-title:first-of-type { margin-top: 4px; }
+    ul.abbr-entries {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border-top: 1px solid var(--rule);
+    }
+    li.abbr-entry {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 2px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .abbr-word {
+      font-size: 0.9rem;
+      color: var(--ink);
+      font-weight: 300;
+    }
+    .abbr-short {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--muted);
+      white-space: nowrap;
+      padding-left: 16px;
+      text-align: right;
+    }
+    mark {
+      background: var(--accent-soft);
+      color: var(--ink);
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+    .abbr-empty {
+      padding: 32px 0;
+      text-align: center;
+      color: var(--muted);
+      font-style: italic;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Site Nav -->
+  <nav class="site-nav">
+    <a href="date-calculator.html">Date Calculator</a>
+    <span class="site-nav-sep">·</span>
+    <a href="ny-motion-deadlines-calculator.html">NY Motion Deadlines</a>
+    <span class="site-nav-sep">·</span>
+    <a href="nj-motion-deadlines-calculator.html">NJ Motion Deadlines</a>
+    <span class="site-nav-sep">·</span>
+    <a href="ny-response-deadline-calculator.html">NY Answer Deadlines</a>
+    <span class="site-nav-sep">·</span>
+    <span class="site-nav-current">Bluebook Abbreviations</span>
+    <a href="https://www.philipmtaylor.com" class="site-nav-home">philipmtaylor.com</a>
+  </nav>
+
+  <!-- Page Title -->
+  <div class="page-title">
+    <h1>Bluebook Word Abbreviations</h1>
+    <p>Search common case-name and citation word abbreviations.</p>
+    <span class="statute-tag">Table 6 — Case Names &amp; Institutional Authors</span>
+    <span class="statute-tag">Table 10 — Geographic Terms</span>
+  </div>
+
+  <!-- Card -->
+  <div class="card">
+    <div class="card-inner">
+
+      <div class="section-label">Search</div>
+      <div class="search-field">
+        <input type="text" id="search" placeholder='Search a word, e.g. &quot;association&quot; or &quot;department&quot;' autocomplete="off" autofocus>
+      </div>
+      <div class="result-count" id="count"></div>
+
+      <div id="results"></div>
+
+      <div class="statute-note">
+        Covers general words (Table 6), select geographic terms (Table 10), and common court/publication terms. For anything not listed here, use full spelling in citations that aren't case names, and check the current print edition for edge cases.
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const data = [
+      { group: "Common words in case names (Table 6)", items: [
+        ["Administrator", "Adm'r"],
+        ["Administratrix", "Adm'x"],
+        ["Advertising", "Adver."],
+        ["Agricultural(e)", "Agric."],
+        ["American", "Am."],
+        ["Assessment", "Assmt."],
+        ["Associate(s)", "Assoc(s)."],
+        ["Association", "Ass'n"],
+        ["Attorney", "Att'y"],
+        ["Automobile", "Auto."],
+        ["Avenue", "Ave."],
+        ["Bankruptcy", "Bankr."],
+        ["Board", "Bd."],
+        ["Brotherhood", "Bhd."],
+        ["Building", "Bldg."],
+        ["Business", "Bus."],
+        ["Casualty", "Cas."],
+        ["Cemetery", "Cemetery"],
+        ["Center", "Ctr."],
+        ["Certiorari", "Cert."],
+        ["Chemical(s)", "Chem(s)."],
+        ["Church", "Church"],
+        ["College", "Coll."],
+        ["Commerce", "Com."],
+        ["Commercial", "Com'l"],
+        ["Commission(er)", "Comm'n / Comm'r"],
+        ["Committee", "Comm."],
+        ["Community", "Cmty."],
+        ["Company", "Co."],
+        ["Congress", "Cong."],
+        ["Consolidated", "Consol."],
+        ["Construction", "Constr."],
+        ["Corporation", "Corp."],
+        ["County", "Cnty."],
+        ["Department", "Dep't"],
+        ["Development", "Dev."],
+        ["Director", "Dir."],
+        ["Distributing", "Distrib."],
+        ["District", "Dist."],
+        ["Division", "Div."],
+        ["Economic", "Econ."],
+        ["Education", "Educ."],
+        ["Electric(al)", "Elec."],
+        ["Employment", "Emp't"],
+        ["Environmental", "Env't"],
+        ["Equipment", "Equip."],
+        ["Executor", "Ex'r"],
+        ["Executrix", "Ex'x"],
+        ["Exchange", "Exch."],
+        ["Export", "Exp."],
+        ["Federal", "Fed."],
+        ["Federation", "Fed'n"],
+        ["Finance", "Fin."],
+        ["Financial", "Fin."],
+        ["Foundation", "Found."],
+        ["General", "Gen."],
+        ["Government", "Gov't"],
+        ["Guaranty", "Guar."],
+        ["Health", "Health"],
+        ["Highway", "Hwy."],
+        ["Hospital", "Hosp."],
+        ["Housing", "Hous."],
+        ["Import", "Imp."],
+        ["Improvement", "Improv."],
+        ["Incorporated", "Inc."],
+        ["Independent", "Indep."],
+        ["Industrial", "Indus."],
+        ["Industries", "Indus."],
+        ["Institute", "Inst."],
+        ["Institution", "Inst."],
+        ["Insurance", "Ins."],
+        ["International", "Int'l"],
+        ["Investment", "Inv."],
+        ["Laboratory(ies)", "Lab(s)."],
+        ["Limited", "Ltd."],
+        ["Machine(ry)", "Mach."],
+        ["Management", "Mgmt."],
+        ["Manufacturing", "Mfg."],
+        ["Manufacturer", "Mfr."],
+        ["Maritime", "Mar."],
+        ["Marketing", "Mktg."],
+        ["Mechanical", "Mech."],
+        ["Medical", "Med."],
+        ["Memorial", "Mem'l"],
+        ["Metropolitan", "Metro."],
+        ["Municipal", "Mun."],
+        ["Mutual", "Mut."],
+        ["National", "Nat'l"],
+        ["Number", "No."],
+        ["Organization", "Org."],
+        ["Pacific", "Pac."],
+        ["Petroleum", "Petrol."],
+        ["Pharmaceutical(s)", "Pharm(s)."],
+        ["Philosophical", "Phil."],
+        ["Products", "Prods."],
+        ["Property", "Prop."],
+        ["Protection", "Prot."],
+        ["Public", "Pub."],
+        ["Publishing", "Publ'g"],
+        ["Railroad", "R.R."],
+        ["Railway", "Ry."],
+        ["Redevelopment", "Redev."],
+        ["Refining", "Ref'g"],
+        ["Regional", "Reg'l"],
+        ["Rehabilitation", "Rehab."],
+        ["Retirement", "Ret."],
+        ["Savings", "Sav."],
+        ["School", "Sch."],
+        ["Secretary", "Sec'y"],
+        ["Security(ies)", "Sec(s)."],
+        ["Service(s)", "Serv(s)."],
+        ["Society", "Soc'y"],
+        ["Sciences", "Sciences"],
+        ["Standard", "Standard"],
+        ["Steamship", "S.S."],
+        ["Superintendent", "Superintendent"],
+        ["Surety", "Sur."],
+        ["Systems", "Sys."],
+        ["Technology(ies)", "Tech."],
+        ["Telecommunications", "Telecomm."],
+        ["Telephone", "Tel."],
+        ["Township", "Twp."],
+        ["Transportation", "Transp."],
+        ["Trustee(s)", "Tr(s)."],
+        ["Union", "Union"],
+        ["United States", "U.S."],
+        ["University", "Univ."],
+        ["Utility(ies)", "Util(s)."],
+        ["Village", "Vill."],
+      ]},
+      { group: "Court & procedural terms", items: [
+        ["Appeal(s)", "App."],
+        ["Appellate", "App."],
+        ["Bankruptcy Court", "Bankr. Ct."],
+        ["Circuit", "Cir."],
+        ["Civil", "Civ."],
+        ["Court of Appeals", "Ct. App."],
+        ["Court of Claims", "Ct. Cl."],
+        ["Criminal", "Crim."],
+        ["District Court", "Dist. Ct."],
+        ["Family Court", "Fam. Ct."],
+        ["Superior Court", "Super. Ct."],
+        ["Supreme Court", "Sup. Ct."],
+        ["Surrogate's Court", "Surr. Ct."],
+        ["Tax Court", "T.C."],
+      ]},
+      { group: "States & geographic terms (selected, Table 10)", items: [
+        ["New Jersey", "N.J."],
+        ["New York", "N.Y."],
+        ["Pennsylvania", "Pa."],
+        ["California", "Cal."],
+        ["Massachusetts", "Mass."],
+        ["Connecticut", "Conn."],
+        ["Delaware", "Del."],
+        ["Florida", "Fla."],
+        ["Illinois", "Ill."],
+        ["Maryland", "Md."],
+        ["Michigan", "Mich."],
+        ["North Carolina", "N.C."],
+        ["South Carolina", "S.C."],
+        ["Virginia", "Va."],
+        ["Washington", "Wash."],
+        ["United States", "U.S."],
+        ["District of Columbia", "D.C."],
+      ]},
+      { group: "Publications & reporters", items: [
+        ["Reporter", "Rep."],
+        ["Reports", "Rep."],
+        ["Review", "Rev."],
+        ["Law Review", "L. Rev."],
+        ["Journal", "J."],
+        ["Quarterly", "Q."],
+        ["Bulletin", "Bull."],
+        ["Yearbook", "Y.B."],
+        ["Digest", "Dig."],
+        ["Annotated", "Ann."],
+        ["Supplement", "Supp."],
+        ["Edition", "Ed."],
+        ["Volume", "Vol."],
+        ["Section", "§"],
+        ["Paragraph", "¶"],
+      ]},
+    ];
+
+    const resultsEl = document.getElementById('results');
+    const countEl = document.getElementById('count');
+    const searchEl = document.getElementById('search');
+
+    function escapeHtml(s) {
+      return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function highlight(text, q) {
+      if (!q) return escapeHtml(text);
+      const i = text.toLowerCase().indexOf(q.toLowerCase());
+      if (i === -1) return escapeHtml(text);
+      return escapeHtml(text.slice(0, i)) + '<mark>' + escapeHtml(text.slice(i, i + q.length)) + '</mark>' + escapeHtml(text.slice(i + q.length));
+    }
+
+    function render(query) {
+      const q = query.trim().toLowerCase();
+      resultsEl.innerHTML = '';
+      let total = 0;
+
+      data.forEach(section => {
+        const matches = section.items.filter(([word, abbr]) =>
+          !q || word.toLowerCase().includes(q) || abbr.toLowerCase().includes(q)
+        );
+        if (matches.length === 0) return;
+        total += matches.length;
+
+        const h = document.createElement('div');
+        h.className = 'abbr-group-title';
+        h.textContent = section.group;
+        resultsEl.appendChild(h);
+
+        const ul = document.createElement('ul');
+        ul.className = 'abbr-entries';
+        matches.forEach(([word, abbr]) => {
+          const li = document.createElement('li');
+          li.className = 'abbr-entry';
+          li.innerHTML = `<span class="abbr-word">${highlight(word, q)}</span><span class="abbr-short">${highlight(abbr, q)}</span>`;
+          ul.appendChild(li);
+        });
+        resultsEl.appendChild(ul);
+      });
+
+      if (total === 0) {
+        resultsEl.innerHTML = '<div class="abbr-empty">No match. Try a shorter word or check the print edition for this term.</div>';
+        countEl.textContent = '';
+      } else {
+        countEl.textContent = q ? `${total} match${total === 1 ? '' : 'es'}` : `${total} entries`;
+      }
+    }
+
+    searchEl.addEventListener('input', e => render(e.target.value));
+    render('');
+  </script>
+
+</body>
+</html>
