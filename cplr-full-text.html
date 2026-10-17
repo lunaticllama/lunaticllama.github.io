@@ -105,7 +105,6 @@
 
   /* ── Section accordion ── */
   .sec { border: 1px solid var(--rule); border-radius: var(--radius); margin-bottom: 10px; }
-  .sec.has-link { border-color: rgba(201,79,42,0.4); }
   .sec-head {
     display: flex; align-items: baseline; gap: 10px; width: 100%; text-align: left;
     background: none; border: none; cursor: pointer; padding: 12px 16px; color: var(--ink);
@@ -135,41 +134,6 @@
   .link-btn.westlaw { color: var(--white); background: var(--accent); border-color: var(--accent); }
   .link-btn.westlaw:hover { background: #b0431f; color: var(--white); }
   .link-btn.westlaw.fallback { background: none; color: var(--accent); }
-
-  .save-form { background: var(--cream); border: 1px solid var(--rule); border-radius: var(--radius); padding: 12px 16px; }
-  .save-form summary { cursor: pointer; color: var(--muted); font-size: 0.78rem; }
-  .save-form .fields { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-  .save-form input {
-    font-family: 'DM Sans', sans-serif; background: var(--white); border: 1px solid var(--rule);
-    color: var(--ink); padding: 9px 12px; border-radius: var(--radius); font-size: 0.82rem;
-    flex: 1; min-width: 180px; outline: none; transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .save-form input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,79,42,0.1); }
-  .save-form button {
-    font-family: 'DM Sans', sans-serif; background: var(--accent); color: var(--white); border: none;
-    font-weight: 600; padding: 9px 16px; border-radius: var(--radius); cursor: pointer; font-size: 0.8rem;
-  }
-  .save-form button:hover { background: #b0431f; }
-  .save-form .remove-btn { background: none; border: 1px solid var(--rule); color: #c0392b; }
-  .save-form .remove-btn:hover { border-color: #c0392b; background: none; }
-
-  /* ── Saved Westlaw links ── */
-  .saved-sub { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin: 10px 0 18px; font-weight: 300; }
-  table.saved-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-  table.saved-table th {
-    text-align: left; font-family: 'DM Mono', monospace; font-size: 0.65rem; text-transform: uppercase;
-    letter-spacing: 0.08em; color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--rule); padding: 8px;
-  }
-  table.saved-table td { border-bottom: 1px solid var(--rule); padding: 10px 8px; vertical-align: top; }
-  table.saved-table td.num { font-family: 'DM Mono', monospace; color: var(--accent); white-space: nowrap; }
-  table.saved-table a { color: var(--accent); word-break: break-all; text-decoration: none; }
-  table.saved-table a:hover { text-decoration: underline; }
-  table.saved-table button.del {
-    background: none; border: 1px solid var(--rule); color: #c0392b; padding: 5px 10px;
-    border-radius: var(--radius); cursor: pointer; font-size: 0.75rem;
-  }
-  table.saved-table button.del:hover { border-color: #c0392b; }
-  .no-saved { color: var(--muted); font-size: 0.85rem; font-style: italic; padding: 10px 0; }
 
   /* ── Toast ── */
   .toast {
@@ -208,7 +172,7 @@
   <!-- Page Title -->
   <div class="page-title">
     <h1>CPLR Full Text &amp; Citation Finder</h1>
-    <p>The complete text of the New York Civil Practice Law &amp; Rules, browsable by article or searchable by keyword or section number. Each provision carries a link to check the current official version, plus your own Westlaw link once you've saved one.</p>
+    <p>The complete text of the New York Civil Practice Law &amp; Rules, browsable by article or searchable by keyword or section number. Each provision carries a link to check the current official version and a shortcut to look it up on Westlaw.</p>
     <span class="statute-tag">Snapshot 2026-07-03 (NY Senate law version)</span>
     <span class="statute-tag">Pulled Oct 2, 2026</span>
   </div>
@@ -238,17 +202,6 @@
         </div>
       </div>
 
-      <hr class="divider" />
-
-      <!-- ══════════ SAVED WESTLAW LINKS ══════════ -->
-      <div class="section-label">Your Saved Westlaw Links</div>
-      <p class="saved-sub">Deep-linking straight to a Westlaw document requires Westlaw's own document ID, which only appears once you open the document there &mdash; there's no way to construct it from the citation alone. Open a section in Westlaw, copy its link, and save it here once; after that, this page sends you straight to it every time. Links are stored only in this browser, on this device.</p>
-      <table class="saved-table" id="savedTable">
-        <thead><tr><th>Section</th><th>Westlaw link</th><th></th></tr></thead>
-        <tbody id="savedBody"></tbody>
-      </table>
-      <div class="no-saved" id="noSaved" style="display:none;">Nothing saved yet.</div>
-
     </div><!-- /card-inner -->
   </div><!-- /card -->
 
@@ -262,11 +215,6 @@
 <script>
 (function(){
   var ARTICLES = JSON.parse(document.getElementById('cplr-data').textContent);
-
-  var STORE_KEY = "cplr-westlaw-links-v1";
-  var savedLinks = {};
-  try { savedLinks = JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); } catch(e) { savedLinks = {}; }
-  function persist() { try { localStorage.setItem(STORE_KEY, JSON.stringify(savedLinks)); } catch(e) {} }
 
   function freeTextUrl(num) {
     return "https://www.nysenate.gov/legislation/laws/CVP/" + encodeURIComponent(num);
@@ -306,10 +254,10 @@
   });
 
   function sectionHtml(sec, art) {
-    var num = sec.n, saved = savedLinks[num.toUpperCase()];
+    var num = sec.n;
     var cite = "NY CPLR § " + num;
     var wrap = document.createElement("div");
-    wrap.className = "sec" + (saved ? " has-link" : "");
+    wrap.className = "sec";
     wrap.dataset.num = num;
 
     var head = document.createElement("button");
@@ -327,23 +275,12 @@
     var meta = sec.d ? '<div class="sec-meta">Last amended / active: ' + escapeHtml(sec.d) + '</div>' : '';
     var linkRow = '<div class="link-row">' +
       '<a class="link-btn check" href="' + freeTextUrl(num) + '" target="_blank" rel="noopener">Check current version ↗</a>';
-    if (saved) {
-      linkRow += '<a class="link-btn westlaw" href="' + escapeHtml(saved.url) + '" target="_blank" rel="noopener">Open in Westlaw ↗</a>';
-    } else {
-      linkRow += '<button class="link-btn westlaw fallback" data-copy="' + escapeHtml(cite) + '" type="button">Copy citation &amp; open Westlaw</button>';
-    }
+    linkRow += '<button class="link-btn westlaw fallback" data-copy="' + escapeHtml(cite) + '" type="button">Copy citation &amp; open Westlaw</button>';
     linkRow += '<button class="link-btn copy" data-copytext="1" type="button">Copy text</button>';
     linkRow += '</div>';
 
-    var saveForm = '<details class="save-form"><summary>' + (saved ? "Edit saved Westlaw link" : "Save a Westlaw link for this section") + '</summary>' +
-      '<div class="fields">' +
-      '<input type="text" class="save-url" placeholder="Paste the Westlaw document URL" value="' + (saved ? escapeHtml(saved.url) : '') + '">' +
-      '<button type="button" class="save-btn">Save</button>' +
-      (saved ? '<button type="button" class="remove-btn" style="background:none;border:1px solid var(--rule);color:#c0392b;">Remove</button>' : '') +
-      '</div></details>';
-
     body.innerHTML = meta + linkRow +
-      '<div class="sec-text">' + escapeHtml(sec.x) + '</div>' + saveForm;
+      '<div class="sec-text">' + escapeHtml(sec.x) + '</div>';
 
     wrap.appendChild(head);
     wrap.appendChild(body);
@@ -358,32 +295,7 @@
       copyToClipboard(sec.x);
       showToast("Copied full text of § " + num + ".");
     });
-    body.querySelector('.save-btn').addEventListener("click", function(){
-      var url = body.querySelector('.save-url').value.trim();
-      if (!url) return;
-      savedLinks[num.toUpperCase()] = { url: url };
-      persist();
-      renderSavedTable();
-      showToast("Saved. § " + num + " now opens directly in Westlaw.");
-      refreshSectionNode(wrap, sec, art, true);
-    });
-    var removeBtn = body.querySelector('.remove-btn');
-    if (removeBtn) {
-      removeBtn.addEventListener("click", function(){
-        delete savedLinks[num.toUpperCase()];
-        persist();
-        renderSavedTable();
-        showToast("Removed saved link for § " + num + ".");
-        refreshSectionNode(wrap, sec, art, true);
-      });
-    }
     return wrap;
-  }
-
-  function refreshSectionNode(oldWrap, sec, art, keepOpen) {
-    var fresh = sectionHtml(sec, art);
-    if (keepOpen) fresh.classList.add("open");
-    oldWrap.replaceWith(fresh);
   }
 
   function selectArticle(idx, focusNum) {
@@ -516,39 +428,6 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 3400);
   }
-
-  function renderSavedTable() {
-    var body = document.getElementById("savedBody");
-    var noSaved = document.getElementById("noSaved");
-    var keys = Object.keys(savedLinks).sort();
-    body.innerHTML = "";
-    if (keys.length === 0) {
-      noSaved.style.display = "block";
-      document.getElementById("savedTable").style.display = "none";
-      return;
-    }
-    noSaved.style.display = "none";
-    document.getElementById("savedTable").style.display = "table";
-    keys.forEach(function(num){
-      var tr = document.createElement("tr");
-      tr.innerHTML = '<td class="num">§ ' + escapeHtml(num) + '</td>' +
-        '<td><a href="' + escapeHtml(savedLinks[num].url) + '" target="_blank" rel="noopener">' + escapeHtml(savedLinks[num].url) + '</a></td>' +
-        '<td><button class="del" type="button">Remove</button></td>';
-      tr.querySelector(".del").addEventListener("click", function(){
-        delete savedLinks[num];
-        persist();
-        renderSavedTable();
-        showToast("Removed saved link for § " + num + ".");
-        var openSec = document.querySelector('.sec[data-num="' + CSS.escape(num) + '"]');
-        if (openSec) {
-          var f = FLAT_BY_NUM[num];
-          if (f) refreshSectionNode(openSec, ARTICLES[f.artIdx].s[f.secIdx], ARTICLES[f.artIdx], openSec.classList.contains("open"));
-        }
-      });
-      body.appendChild(tr);
-    });
-  }
-  renderSavedTable();
 })();
 </script>
 </body>
