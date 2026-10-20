@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Redline Compare</title>
+<link rel="icon" type="image/x-icon" href="/favicons/dc-favicon.ico">
+<link rel="icon" type="image/svg+xml" href="/favicons/dc-favicon.svg">
+<link rel="apple-touch-icon" href="/favicons/dc-apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* Side-by-side redlines need more room than a calculator card: widen the shared containers. */
+  .site-nav, .page-title, .card, .foot-note { max-width: 1040px; }
+  .page-title p { max-width: 70ch; }
+  /* Let the toolbar stick while scrolling the redline (overflow:hidden would trap it). */
+  .card { overflow: visible; }
+
+  :root {
+    --mark: #c0392b;
+    --mark-bg: rgba(192,57,43,0.07);
+    --current: rgba(201,79,42,0.08);
+  }
+
+  /* ── Inputs ── */
+  .pane-head { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+  .pane-head .pane-tag {
+    font-size: 0.72rem; font-weight: 500; color: var(--muted);
+    letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;
+  }
+  .name {
+    flex: 1; min-width: 0; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500;
+    color: var(--ink); background: transparent; border: 0; border-bottom: 1px dashed var(--rule);
+    padding: 3px 2px; outline: none;
+  }
+  .name:focus { border-bottom-color: var(--accent); }
+  .mini {
+    font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 500; color: var(--muted);
+    background: none; border: 1px solid var(--rule); border-radius: var(--radius);
+    padding: 4px 9px; cursor: pointer; white-space: nowrap; transition: all 0.15s;
+  }
+  .mini:hover { color: var(--ink); border-color: var(--ink); }
+  textarea {
+    width: 100%; height: 230px; resize: vertical;
+    font-family: 'DM Serif Display', serif; font-size: 0.95rem; line-height: 1.6; color: var(--ink);
+    background: var(--paper); border: 1px solid var(--rule); border-radius: var(--radius);
+    padding: 12px 14px; outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  textarea:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,79,42,0.1); background: var(--white);
+  }
+  .form-row.inputs { margin-bottom: 10px; }
+  .example-note { font-size: 0.78rem; color: var(--muted); font-weight: 300; line-height: 1.5; }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--white); border: 1px solid var(--rule); border-radius: var(--radius);
+    padding: 10px 12px; margin-bottom: 14px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+    box-shadow: var(--shadow);
+  }
+  .group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .toolbar .toggle-group label { padding: 7px 12px; font-size: 0.78rem; }
+  .toolbar select {
+    width: auto; font-size: 0.8rem; padding: 7px 30px 7px 10px;
+  }
+  .author {
+    width: 130px; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: var(--ink);
+    background: var(--paper); border: 1px solid var(--rule); border-radius: var(--radius);
+    padding: 7px 10px; outline: none;
+  }
+  .author:focus { border-color: var(--accent); background: var(--white); }
+  label.chk { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--ink); cursor: pointer; }
+  label.chk input { accent-color: var(--accent); }
+  .stats {
+    font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--muted);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .stats b { color: var(--mark); font-weight: 500; }
+  .export { margin-left: auto; }
+  .toolbar .btn-calculate { padding: 9px 18px; font-size: 0.8rem; }
+  .toolbar .btn-calculate:disabled { opacity: 0.6; cursor: progress; }
+  .toolbar .btn-reset { padding: 7px 12px; font-size: 0.78rem; }
+  .toolbar .btn-reset:disabled { opacity: 0.45; cursor: default; }
+  .status { font-size: 0.75rem; color: var(--muted); width: 100%; }
+  .status.err { color: var(--mark); }
+  .status.ok { color: #4a7d4a; }
+
+  /* ── Legend ── */
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.75rem; color: var(--muted); align-items: center; margin-bottom: 14px; }
+  .legend .ins, .legend .del { font-family: 'DM Serif Display', serif; font-size: 0.9rem; }
+
+  /* ── Results ── */
+  .result { border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; background: var(--white); }
+  .colhead { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--rule); background: var(--cream); }
+  .colhead div {
+    padding: 10px 18px; font-family: 'DM Mono', monospace; font-size: 0.65rem; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); min-width: 0; overflow-wrap: anywhere;
+  }
+  .colhead div + div { border-left: 1px solid var(--rule); }
+  .row { display: grid; grid-template-columns: 1fr 1fr; scroll-margin: 120px; }
+  .cell {
+    padding: 2px 18px; min-width: 0; font-family: 'DM Serif Display', serif; font-size: 1rem; line-height: 1.65;
+    overflow-wrap: anywhere; position: relative;
+  }
+  .cell + .cell { border-left: 1px solid var(--rule); }
+  .cell p, .blk p { padding: 4px 0; white-space: pre-wrap; }
+  .row.chg .cell:first-child { box-shadow: inset 3px 0 0 var(--mark); }
+  .row.chg .cell.blank { background: repeating-linear-gradient(-45deg, transparent 0 6px, var(--cream) 6px 8px); }
+  .row.current { background: var(--current); }
+  .ins { color: var(--mark); text-decoration: underline; text-decoration-color: var(--mark); text-underline-offset: 3px; }
+  .del { color: var(--mark); text-decoration: line-through; text-decoration-color: var(--mark); }
+  .row.chg .ins, .row.chg .del, .blk.chg .ins, .blk.chg .del { background: var(--mark-bg); }
+  .combined { padding: 14px 22px 18px; }
+  .blk {
+    font-family: 'DM Serif Display', serif; font-size: 1rem; line-height: 1.65;
+    padding: 2px 0 2px 14px; margin-left: -14px; scroll-margin: 120px;
+  }
+  .blk.chg { box-shadow: inset 3px 0 0 var(--mark); }
+  .blk.current { background: var(--current); }
+  .empty-state { padding: 36px 20px; text-align: center; color: var(--muted); font-size: 0.88rem; font-weight: 300; }
+  .side-label { display: none; }
+
+  .foot-note {
+    width: 100%; margin-top: 8px;
+    font-size: 0.75rem; color: var(--muted); line-height: 1.6; font-weight: 300;
+  }
+
+  @media (max-width: 600px) {
+    textarea { height: 170px; }
+    .export { margin-left: 0; }
+    .colhead { display: none; }
+    .row { grid-template-columns: 1fr; }
+    .cell + .cell { border-left: 0; }
+    .row:not(.chg) .cell + .cell { display: none; }
+    .row.chg { border-block: 1px solid var(--rule); margin-block: 6px; }
+    .row.chg .cell { box-shadow: inset 3px 0 0 var(--mark); }
+    .row.chg .side-label {
+      display: block; font-family: 'DM Mono', monospace; font-size: 0.6rem; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding-top: 8px;
+    }
+    .row.chg .cell.blank { display: none; }
+  }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+</head>
+<body>
+
+  <!-- Site Nav -->
+  <nav class="site-nav">
+    <a href="date-calculator.html">Date Calculator</a>
+    <span class="site-nav-sep">·</span>
+    <a href="ny-motion-deadlines-calculator.html">NY Motion Deadlines</a>
+    <span class="site-nav-sep">·</span>
+    <a href="nj-motion-deadlines-calculator.html">NJ Motion Deadlines</a>
+    <span class="site-nav-sep">·</span>
+    <a href="ny-response-deadline-calculator.html">NY Answer Deadlines</a>
+    <span class="site-nav-sep">·</span>
+    <a href="bluebook-abbreviations.html">Bluebook Abbreviations</a>
+    <span class="site-nav-sep">·</span>
+    <a href="cplr-full-text.html">CPLR Full Text</a>
+    <span class="site-nav-sep">·</span>
+    <span class="site-nav-current">Redline Compare</span>
+    <a href="https://www.philipmtaylor.com" class="site-nav-home">philipmtaylor.com</a>
+  </nav>
+
+  <!-- Page Title -->
+  <div class="page-title">
+    <h1>Redline Compare</h1>
+    <p>Paste two versions of a text to see the changes in Word-style markup: insertions underlined, deletions struck through. Export the result to Word as tracked changes or a formatted redline.</p>
+    <span class="statute-tag">Runs in your browser &mdash; nothing is uploaded</span>
+  </div>
+
+  <!-- Card -->
+  <div class="card">
+    <div class="card-inner">
+
+      <!-- ══════════ TEXTS ══════════ -->
+      <div class="section-label">Texts to Compare</div>
+      <div class="form-row cols-2 inputs">
+        <div class="field">
+          <div class="pane-head">
+            <span class="pane-tag">Original</span>
+            <input class="name" id="nameA" value="Draft of Oct. 12" aria-label="Name of original version">
+            <button class="mini" type="button" data-open="A">Open file</button>
+            <button class="mini" type="button" data-clear="A">Clear</button>
+          </div>
+          <textarea id="textA" spellcheck="false" aria-label="Original text"></textarea>
+        </div>
+        <div class="field">
+          <div class="pane-head">
+            <span class="pane-tag">Revised</span>
+            <input class="name" id="nameB" value="Counterparty comments" aria-label="Name of revised version">
+            <button class="mini" type="button" data-open="B">Open file</button>
+            <button class="mini" type="button" data-clear="B">Clear</button>
+          </div>
+          <textarea id="textB" spellcheck="false" aria-label="Revised text"></textarea>
+        </div>
+      </div>
+      <input type="file" id="fileInput" accept=".txt,.md,.docx,text/plain" hidden>
+      <p class="example-note" id="exampleNote">Example text is loaded so you can see how it works. Replace it with your own. Files: .txt or .docx (a .docx with tracked changes is read as if all changes were accepted).</p>
+
+      <hr class="divider" />
+
+      <!-- ══════════ REDLINE ══════════ -->
+      <div class="section-label">Redline</div>
+
+      <div class="toolbar" role="toolbar" aria-label="Comparison controls">
+        <div class="group">
+          <div class="toggle-group" role="group" aria-label="View">
+            <input type="radio" name="view" id="viewSbs" value="sbs" checked><label for="viewSbs">Side by side</label>
+            <input type="radio" name="view" id="viewComb" value="comb"><label for="viewComb">Combined</label>
+          </div>
+          <div class="select-wrapper">
+            <select id="gran" aria-label="Compare by">
+              <option value="word">Compare words</option>
+              <option value="char">Compare characters</option>
+            </select>
+          </div>
+          <label class="chk"><input type="checkbox" id="ignoreWs"> Ignore extra spaces</label>
+        </div>
+        <div class="group">
+          <span class="stats" id="stats">–</span>
+          <button class="btn-reset" type="button" id="prev" aria-label="Previous change">↑ Prev</button>
+          <button class="btn-reset" type="button" id="next" aria-label="Next change">Next ↓</button>
+        </div>
+        <div class="group export">
+          <div class="select-wrapper">
+            <select id="exportMode" aria-label="Word export format">
+              <option value="tracked">Tracked changes</option>
+              <option value="formatted">Formatted redline</option>
+            </select>
+          </div>
+          <input class="author" id="author" value="Redline" aria-label="Author name for tracked changes" title="Author name shown on tracked changes">
+          <button class="btn-calculate" type="button" id="exportBtn">Export to Word</button>
+        </div>
+        <p class="status" id="status" hidden></p>
+      </div>
+
+      <div class="legend" aria-hidden="true">
+        <span><span class="ins">Inserted text</span></span>
+        <span><span class="del">Deleted text</span></span>
+        <span>Bar at left marks a changed paragraph</span>
+      </div>
+
+      <section class="result" aria-live="polite">
+        <div id="sbs">
+          <div class="colhead"><div id="headA">Original</div><div id="headB">Revised</div></div>
+          <div id="rows"></div>
+        </div>
+        <div id="combined" class="combined" hidden></div>
+      </section>
+
+    </div><!-- /card-inner -->
+  </div><!-- /card -->
+
+  <p class="foot-note">
+    The comparison runs entirely in your browser; nothing you paste or open is sent anywhere. Tracked-changes exports open in Word with each change attributed to the author name above, so you can use Review &rsaquo; Accept or Reject. Formatting (bold, italics, numbering) is not carried over from .docx files &mdash; only the text is compared.
+  </p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/diff_match_patch/20121119/diff_match_patch.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const textA = $("textA"), textB = $("textB"), nameA = $("nameA"), nameB = $("nameB");
+
+  const SAMPLE_A = `7. Confidentiality
+
+7.1 Each party shall hold the other party's Confidential Information in strict confidence and shall not disclose it to any third party without the prior written consent of the disclosing party.
+
+7.2 The obligations in this Section 7 shall survive termination of this Agreement for a period of two (2) years.
+
+7.3 Confidential Information does not include information that is or becomes publicly available through no fault of the receiving party.
+
+7.4 Upon termination, the receiving party shall promptly return all Confidential Information to the disclosing party.`;
+  const SAMPLE_B = `7. Confidentiality and Data Protection
+
+7.1 Each party shall hold the other party's Confidential Information in strict confidence and shall not disclose it to any third party, other than its attorneys and auditors bound by duties of confidentiality, without the prior written consent of the disclosing party.
+
+7.2 The obligations in this Section 7 shall survive termination or expiration of this Agreement for a period of five (5) years.
+
+7.3 Confidential Information does not include information that is or becomes publicly available through no fault of the receiving party, or that the receiving party independently develops.
+
+7.4 Upon termination, the receiving party shall, at the disclosing party's election, promptly return or destroy all Confidential Information and certify such destruction in writing.
+
+7.5 Each party shall comply with all applicable data protection laws in its handling of personal information received under this Agreement.`;
+  textA.value = SAMPLE_A;
+  textB.value = SAMPLE_B;
+
+  const dmp = new diff_match_patch();
+  dmp.Diff_Timeout = 3;
+
+  let view = "sbs";
+  let blocks = [];
+  let ops = [];
+  let navIndex = -1;
+
+  // ---------- diff helpers ----------
+  function makeEncoder() {
+    const fwd = new Map(), back = new Map();
+    let code = 1;
+    return {
+      enc(list) {
+        let out = "";
+        for (const t of list) {
+          let c = fwd.get(t);
+          if (c === undefined) {
+            if (code === 0xD800) code = 0xE000;
+            if (code > 0xFFFF) throw new Error("too many tokens");
+            c = String.fromCharCode(code++);
+            fwd.set(t, c); back.set(c, t);
+          }
+          out += c;
+        }
+        return out;
+      },
+      dec(str) { const r = []; for (const ch of str) r.push(back.get(ch)); return r; }
+    };
+  }
+  const TOKEN_RE = /[\p{L}\p{N}_'’]+|[ \t ]+|\n|[^\p{L}\p{N}\s]/gu;
+
+  function merge(list) {
+    const out = [];
+    for (const o of list) {
+      if (!o.s) continue;
+      const last = out[out.length - 1];
+      if (last && last.t === o.t) last.s += o.s; else out.push({ t: o.t, s: o.s });
+    }
+    return out;
+  }
+
+  function diffText(a, b, gran) {
+    if (!a && !b) return [];
+    if (!a) return [{ t: 1, s: b }];
+    if (!b) return [{ t: -1, s: a }];
+    let d;
+    if (gran === "char") {
+      d = dmp.diff_main(a, b);
+      dmp.diff_cleanupSemantic(d);
+      return merge(d.map(([t, s]) => ({ t, s })));
+    }
+    try {
+      const e = makeEncoder();
+      const ea = e.enc(a.match(TOKEN_RE) || []), eb = e.enc(b.match(TOKEN_RE) || []);
+      d = dmp.diff_main(ea, eb, false);
+      dmp.diff_cleanupSemantic(d);
+      return merge(d.map(([t, s]) => ({ t, s: e.dec(s).join("") })));
+    } catch (err) {
+      return diffText(a, b, "char");
+    }
+  }
+
+  function normalize(s, ignoreWs) {
+    s = s.replace(/\r\n?/g, "\n");
+    if (ignoreWs) s = s.split("\n").map(l => l.replace(/[ \t ]+/g, " ").trim()).join("\n");
+    return s;
+  }
+
+  function compare() {
+    const ignoreWs = $("ignoreWs").checked;
+    const gran = $("gran").value;
+    const a = normalize(textA.value, ignoreWs), b = normalize(textB.value, ignoreWs);
+    const pa = a.split("\n"), pb = b.split("\n");
+    const e = makeEncoder();
+    const d = dmp.diff_main(e.enc(pa), e.enc(pb), false);
+
+    blocks = [];
+    let del = [], ins = [];
+    const flush = () => {
+      if (!del.length && !ins.length) return;
+      if (del.length === ins.length) {
+        for (let k = 0; k < del.length; k++) blocks.push({ kind: "chg", ops: diffText(del[k], ins[k], gran) });
+      } else if (!ins.length) {
+        blocks.push({ kind: "del", ops: [{ t: -1, s: del.join("\n") }] });
+      } else if (!del.length) {
+        blocks.push({ kind: "ins", ops: [{ t: 1, s: ins.join("\n") }] });
+      } else {
+        blocks.push({ kind: "chg", ops: diffText(del.join("\n"), ins.join("\n"), gran) });
+      }
+      del = []; ins = [];
+    };
+    for (const [t, s] of d) {
+      const paras = e.dec(s);
+      if (t === 0) { flush(); for (const p of paras) blocks.push({ kind: "eq", ops: p ? [{ t: 0, s: p }] : [] }); }
+      else if (t === -1) del.push(...paras);
+      else ins.push(...paras);
+    }
+    flush();
+    // A changed block whose word diff came out empty-equal is unchanged.
+    for (const bl of blocks) if (bl.kind === "chg" && bl.ops.every(o => o.t === 0)) bl.kind = "eq";
+
+    // Flat op stream with typed paragraph marks, for the combined view and Word export.
+    ops = [];
+    blocks.forEach((bl, i) => {
+      ops.push(...bl.ops);
+      if (i < blocks.length - 1) {
+        const sepType = bl.kind === "del" ? -1 : bl.kind === "ins" ? 1 : 0;
+        ops.push({ t: sepType, s: "\n" });
+      }
+    });
+    const last = blocks[blocks.length - 1];
+    if (last && (last.kind === "del" || last.kind === "ins") && blocks.length > 1) {
+      // The separator before a trailing added/removed paragraph belongs to that change.
+      for (let k = ops.length - 1; k >= 0; k--) {
+        if (ops[k].s === "\n" && ops[k].t === 0) { ops[k].t = last.kind === "del" ? -1 : 1; break; }
+      }
+    }
+    ops = merge(ops);
+    render();
+  }
+
+  // ---------- rendering ----------
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  function renderOps(list, side) {
+    let html = "", para = "";
+    for (const o of list) {
+      if (side === "L" && o.t === 1) continue;
+      if (side === "R" && o.t === -1) continue;
+      const cls = o.t === -1 ? "del" : o.t === 1 ? "ins" : "";
+      const parts = o.s.split("\n");
+      parts.forEach((piece, i) => {
+        if (i > 0) { html += `<p>${para || "&nbsp;"}</p>`; para = ""; }
+        if (piece) para += cls ? `<span class="${cls}">${esc(piece)}</span>` : esc(piece);
+      });
+    }
+    html += `<p>${para || "&nbsp;"}</p>`;
+    return html;
+  }
+
+  function render() {
+    const la = nameA.value.trim() || "Original", lb = nameB.value.trim() || "Revised";
+    $("headA").textContent = la;
+    $("headB").textContent = lb;
+
+    const rows = $("rows");
+    if (!textA.value.trim() && !textB.value.trim()) {
+      rows.innerHTML = `<div class="empty-state">Paste the original text on the left and the revised text on the right.</div>`;
+      $("combined").innerHTML = `<div class="empty-state">Paste two versions above to see the redline.</div>`;
+      updateStats(0, 0, 0);
+      return;
+    }
+    let html = "";
+    for (const bl of blocks) {
+      if (bl.kind === "eq") {
+        const body = renderOps(bl.ops, "L");
+        html += `<div class="row"><div class="cell">${body}</div><div class="cell">${body}</div></div>`;
+      } else {
+        const L = bl.kind === "ins" ? "" : renderOps(bl.ops, "L");
+        const R = bl.kind === "del" ? "" : renderOps(bl.ops, "R");
+        html += `<div class="row chg">` +
+          `<div class="cell${L ? "" : " blank"}"><span class="side-label">${esc(la)}</span>${L}</div>` +
+          `<div class="cell${R ? "" : " blank"}"><span class="side-label">${esc(lb)}</span>${R}</div></div>`;
+      }
+    }
+    rows.innerHTML = html;
+
+    let comb = "";
+    for (const bl of blocks) {
+      comb += `<div class="blk${bl.kind === "eq" ? "" : " chg"}">${renderOps(bl.ops, "C")}</div>`;
+    }
+    $("combined").innerHTML = comb;
+
+    let nIns = 0, nDel = 0;
+    for (const o of ops) { if (o.t === 1 && o.s.trim()) nIns++; else if (o.t === -1 && o.s.trim()) nDel++; }
+    updateStats(blocks.filter(b => b.kind !== "eq").length, nIns, nDel);
+    navIndex = -1;
+  }
+
+  function updateStats(nChg, nIns, nDel) {
+    const s = $("stats");
+    if (!nChg) { s.textContent = "No changes"; }
+    else s.innerHTML = `<b>${nIns}</b> ins · <b>${nDel}</b> del · ${nChg} ¶ changed`;
+    $("prev").disabled = $("next").disabled = !nChg;
+  }
+
+  function changedEls() {
+    return Array.from((view === "sbs" ? $("rows") : $("combined")).querySelectorAll(".chg"));
+  }
+  function go(step) {
+    const els = changedEls();
+    if (!els.length) return;
+    els.forEach(el => el.classList.remove("current"));
+    navIndex = navIndex < 0 ? (step > 0 ? 0 : els.length - 1) : (navIndex + step + els.length) % els.length;
+    const el = els[navIndex];
+    el.classList.add("current");
+    el.scrollIntoView({ block: "center" });
+  }
+
+  // ---------- Word export ----------
+  const xmlEsc = (s) => s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F￾￿]/g, "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  function textXml(s, tag) {
+    return s.split("\t").map(p => p ? `<w:${tag} xml:space="preserve">${xmlEsc(p)}</w:${tag}>` : "").join("<w:tab/>");
+  }
+
+  function buildDocumentXml(mode, author) {
+    const date = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+    const who = xmlEsc(author || "Redline");
+    let id = 1;
+    const attrs = () => `w:id="${id++}" w:author="${who}" w:date="${date}"`;
+    const RED = "C00000";
+
+    const run = (t, s) => {
+      if (mode === "tracked") {
+        if (t === 0) return `<w:r>${textXml(s, "t")}</w:r>`;
+        if (t === 1) return `<w:ins ${attrs()}><w:r>${textXml(s, "t")}</w:r></w:ins>`;
+        return `<w:del ${attrs()}><w:r>${textXml(s, "delText")}</w:r></w:del>`;
+      }
+      if (t === 0) return `<w:r>${textXml(s, "t")}</w:r>`;
+      const fx = t === 1 ? `<w:u w:val="single"/>` : `<w:strike/>`;
+      return `<w:r><w:rPr><w:color w:val="${RED}"/>${fx}</w:rPr>${textXml(s, "t")}</w:r>`;
+    };
+
+    const paras = [];
+    if (mode === "formatted") {
+      const la = nameA.value.trim() || "Original", lb = nameB.value.trim() || "Revised";
+      const plain = (s, bold) => `<w:p><w:r>${bold ? "<w:rPr><w:b/></w:rPr>" : ""}${textXml(s, "t")}</w:r></w:p>`;
+      paras.push(plain("Redline comparison", true));
+      paras.push(plain(`Original: ${la}`));
+      paras.push(plain(`Revised: ${lb}`));
+      paras.push(plain(`Prepared ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`));
+      paras.push(`<w:p><w:r>${textXml("Legend: ", "t")}</w:r>${run(1, "inserted text")}<w:r>${textXml("  ", "t")}</w:r>${run(-1, "deleted text")}</w:p>`);
+      paras.push(`<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="999999"/></w:pBdr></w:pPr></w:p>`);
+    }
+    let cur = "";
+    for (const o of ops) {
+      const parts = o.s.split("\n");
+      parts.forEach((piece, i) => {
+        if (i > 0) {
+          let mark = "";
+          if (mode === "tracked" && o.t !== 0) mark = `<w:pPr><w:rPr><w:${o.t === 1 ? "ins" : "del"} ${attrs()}/></w:rPr></w:pPr>`;
+          paras.push(`<w:p>${mark}${cur}</w:p>`);
+          cur = "";
+        }
+        if (piece) cur += run(o.t, piece);
+      });
+    }
+    paras.push(`<w:p>${cur}</w:p>`);
+
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+      `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>` +
+      paras.join("") +
+      `<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr>` +
+      `</w:body></w:document>`;
+  }
+
+  async function buildDocx(mode, author) {
+    const zip = new JSZip();
+    zip.file("[Content_Types].xml",
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+      `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>` +
+      `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>` +
+      `<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`);
+    zip.file("_rels/.rels",
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+      `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
+    zip.file("word/_rels/document.xml.rels",
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+      `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`);
+    zip.file("word/styles.xml",
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+      `<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:lang w:val="en-US"/></w:rPr></w:rPrDefault>` +
+      `<w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="240" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>` +
+      `<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style></w:styles>`);
+    zip.file("word/document.xml", buildDocumentXml(mode, author));
+    return zip.generateAsync({ type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function setStatus(msg, kind) {
+    const s = $("status");
+    s.hidden = !msg;
+    s.textContent = msg || "";
+    s.className = "status" + (kind ? " " + kind : "");
+  }
+
+  $("exportBtn").addEventListener("click", async () => {
+    const btn = $("exportBtn");
+    if (!ops.length) { setStatus("There is nothing to export yet. Paste two versions first.", "err"); return; }
+    btn.disabled = true;
+    setStatus("Preparing the Word file…");
+    try {
+      const mode = $("exportMode").value;
+      const blob = await buildDocx(mode, $("author").value.trim());
+      const clean = (s) => s.replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 60);
+      const filename = `Redline - ${clean(nameA.value || "Original")} vs ${clean(nameB.value || "Revised")}${mode === "tracked" ? " (tracked)" : ""}.docx`;
+      downloadBlob(blob, filename);
+      setStatus(mode === "tracked" ? "Downloaded. Open it in Word and use Review › Accept or Reject." : "Downloaded.", "ok");
+    } catch (err) {
+      setStatus("The Word file couldn't be created" + (err && err.message ? `: ${err.message}` : "."), "err");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  $("exportMode").addEventListener("change", () => { $("author").hidden = $("exportMode").value !== "tracked"; saveState(); });
+
+  // ---------- file loading ----------
+  let openTarget = "A";
+  document.querySelectorAll("[data-open]").forEach(b => b.addEventListener("click", () => {
+    openTarget = b.dataset.open; $("fileInput").value = ""; $("fileInput").click();
+  }));
+  document.querySelectorAll("[data-clear]").forEach(b => b.addEventListener("click", () => {
+    (b.dataset.clear === "A" ? textA : textB).value = ""; $("exampleNote").hidden = true; schedule(0);
+  }));
+
+  async function readDocx(file) {
+    const zip = await JSZip.loadAsync(file);
+    const xmlFile = zip.file("word/document.xml");
+    if (!xmlFile) throw new Error("This .docx has no main document part.");
+    const doc = new DOMParser().parseFromString(await xmlFile.async("string"), "application/xml");
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const out = [];
+    for (const p of doc.getElementsByTagNameNS(W, "p")) {
+      let s = "";
+      const walk = (n) => {
+        for (const c of n.childNodes) {
+          if (c.nodeType !== 1) continue;
+          if (c.namespaceURI === W) {
+            if (c.localName === "t") { s += c.textContent; continue; }
+            if (c.localName === "tab") { s += "\t"; continue; }
+            if (c.localName === "br" || c.localName === "cr") { s += " "; continue; }
+            if (c.localName === "del" || c.localName === "delText" || c.localName === "p") continue;
+          }
+          walk(c);
+        }
+      };
+      walk(p);
+      out.push(s);
+    }
+    return out.join("\n");
+  }
+
+  $("fileInput").addEventListener("change", async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      const text = /\.docx$/i.test(file.name) ? await readDocx(file) : await file.text();
+      (openTarget === "A" ? textA : textB).value = text;
+      (openTarget === "A" ? nameA : nameB).value = file.name.replace(/\.[^.]+$/, "");
+      $("exampleNote").hidden = true;
+      setStatus("");
+      schedule(0);
+    } catch (err) {
+      setStatus(`Couldn't read ${file.name}. Use a .txt or .docx file, or paste the text.`, "err");
+    }
+  });
+
+  // ---------- URL state (settings only; the texts are too long and too private for a URL) ----------
+  function saveState() {
+    const p = {};
+    if (view !== "sbs") p.view = view;
+    if ($("gran").value !== "word") p.gran = $("gran").value;
+    if ($("ignoreWs").checked) p.ws = "1";
+    if ($("exportMode").value !== "tracked") p.export = $("exportMode").value;
+    const qs = new URLSearchParams(p).toString();
+    history.replaceState(null, "", qs ? "?" + qs : location.pathname);
+  }
+
+  // ---------- wiring ----------
+  let timer = null;
+  function schedule(ms) { clearTimeout(timer); timer = setTimeout(compare, ms); }
+  [textA, textB].forEach(t => t.addEventListener("input", () => { $("exampleNote").hidden = true; schedule(350); }));
+  [nameA, nameB].forEach(n => n.addEventListener("input", render));
+  $("gran").addEventListener("change", () => { saveState(); schedule(0); });
+  $("ignoreWs").addEventListener("change", () => { saveState(); schedule(0); });
+  $("prev").addEventListener("click", () => go(-1));
+  $("next").addEventListener("click", () => go(1));
+
+  function setView(v) {
+    view = v;
+    $("viewSbs").checked = v === "sbs";
+    $("viewComb").checked = v === "comb";
+    $("sbs").hidden = v !== "sbs";
+    $("combined").hidden = v !== "comb";
+    navIndex = -1;
+    document.querySelectorAll(".current").forEach(el => el.classList.remove("current"));
+  }
+  $("viewSbs").addEventListener("change", () => { setView("sbs"); saveState(); });
+  $("viewComb").addEventListener("change", () => { setView("comb"); saveState(); });
+
+  (function restore() {
+    const p = new URLSearchParams(location.search);
+    if (p.get("gran") === "char") $("gran").value = "char";
+    if (p.get("ws") === "1") $("ignoreWs").checked = true;
+    if (p.get("export") === "formatted") { $("exportMode").value = "formatted"; $("author").hidden = true; }
+    setView(p.get("view") === "comb" ? "comb" : "sbs");
+  })();
+
+  compare();
+})();
+</script>
+
+</body>
+</html>
