@@ -237,6 +237,7 @@
             </select>
           </div>
           <input class="author" id="author" value="Redline" aria-label="Author name for tracked changes" title="Author name shown on tracked changes">
+          <button class="btn-reset" type="button" id="copyBtn" title="Copy the redline with its formatting, ready to paste into Word or an email">Copy redline</button>
           <button class="btn-calculate" type="button" id="exportBtn">Export to Word</button>
         </div>
         <p class="status" id="status" hidden></p>
@@ -608,6 +609,63 @@
       setStatus("The Word file couldn't be created" + (err && err.message ? `: ${err.message}` : "."), "err");
     } finally {
       btn.disabled = false;
+    }
+  });
+
+  // ---------- Copy redline ----------
+  // Inline styles so the marks survive pasting into Word, Outlook or Gmail.
+  function redlineClipboard() {
+    const RED = "#C00000";
+    const style = (t) => t === 1 ? `color:${RED};text-decoration:underline` : `color:${RED};text-decoration:line-through`;
+    const paras = [[]], plain = [""];
+    for (const o of ops) {
+      o.s.split("\n").forEach((piece, i) => {
+        if (i > 0) { paras.push([]); plain.push(""); }
+        if (!piece) return;
+        paras[paras.length - 1].push(o.t === 0 ? esc(piece) : `<span style="${style(o.t)}">${esc(piece)}</span>`);
+        plain[plain.length - 1] += o.t === 1 ? `[+${piece}+]` : o.t === -1 ? `[-${piece}-]` : piece;
+      });
+    }
+    const html = `<div style="font-family:'Times New Roman',serif;font-size:12pt">` +
+      paras.map(p => `<p style="margin:0 0 8pt">${p.join("") || "&nbsp;"}</p>`).join("") + `</div>`;
+    return { html, text: plain.join("\n") };
+  }
+
+  function flashBtn(btn, label) {
+    const orig = btn.textContent;
+    btn.textContent = label;
+    setTimeout(() => btn.textContent = orig, 1500);
+  }
+
+  $("copyBtn").addEventListener("click", async () => {
+    const btn = $("copyBtn");
+    if (!ops.length) { setStatus("There is nothing to copy yet. Paste two versions first.", "err"); return; }
+    const { html, text } = redlineClipboard();
+    try {
+      if (navigator.clipboard && window.ClipboardItem) {
+        await navigator.clipboard.write([new ClipboardItem({
+          "text/html": new Blob([html], { type: "text/html" }),
+          "text/plain": new Blob([text], { type: "text/plain" })
+        })]);
+      } else {
+        // Older browsers: copy a rendered selection, which carries the formatting.
+        const box = document.createElement("div");
+        box.innerHTML = html;
+        box.style.cssText = "position:fixed;left:-9999px;top:0";
+        document.body.appendChild(box);
+        const range = document.createRange();
+        range.selectNodeContents(box);
+        const sel = window.getSelection();
+        sel.removeAllRanges(); sel.addRange(range);
+        const ok = document.execCommand("copy");
+        sel.removeAllRanges();
+        document.body.removeChild(box);
+        if (!ok) throw new Error("copy failed");
+      }
+      setStatus("");
+      flashBtn(btn, "Copied!");
+    } catch (err) {
+      setStatus("Couldn't copy to the clipboard in this browser. Use Export to Word instead.", "err");
     }
   });
 
