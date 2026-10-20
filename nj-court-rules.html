@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NJ Court Rules Full Text</title>
+<link rel="icon" type="image/x-icon" href="/favicons/dc-favicon.ico">
+<link rel="icon" type="image/svg+xml" href="/favicons/dc-favicon.svg">
+<link rel="apple-touch-icon" href="/favicons/dc-apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* This page needs more room than a calculator card: widen the shared containers. */
+  .site-nav, .page-title, .card, .foot-note { max-width: 1040px; }
+  .page-title p { max-width: 70ch; }
+
+  /* ── Search ── */
+  .search-field input[type="text"] {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .search-field input[type="text"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(201,79,42,0.1);
+    background: var(--white);
+  }
+  .search-hint {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  .search-results {
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 420px;
+    overflow-y: auto;
+    margin-top: 14px;
+  }
+  .search-results.show { display: flex; }
+  .sr-item {
+    text-align: left;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .sr-item:hover { border-color: var(--accent); }
+  .sr-item .sr-head {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin-bottom: 3px;
+  }
+  .sr-item .sr-title { font-weight: 500; font-size: 0.9rem; color: var(--ink); }
+  .sr-item .sr-snippet { font-size: 0.8rem; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  .sr-empty { font-size: 0.85rem; color: var(--muted); font-style: italic; padding: 10px 2px; }
+  mark { background: var(--accent-soft); color: var(--ink); padding: 0 2px; border-radius: 2px; }
+
+  /* ── Browse layout: article list + section reader ── */
+  .layout { display: grid; grid-template-columns: 230px 1fr; gap: 32px; margin-top: 10px; }
+  @media (max-width: 720px) { .layout { grid-template-columns: 1fr; } }
+
+  .toc { max-height: 70vh; overflow-y: auto; padding-right: 4px; }
+  @media (max-width: 720px) {
+    .toc { max-height: 240px; border-bottom: 1px solid var(--rule); padding-bottom: 14px; margin-bottom: 6px; }
+  }
+  .toc-item {
+    display: block; width: 100%; text-align: left;
+    background: none; border: none; border-radius: var(--radius);
+    color: var(--ink); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 400;
+    padding: 7px 10px; cursor: pointer; line-height: 1.35;
+  }
+  .toc-item .num {
+    font-family: 'DM Mono', monospace; color: var(--accent);
+    font-size: 0.68rem; margin-right: 6px;
+  }
+  .toc-item:hover { background: var(--accent-soft); }
+  .toc-item.active { background: var(--cream); font-weight: 600; }
+  .toc-item .range { display: block; font-size: 0.68rem; color: var(--muted); margin-top: 1px; font-weight: 400; }
+
+  .content h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem; color: var(--ink); margin-bottom: 2px; letter-spacing: -0.01em; line-height: 1.2;
+  }
+  .content .content-range {
+    font-family: 'DM Mono', monospace; font-size: 0.72rem;
+    color: var(--muted); margin-bottom: 18px;
+  }
+  .empty-state { color: var(--muted); font-size: 0.88rem; line-height: 1.6; padding: 16px 0; font-weight: 300; }
+
+  /* ── Section accordion ── */
+  .sec { border: 1px solid var(--rule); border-radius: var(--radius); margin-bottom: 10px; }
+  .sec-head {
+    display: flex; align-items: baseline; gap: 10px; width: 100%; text-align: left;
+    background: none; border: none; cursor: pointer; padding: 12px 16px; color: var(--ink);
+  }
+  .sec-head .sec-num { font-family: 'DM Mono', monospace; color: var(--accent); font-weight: 500; font-size: 0.78rem; white-space: nowrap; }
+  .sec-head .sec-title { font-size: 0.85rem; font-weight: 500; flex: 1; }
+  .sec-head .sec-chevron { color: var(--muted); font-size: 0.7rem; transition: transform 0.15s ease; }
+  .sec.open .sec-chevron { transform: rotate(90deg); }
+  .sec-body { display: none; padding: 0 16px 18px; }
+  .sec.open .sec-body { display: block; }
+  .sec-text {
+    font-family: 'DM Serif Display', serif; font-size: 0.95rem; line-height: 1.7; white-space: pre-wrap;
+    background: var(--paper); border: 1px solid var(--rule); border-radius: var(--radius);
+    padding: 16px 18px; margin: 0 0 14px;
+  }
+  .sec-meta { font-size: 0.7rem; color: var(--muted); margin-bottom: 12px; font-family: 'DM Mono', monospace; }
+  .link-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .link-btn {
+    display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+    font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 500;
+    padding: 9px 16px; border-radius: var(--radius); border: 1px solid var(--rule);
+    cursor: pointer; background: var(--white); color: var(--muted); transition: all 0.15s;
+  }
+  .link-btn:hover { color: var(--ink); border-color: var(--ink); }
+  .link-btn.check { color: var(--accent); border-color: rgba(201,79,42,0.35); }
+  .link-btn.check:hover { border-color: var(--accent); }
+  .link-btn.westlaw { color: var(--white); background: var(--accent); border-color: var(--accent); }
+  .link-btn.westlaw:hover { background: #b0431f; color: var(--white); }
+  .link-btn.westlaw.fallback { background: none; color: var(--accent); }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: var(--paper); font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+    padding: 11px 18px; border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; z-index: 50;
+    max-width: 90vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .foot-note {
+    width: 100%; margin-top: 8px;
+    font-size: 0.75rem; color: var(--muted); line-height: 1.6; font-weight: 300;
+  }
+
+  /* ── NJ additions: Part headings in the TOC, history note ── */
+  .toc-part {
+    font-family: 'DM Mono', monospace; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--muted); padding: 14px 10px 4px; border-top: 1px solid var(--rule); margin-top: 6px;
+  }
+  .toc-part:first-child { border-top: none; margin-top: 0; padding-top: 4px; }
+  .sec-note {
+    font-size: 0.75rem; color: var(--muted); line-height: 1.6; font-weight: 300;
+    border-left: 2px solid var(--rule); padding: 2px 0 2px 12px; margin: 0 0 4px;
+  }
+  .sec-note strong { font-weight: 600; color: var(--ink); }
+</style>
+</head>
+<body>
+
+  <!-- Site Nav -->
+  <nav class="site-nav">
+    <a href="date-calculator.html">Date Calculator</a>
+    <span class="site-nav-sep">·</span>
+    <a href="ny-motion-deadlines-calculator.html">NY Motion Deadlines</a>
+    <span class="site-nav-sep">·</span>
+    <a href="nj-motion-deadlines-calculator.html">NJ Motion Deadlines</a>
+    <span class="site-nav-sep">·</span>
+    <a href="ny-response-deadline-calculator.html">NY Answer Deadlines</a>
+    <span class="site-nav-sep">·</span>
+    <a href="bluebook-abbreviations.html">Bluebook Abbreviations</a>
+    <span class="site-nav-sep">·</span>
+    <a href="cplr-full-text.html">CPLR Full Text</a>
+    <span class="site-nav-sep">·</span>
+    <span class="site-nav-current">NJ Court Rules</span>
+    <span class="site-nav-sep">·</span>
+    <a href="redline.html">Redline Compare</a>
+    <a href="https://www.philipmtaylor.com" class="site-nav-home">philipmtaylor.com</a>
+  </nav>
+
+  <!-- Page Title -->
+  <div class="page-title">
+    <h1>NJ Court Rules Full Text &amp; Citation Finder</h1>
+    <p>The complete text of the Rules Governing the Courts of the State of New Jersey that apply in the Superior Court (Parts I&ndash;VI), browsable by chapter or searchable by keyword or rule number. Each rule carries a link to check the current official version and a shortcut to look it up on Westlaw.</p>
+    <span class="statute-tag" id="tag-through">Amendments effective through —</span>
+    <span class="statute-tag" id="tag-pulled">Pulled —</span>
+  </div>
+
+  <!-- Card -->
+  <div class="card">
+    <div class="card-inner">
+
+      <!-- ══════════ SEARCH ══════════ -->
+      <div class="section-label">Search</div>
+      <div class="search-field">
+        <input type="text" id="searchInput" placeholder='Search the full text, or jump to a rule number (e.g. 4:46-2, &quot;summary judgment&quot;, 1:6-3)' autocomplete="off">
+      </div>
+      <div class="search-hint">Or browse by chapter below.</div>
+      <div class="search-results" id="searchResults"></div>
+
+      <hr class="divider" />
+
+      <!-- ══════════ BROWSE ══════════ -->
+      <div class="section-label">Browse by Chapter</div>
+      <div class="layout">
+        <nav class="toc" id="toc"></nav>
+        <div class="content">
+          <div id="contentHead"></div>
+          <div id="sectionList"></div>
+          <div id="emptyState" class="empty-state">Select a chapter on the left, or search above.</div>
+        </div>
+      </div>
+
+    </div><!-- /card-inner -->
+  </div><!-- /card -->
+
+  <p class="foot-note">
+    Full text pulled from the New Jersey Judiciary's Rules of Court at njcourts.gov, which includes amendments effective on or before <span id="foot-through">—</span> (pulled <span id="foot-pulled">—</span>). Each rule's source and amendment history appears beneath its text. This is a static snapshot, not a live feed &mdash; the Supreme Court amends the rules periodically, so use the "Check current version" link on any rule before relying on it in a filing. Parts VII (Municipal Courts), VIII (Tax Court) and the Appendices are not included.
+  </p>
+
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="nj-rules-data">[]</script>
+<script>
+(function(){
+  var CHAPTERS = JSON.parse(document.getElementById('nj-rules-data').textContent);
+  var PART_NAMES = {
+    1: "Part I — Rules of General Application",
+    2: "Part II — Appellate Practice",
+    3: "Part III — Criminal Practice",
+    4: "Part IV — Civil Practice",
+    5: "Part V — Family Practice",
+    6: "Part VI — Special Civil Part"
+  };
+
+  function officialUrl(num) {
+    return "https://www.njcourts.gov/attorneys/rules-of-court?id=" + encodeURIComponent(num).replace("%3A", ":");
+  }
+  function normalizeNum(raw) {
+    return String(raw).trim().toUpperCase()
+      .replace(/^(N\.?\s*J\.?\s*)?(CT\.?\s*)?(RULES?|R\.?)\s*/, "")
+      .replace(/\s+/g, "");
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  var toc = document.getElementById("toc");
+  var contentHead = document.getElementById("contentHead");
+  var sectionList = document.getElementById("sectionList");
+  var emptyState = document.getElementById("emptyState");
+
+  // flat index for search: {num, title, text, chIdx}
+  var FLAT = [];
+  CHAPTERS.forEach(function(ch, ci){
+    ch.s.forEach(function(rule, ri){
+      FLAT.push({ chIdx: ci, ruleIdx: ri, num: rule.n, title: rule.t, text: rule.x });
+    });
+  });
+  var FLAT_BY_NUM = {};
+  FLAT.forEach(function(f){ FLAT_BY_NUM[f.num.toUpperCase()] = f; });
+  var CH_BY_NUM = {};
+  CHAPTERS.forEach(function(ch, ci){ CH_BY_NUM[ch.a.toUpperCase()] = ci; });
+
+  function rangeLabel(ch) {
+    return 'R. ' + ch.f + (ch.z !== ch.f ? ' to ' + ch.z : '');
+  }
+
+  var lastPart = null;
+  CHAPTERS.forEach(function(ch, idx){
+    if (ch.p !== lastPart) {
+      var h = document.createElement("div");
+      h.className = "toc-part";
+      h.textContent = PART_NAMES[ch.p] || ("Part " + ch.p);
+      toc.appendChild(h);
+      lastPart = ch.p;
+    }
+    var btn = document.createElement("button");
+    btn.className = "toc-item";
+    btn.type = "button";
+    btn.dataset.idx = idx;
+    btn.innerHTML = '<span class="num">' + escapeHtml(ch.a) + '</span>' + escapeHtml(ch.t) +
+      '<span class="range">' + escapeHtml(rangeLabel(ch)) + '</span>';
+    btn.addEventListener("click", function(){ selectChapter(idx); });
+    toc.appendChild(btn);
+  });
+
+  function ruleHtml(rule) {
+    var num = rule.n;
+    var cite = "N.J. Ct. R. " + num;
+    var wrap = document.createElement("div");
+    wrap.className = "sec";
+    wrap.dataset.num = num;
+
+    var head = document.createElement("button");
+    head.type = "button";
+    head.className = "sec-head";
+    head.innerHTML = '<span class="sec-num">R. ' + escapeHtml(num) + '</span>' +
+      '<span class="sec-title">' + escapeHtml(rule.t) + '</span>' +
+      '<span class="sec-chevron">▸</span>';
+    head.addEventListener("click", function(){
+      wrap.classList.toggle("open");
+    });
+
+    var body = document.createElement("div");
+    body.className = "sec-body";
+    var meta = rule.d ? '<div class="sec-meta">Latest amendment effective: ' + escapeHtml(rule.d) + '</div>' : '';
+    var linkRow = '<div class="link-row">' +
+      '<a class="link-btn check" href="' + officialUrl(num) + '" target="_blank" rel="noopener">Check current version ↗</a>';
+    linkRow += '<button class="link-btn westlaw fallback" data-copy="' + escapeHtml(cite) + '" type="button">Copy citation &amp; open Westlaw</button>';
+    linkRow += '<button class="link-btn copy" data-copytext="1" type="button">Copy text</button>';
+    linkRow += '</div>';
+    var note = rule.m ? '<div class="sec-note"><strong>Note:</strong> ' + escapeHtml(rule.m) + '</div>' : '';
+
+    body.innerHTML = meta + linkRow +
+      '<div class="sec-text">' + escapeHtml(rule.x) + '</div>' + note;
+
+    wrap.appendChild(head);
+    wrap.appendChild(body);
+
+    body.querySelector('[data-copy]').addEventListener("click", function(e){
+      var text = e.currentTarget.getAttribute("data-copy");
+      copyToClipboard(text);
+      showToast('Copied "' + text + '" — opening Westlaw, paste it into the search box.');
+      window.open("https://1.next.westlaw.com/", "_blank", "noopener");
+    });
+    body.querySelector('[data-copytext]').addEventListener("click", function(){
+      copyToClipboard(rule.x);
+      showToast("Copied full text of R. " + num + ".");
+    });
+    return wrap;
+  }
+
+  function selectChapter(idx, focusNum) {
+    Array.from(toc.querySelectorAll(".toc-item")).forEach(function(el){
+      el.classList.toggle("active", Number(el.dataset.idx) === idx);
+    });
+    var ch = CHAPTERS[idx];
+    emptyState.style.display = "none";
+    contentHead.innerHTML = '<h2>' + escapeHtml(ch.a) + ' — ' + escapeHtml(ch.t) + '</h2>' +
+      '<div class="content-range">' + escapeHtml((PART_NAMES[ch.p] || "") + ' · ' + rangeLabel(ch)) + '</div>';
+    sectionList.innerHTML = "";
+    document.getElementById("searchResults").classList.remove("show");
+    ch.s.forEach(function(rule){
+      var node = ruleHtml(rule);
+      sectionList.appendChild(node);
+      if (focusNum && rule.n.toUpperCase() === focusNum.toUpperCase()) {
+        node.classList.add("open");
+      }
+    });
+    var activeBtn = toc.querySelector('.toc-item.active');
+    if (activeBtn) activeBtn.scrollIntoView({ block: "nearest" });
+    if (focusNum) {
+      var target = sectionList.querySelector('[data-num="' + CSS.escape(focusNum) + '"]');
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
+  // Search
+  var searchInput = document.getElementById("searchInput");
+  var searchResults = document.getElementById("searchResults");
+  var searchTimer = null;
+  searchInput.addEventListener("input", function(){
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(runSearch, 120);
+  });
+  searchInput.addEventListener("keydown", function(e){
+    if (e.key === "Enter") { clearTimeout(searchTimer); runSearch(true); }
+  });
+
+  function snippetAround(text, q) {
+    var lower = text.toLowerCase();
+    var i = lower.indexOf(q.toLowerCase());
+    if (i === -1) return text.slice(0, 140) + (text.length > 140 ? "…" : "");
+    var start = Math.max(0, i - 60);
+    var end = Math.min(text.length, i + q.length + 80);
+    var snip = (start > 0 ? "…" : "") + text.slice(start, end) + (end < text.length ? "…" : "");
+    return snip;
+  }
+  function highlight(str, q) {
+    var idx = str.toLowerCase().indexOf(q.toLowerCase());
+    if (idx === -1) return escapeHtml(str);
+    return escapeHtml(str.slice(0, idx)) + "<mark>" + escapeHtml(str.slice(idx, idx + q.length)) + "</mark>" + escapeHtml(str.slice(idx + q.length));
+  }
+
+  function runSearch(forceJump) {
+    var raw = searchInput.value.trim();
+    if (!raw) { searchResults.classList.remove("show"); searchResults.innerHTML = ""; return; }
+    var normNum = normalizeNum(raw);
+    if (forceJump && /^[0-9]+:/.test(normNum)) {
+      if (FLAT_BY_NUM[normNum]) {
+        jumpTo(FLAT_BY_NUM[normNum].num);
+        searchResults.classList.remove("show");
+        return;
+      }
+      if (CH_BY_NUM[normNum] !== undefined) {
+        selectChapter(CH_BY_NUM[normNum]);
+        return;
+      }
+    }
+    var q = /^[0-9]+:/.test(normNum) ? normNum.toLowerCase() : raw.toLowerCase();
+    if (q.length < 2) { searchResults.classList.remove("show"); return; }
+    var matches = [];
+    for (var i = 0; i < FLAT.length && matches.length < 40; i++) {
+      var f = FLAT[i];
+      if (f.num.toLowerCase().indexOf(q) === 0 || f.title.toLowerCase().indexOf(q) !== -1 || f.text.toLowerCase().indexOf(q) !== -1) {
+        matches.push(f);
+      }
+    }
+    renderSearchResults(matches, q);
+  }
+
+  function renderSearchResults(matches, q) {
+    searchResults.innerHTML = "";
+    searchResults.classList.add("show");
+    if (matches.length === 0) {
+      searchResults.innerHTML = '<div class="sr-empty">No matches.</div>';
+      return;
+    }
+    matches.forEach(function(f){
+      var item = document.createElement("button");
+      item.type = "button";
+      item.className = "sr-item";
+      var inTitle = f.title.toLowerCase().indexOf(q.toLowerCase()) !== -1;
+      var inNum = f.num.toLowerCase().indexOf(q) === 0;
+      var snip = (inTitle || inNum) ? "" : '<div class="sr-snippet">' + highlight(snippetAround(f.text, q), q) + '</div>';
+      var ch = CHAPTERS[f.chIdx];
+      item.innerHTML = '<div class="sr-head">R. ' + escapeHtml(f.num) + ' &middot; Part ' + escapeHtml(String(ch.p)) + '</div>' +
+        '<div class="sr-title">' + highlight(f.title, inTitle ? q : "___nomatch___") + '</div>' + snip;
+      item.addEventListener("click", function(){
+        jumpTo(f.num);
+        searchResults.classList.remove("show");
+      });
+      searchResults.appendChild(item);
+    });
+  }
+
+  function jumpTo(num) {
+    var f = FLAT_BY_NUM[num.toUpperCase()];
+    if (!f) return;
+    selectChapter(f.chIdx, num);
+  }
+
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(function(){});
+    } else {
+      try {
+        var ta = document.createElement("textarea");
+        ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.select(); document.execCommand("copy");
+        document.body.removeChild(ta);
+      } catch(e) {}
+    }
+  }
+
+  var toastEl = document.getElementById("toast");
+  var toastTimer = null;
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 3400);
+  }
+})();
+</script>
+</body>
+</html>

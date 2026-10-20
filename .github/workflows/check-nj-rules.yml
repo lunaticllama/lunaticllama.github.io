@@ -1,0 +1,37 @@
+name: Check NJ Court Rules Snapshot
+
+on:
+  schedule:
+    - cron: '15 13 * * 1'   # Mondays, 9:15 AM ET
+  workflow_dispatch:         # Allow manual trigger from GitHub Actions tab
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compare amendments date with njcourts.gov
+        id: check
+        run: |
+          set +e
+          python3 .github/scripts/build-nj-rules.py --check-date
+          code=$?
+          if [ $code -eq 2 ]; then exit 1; fi
+          echo "changed=$([ $code -eq 1 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Open or update issue
+        if: steps.check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="NJ Court Rules snapshot is out of date"
+          existing=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --body-file nj-rules-report.md
+          else
+            gh issue create --title "$title" --body-file nj-rules-report.md
+          fi
