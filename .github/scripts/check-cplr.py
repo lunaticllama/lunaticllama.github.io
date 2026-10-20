@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Compare the CPLR snapshot embedded in cplr-full-text.html against the live
+Compare the CPLR snapshot embedded in cplr-provisions.html against the live
 NY Senate Open Legislation API (law CVP).
 
 Each section in the page carries the "active date" it had when the snapshot
@@ -16,7 +16,7 @@ import re
 import sys
 import urllib.request
 
-PAGE = "cplr-full-text.html"
+PAGE = "cplr-provisions.html"
 API_URL = "https://legislation.nysenate.gov/api/3/laws/CVP?full=true&key={key}"
 REPORT = os.environ.get("CPLR_REPORT", "cplr-report.md")
 SECTION_URL = "https://www.nysenate.gov/legislation/laws/CVP/{num}"
@@ -93,7 +93,7 @@ def main():
     def link(n):
         return f"[§ {n}]({SECTION_URL.format(num=n)})"
 
-    lines = ["The CPLR snapshot in `cplr-full-text.html` no longer matches the NY Senate Open Legislation API.", ""]
+    lines = ["The CPLR snapshot in `cplr-provisions.html` no longer matches the NY Senate Open Legislation API.", ""]
     if amended:
         lines += [f"### Amended ({len(amended)})", "", "| Section | Title | Snapshot date | Current date |", "|---|---|---|---|"]
         lines += [f"| {link(n)} | {live[n]['title']} | {snapshot[n]['date']} | {live[n]['date']} |" for n in amended]
