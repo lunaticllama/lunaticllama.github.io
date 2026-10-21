@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Redline Compare</title>
+<title>Redline</title>
 <link rel="icon" type="image/x-icon" href="/favicons/dc-favicon.ico">
 <link rel="icon" type="image/svg+xml" href="/favicons/dc-favicon.svg">
 <link rel="apple-touch-icon" href="/favicons/dc-apple-touch-icon.png">
@@ -30,12 +30,7 @@
     font-size: 0.72rem; font-weight: 500; color: var(--muted);
     letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;
   }
-  .name {
-    flex: 1; min-width: 0; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500;
-    color: var(--ink); background: transparent; border: 0; border-bottom: 1px dashed var(--rule);
-    padding: 3px 2px; outline: none;
-  }
-  .name:focus { border-bottom-color: var(--accent); }
+  .pane-head .pane-tag { flex: 1; }
   .mini {
     font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 500; color: var(--muted);
     background: none; border: 1px solid var(--rule); border-radius: var(--radius);
@@ -165,13 +160,13 @@
     <span class="site-nav-sep">·</span>
     <a href="ny-motion-deadlines-calculator.html">NY Motion Deadlines</a>
     <span class="site-nav-sep">·</span>
-    <span class="site-nav-current">Redline Compare</span>
+    <span class="site-nav-current">Redline</span>
     <a href="https://www.philipmtaylor.com" class="site-nav-home">philipmtaylor.com</a>
   </nav>
 
   <!-- Page Title -->
   <div class="page-title">
-    <h1>Redline Compare</h1>
+    <h1>Redline</h1>
     <p>Paste two versions of a text to see the changes in Word-style markup: insertions underlined, deletions struck through. Export the result to Word as tracked changes or a formatted redline.</p>
     <span class="statute-tag">Runs in your browser &mdash; nothing is uploaded</span>
   </div>
@@ -186,7 +181,6 @@
         <div class="field">
           <div class="pane-head">
             <span class="pane-tag">Original</span>
-            <input class="name" id="nameA" value="Draft of Oct. 12" aria-label="Name of original version">
             <button class="mini" type="button" data-open="A">Open file</button>
             <button class="mini" type="button" data-clear="A">Clear</button>
           </div>
@@ -195,7 +189,6 @@
         <div class="field">
           <div class="pane-head">
             <span class="pane-tag">Revised</span>
-            <input class="name" id="nameB" value="Counterparty comments" aria-label="Name of revised version">
             <button class="mini" type="button" data-open="B">Open file</button>
             <button class="mini" type="button" data-clear="B">Clear</button>
           </div>
@@ -203,7 +196,7 @@
         </div>
       </div>
       <input type="file" id="fileInput" accept=".txt,.md,.docx,text/plain" hidden>
-      <p class="example-note" id="exampleNote">Example text is loaded so you can see how it works. Replace it with your own. Files: .txt or .docx (a .docx with tracked changes is read as if all changes were accepted).</p>
+      <p class="example-note">Paste text or open a file: .txt or .docx (a .docx with tracked changes is read as if all changes were accepted).</p>
 
       <hr class="divider" />
 
@@ -269,30 +262,7 @@
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
-  const textA = $("textA"), textB = $("textB"), nameA = $("nameA"), nameB = $("nameB");
-
-  const SAMPLE_A = `7. Confidentiality
-
-7.1 Each party shall hold the other party's Confidential Information in strict confidence and shall not disclose it to any third party without the prior written consent of the disclosing party.
-
-7.2 The obligations in this Section 7 shall survive termination of this Agreement for a period of two (2) years.
-
-7.3 Confidential Information does not include information that is or becomes publicly available through no fault of the receiving party.
-
-7.4 Upon termination, the receiving party shall promptly return all Confidential Information to the disclosing party.`;
-  const SAMPLE_B = `7. Confidentiality and Data Protection
-
-7.1 Each party shall hold the other party's Confidential Information in strict confidence and shall not disclose it to any third party, other than its attorneys and auditors bound by duties of confidentiality, without the prior written consent of the disclosing party.
-
-7.2 The obligations in this Section 7 shall survive termination or expiration of this Agreement for a period of five (5) years.
-
-7.3 Confidential Information does not include information that is or becomes publicly available through no fault of the receiving party, or that the receiving party independently develops.
-
-7.4 Upon termination, the receiving party shall, at the disclosing party's election, promptly return or destroy all Confidential Information and certify such destruction in writing.
-
-7.5 Each party shall comply with all applicable data protection laws in its handling of personal information received under this Agreement.`;
-  textA.value = SAMPLE_A;
-  textB.value = SAMPLE_B;
+  const textA = $("textA"), textB = $("textB");
 
   const dmp = new diff_match_patch();
   dmp.Diff_Timeout = 3;
@@ -436,10 +406,7 @@
   }
 
   function render() {
-    const la = nameA.value.trim() || "Original", lb = nameB.value.trim() || "Revised";
-    $("headA").textContent = la;
-    $("headB").textContent = lb;
-
+    const la = "Original", lb = "Revised";
     const rows = $("rows");
     if (!textA.value.trim() && !textB.value.trim()) {
       rows.innerHTML = `<div class="empty-state">Paste the original text on the left and the revised text on the right.</div>`;
@@ -522,11 +489,8 @@
 
     const paras = [];
     if (mode === "formatted") {
-      const la = nameA.value.trim() || "Original", lb = nameB.value.trim() || "Revised";
       const plain = (s, bold) => `<w:p><w:r>${bold ? "<w:rPr><w:b/></w:rPr>" : ""}${textXml(s, "t")}</w:r></w:p>`;
       paras.push(plain("Redline comparison", true));
-      paras.push(plain(`Original: ${la}`));
-      paras.push(plain(`Revised: ${lb}`));
       paras.push(plain(`Prepared ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`));
       paras.push(`<w:p><w:r>${textXml("Legend: ", "t")}</w:r>${run(1, "inserted text")}<w:r>${textXml("  ", "t")}</w:r>${run(-1, "deleted text")}</w:p>`);
       paras.push(`<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="999999"/></w:pBdr></w:pPr></w:p>`);
@@ -601,8 +565,7 @@
     try {
       const mode = $("exportMode").value;
       const blob = await buildDocx(mode, $("author").value.trim());
-      const clean = (s) => s.replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 60);
-      const filename = `Redline - ${clean(nameA.value || "Original")} vs ${clean(nameB.value || "Revised")}${mode === "tracked" ? " (tracked)" : ""}.docx`;
+      const filename = `Redline${mode === "tracked" ? " (tracked)" : ""}.docx`;
       downloadBlob(blob, filename);
       setStatus(mode === "tracked" ? "Downloaded. Open it in Word and use Review › Accept or Reject." : "Downloaded.", "ok");
     } catch (err) {
@@ -677,7 +640,7 @@
     openTarget = b.dataset.open; $("fileInput").value = ""; $("fileInput").click();
   }));
   document.querySelectorAll("[data-clear]").forEach(b => b.addEventListener("click", () => {
-    (b.dataset.clear === "A" ? textA : textB).value = ""; $("exampleNote").hidden = true; schedule(0);
+    (b.dataset.clear === "A" ? textA : textB).value = ""; schedule(0);
   }));
 
   async function readDocx(file) {
@@ -713,8 +676,6 @@
     try {
       const text = /\.docx$/i.test(file.name) ? await readDocx(file) : await file.text();
       (openTarget === "A" ? textA : textB).value = text;
-      (openTarget === "A" ? nameA : nameB).value = file.name.replace(/\.[^.]+$/, "");
-      $("exampleNote").hidden = true;
       setStatus("");
       schedule(0);
     } catch (err) {
@@ -736,8 +697,7 @@
   // ---------- wiring ----------
   let timer = null;
   function schedule(ms) { clearTimeout(timer); timer = setTimeout(compare, ms); }
-  [textA, textB].forEach(t => t.addEventListener("input", () => { $("exampleNote").hidden = true; schedule(350); }));
-  [nameA, nameB].forEach(n => n.addEventListener("input", render));
+  [textA, textB].forEach(t => t.addEventListener("input", () => schedule(350)));
   $("gran").addEventListener("change", () => { saveState(); schedule(0); });
   $("ignoreWs").addEventListener("change", () => { saveState(); schedule(0); });
   $("prev").addEventListener("click", () => go(-1));
