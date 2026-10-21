@@ -222,34 +222,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* ── Quick notes: a legal pad ── */
-    .notes-card {
-      display: flex;
-      flex-direction: column;
-    }
-    .notes-textarea {
-      flex: 1;
-      width: 100%;
-      min-height: 180px;
-      border: 0;
-      padding: 0 2px;
-      font-family: var(--sans);
-      font-size: .9rem;
-      line-height: 28px;
-      color: var(--ink);
-      resize: vertical;
-      outline: none;
-      background-color: transparent;
-      background-image: linear-gradient(to bottom, transparent 27px, var(--rule) 27px, var(--rule) 28px);
-      background-size: 100% 28px;
-      background-attachment: local;
-    }
-    .notes-textarea:focus-visible {
-      outline: 2px solid var(--margin);
-      outline-offset: 6px;
-    }
-    .notes-textarea::placeholder { color: #A3ABBA; font-style: italic; }
-
     /* ── Headlines ── */
     .headlines-list { list-style: none; }
     .headlines-list li {
@@ -344,7 +316,7 @@
     /* ── Responsive ── */
     @media (max-width: 800px) {
       .dash-grid, .dash-grid-bottom { grid-template-columns: 1fr 1fr; }
-      .headlines-card, .notes-card { grid-column: 1 / -1; }
+      .headlines-card, .tools-card { grid-column: 1 / -1; }
     }
     @media (max-width: 560px) {
       body { padding: 0; }
@@ -397,13 +369,38 @@
 
     </div>
 
-    <!-- Quick Notes · WSJ Headlines · Market -->
+    <!-- Tools · WSJ Headlines · Market -->
     <div class="dash-grid-bottom">
 
-      <!-- Quick Notes -->
-      <div class="card notes-card">
-        <div class="card-label">Quick Notes</div>
-        <textarea class="notes-textarea" id="quick-notes" placeholder="Jot something down…"></textarea>
+      <!-- Tools -->
+      <div class="card tools-card">
+        <div class="card-label">Tools</div>
+        <div class="links-grid">
+          <a class="link-btn" href="/bluebook-abbreviations.html">
+            Bluebook Word Abbreviations <span class="link-arrow">→</span>
+          </a>
+          <a class="link-btn" href="/cplr-provisions.html">
+            CPLR Provisions <span class="link-arrow">→</span>
+          </a>
+          <a class="link-btn" href="/date-calculator.html">
+            Date Calculator <span class="link-arrow">→</span>
+          </a>
+          <a class="link-btn" href="/nj-court-rules.html">
+            NJ Court Rules Full Text &amp; Citation Finder <span class="link-arrow">→</span>
+          </a>
+          <a class="link-btn" href="/nj-motion-deadlines-calculator.html">
+            NJ Motion Deadlines Calculator <span class="link-arrow">→</span>
+          </a>
+          <a class="link-btn" href="/ny-response-deadline-calculator.html">
+            NY Answer Deadlines Calculator <span class="link-arrow">→</span>
+          </a>
+          <a class="link-btn" href="/ny-motion-deadlines-calculator.html">
+            NY Motion Deadlines Calculator <span class="link-arrow">→</span>
+          </a>
+          <a class="link-btn" href="/redline.html">
+            Redline <span class="link-arrow">→</span>
+          </a>
+        </div>
       </div>
 
       <!-- WSJ Headlines -->
@@ -439,9 +436,6 @@
         </a>
         <a class="link-btn" href="https://1.next.westlaw.com/Search/Home.html?transitionType=Default&contextData=(sc.Default)&bhcp=1" target="_blank" rel="noopener">
           Westlaw <span class="link-arrow">↗</span>
-        </a>
-        <a class="link-btn" href="https://philipmtaylor.com/date-calculator.html" target="_blank" rel="noopener">
-          Date Calculator <span class="link-arrow">↗</span>
         </a>
         <a class="link-btn" href="https://iapps.courts.state.ny.us/nyscef/HomePage" target="_blank" rel="noopener">
           NYSCEF <span class="link-arrow">↗</span>
@@ -640,14 +634,6 @@
       }
       updateClock();
       setInterval(updateClock, 1000);
-    })();
-
-    // ── Quick Notes ───────────────────────────────────────
-
-    (function () {
-      const ta = document.getElementById('quick-notes');
-      ta.value = localStorage.getItem('dashboard-notes') || '';
-      ta.addEventListener('input', () => localStorage.setItem('dashboard-notes', ta.value));
     })();
 
     // ── Market Snapshot (read from daily-updated local JSON) ─
