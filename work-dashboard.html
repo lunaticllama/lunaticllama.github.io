@@ -7,20 +7,75 @@
   <link rel="icon" type="image/x-icon" href="/favicons/dc-favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicons/dc-favicon.svg">
   <link rel="apple-touch-icon" href="/favicons/dc-apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Public+Sans:wght@400;500;600&display=swap">
   <style>
+    /* ── Pleading: the dashboard as a sheet of litigation paper ── */
+    :root {
+      --desk:      #E4E7EB;
+      --paper:     #FCFCFA;
+      --ink:       #1D2330;
+      --ink-2:     #485062;
+      --muted:     #737B8C;
+      --margin:    #A8322D;
+      --rule:      #C9D3E0;
+      --rule-soft: #E6EBF2;
+      --up:        #2C6A45;
+      --down:      #A8322D;
+      --serif: 'Libre Caslon Text', Georgia, 'Times New Roman', serif;
+      --sans:  'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      --gutter: 92px;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #0d2a4a 0%, #1a4a7a 40%, #0a1f3d 100%);
-      color: #1e293b;
+      font-family: var(--sans);
+      background: var(--desk);
+      color: var(--ink);
       min-height: 100vh;
-      padding: 28px 24px;
+      padding: 32px 24px;
+      -webkit-font-smoothing: antialiased;
     }
 
     .dashboard {
+      position: relative;
       max-width: 1100px;
       margin: 0 auto;
+      padding: 44px 48px 48px var(--gutter);
+      background-color: var(--paper);
+      /* single right-hand margin rule */
+      background-image: linear-gradient(to left,
+        transparent 22px, var(--margin) 22px, var(--margin) 23px, transparent 23px);
+      box-shadow: 0 1px 0 rgba(29,35,48,.05), 0 18px 40px -24px rgba(29,35,48,.35);
+      overflow: hidden;
+    }
+    /* pleading line numbers */
+    .dashboard::before {
+      content: "1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9\A 10\A 11\A 12\A 13\A 14\A 15\A 16\A 17\A 18\A 19\A 20\A 21\A 22\A 23\A 24\A 25\A 26\A 27\A 28\A 29\A 30\A 31\A 32\A 33\A 34\A 35\A 36\A 37\A 38\A 39\A 40";
+      white-space: pre;
+      position: absolute;
+      top: 44px; bottom: 0; left: 0;
+      width: 54px;
+      text-align: right;
+      font-family: var(--serif);
+      font-size: .7rem;
+      line-height: 32px;
+      color: #A3ABBA;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    /* double left margin rule */
+    .dashboard::after {
+      content: "";
+      position: absolute;
+      top: 0; bottom: 0;
+      left: 66px;
+      width: 5px;
+      border-left: 1px solid var(--margin);
+      border-right: 1px solid var(--margin);
+      pointer-events: none;
     }
 
     /* ── Header ── */
@@ -28,277 +83,280 @@
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 6px 24px;
+      padding-bottom: 18px;
+      margin-bottom: 28px;
+      border-bottom: 3px double var(--ink);
     }
     .dash-title {
-      font-size: 1rem;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      color: #ffffff;
+      font-family: var(--serif);
+      font-size: 2rem;
+      font-weight: 400;
+      line-height: 1.1;
+      color: var(--ink);
     }
     .dash-date {
-      font-size: .9rem;
-      color: #64748b;
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: .95rem;
+      color: var(--ink-2);
     }
 
-    /* ── Cards ── */
+    /* ── Sections (no boxes; ruled like paper) ── */
     .card {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.04);
-      padding: 22px 24px;
+      border-top: 1px solid var(--ink);
+      padding-top: 12px;
+      min-width: 0;
     }
     .card-label {
-      font-size: .62rem;
-      font-weight: 700;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: #94a3b8;
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: .95rem;
+      color: var(--ink-2);
       margin-bottom: 16px;
     }
 
-    /* ── Top grid ── */
-    .dash-grid {
+    .dash-grid,
+    .dash-grid-bottom {
       display: grid;
       grid-template-columns: 1fr 1.3fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
+      gap: 32px 36px;
+      margin-bottom: 36px;
     }
 
     /* ── Weather ── */
     .weather-temp {
-      font-size: 3rem;
-      font-weight: 200;
+      font-family: var(--serif);
+      font-size: 3.2rem;
+      font-weight: 400;
       line-height: 1;
-      letter-spacing: -.02em;
-      color: #0f172a;
-      margin-bottom: 6px;
+      color: var(--ink);
+      margin-bottom: 8px;
+      font-variant-numeric: lining-nums;
     }
     .weather-emoji {
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       vertical-align: middle;
-      margin-right: 4px;
+      margin-right: 6px;
     }
     .weather-condition {
       font-size: .95rem;
-      color: #475569;
-      margin-bottom: 14px;
+      color: var(--ink);
+      margin-bottom: 10px;
     }
     .weather-detail {
-      font-size: .82rem;
-      color: #64748b;
-      line-height: 2;
+      font-size: .84rem;
+      color: var(--ink-2);
+      line-height: 1.9;
+      font-variant-numeric: tabular-nums;
     }
     .weather-loading, .weather-error,
-    .headlines-loading, .headlines-error {
-      font-size: .83rem;
-      color: #94a3b8;
-      padding: 8px 0;
+    .headlines-loading, .headlines-error,
+    .market-loading, .market-error {
+      font-size: .85rem;
+      color: var(--muted);
+      padding: 6px 0;
     }
 
     /* ── Calendar ── */
     .cal-month {
-      font-size: .88rem;
-      font-weight: 600;
-      color: #0f172a;
-      text-align: center;
-      margin-bottom: 14px;
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      color: var(--ink);
+      margin-bottom: 10px;
     }
     .cal-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 2px;
+      row-gap: 2px;
     }
     .cal-day-name {
-      font-size: .6rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #94a3b8;
+      font-size: .68rem;
+      font-weight: 600;
+      color: var(--muted);
       text-align: center;
       padding-bottom: 6px;
+      border-bottom: 1px solid var(--rule);
+      margin-bottom: 4px;
     }
     .cal-day {
-      font-size: .78rem;
+      width: 28px;
+      height: 28px;
+      line-height: 28px;
+      margin: 0 auto;
+      border-radius: 50%;
+      font-size: .8rem;
       text-align: center;
-      padding: 5px 0;
-      border-radius: 6px;
-      color: #475569;
-      cursor: default;
+      color: var(--ink-2);
+      font-variant-numeric: tabular-nums;
     }
     .cal-day.today {
-      background: #2563eb;
-      color: #fff;
-      font-weight: 600;
+      color: var(--margin);
+      font-weight: 700;
+      box-shadow: inset 0 0 0 1.5px var(--margin);
     }
     .cal-day.empty { visibility: hidden; }
 
-    /* ── Headlines ── */
-    .headlines-list {
-      list-style: none;
-    }
-    .headlines-list li {
-      padding: 9px 0;
-      border-bottom: 1px solid #f1f5f9;
-    }
-    .headlines-list li:last-child {
-      border-bottom: none;
-      padding-bottom: 0;
-    }
-    .headline-link {
-      font-size: .85rem;
-      color: #1e293b;
-      text-decoration: none;
-      line-height: 1.45;
-      display: block;
-    }
-    .headline-link:hover { color: #2563eb; }
-    .headline-time {
-      font-size: .68rem;
-      color: #94a3b8;
-      margin-top: 3px;
-    }
-
-    /* ── Quick Links ── */
-    .links-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .link-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 9px 18px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: .85rem;
-      font-family: inherit;
-      color: #334155;
-      text-decoration: none;
-      transition: background .13s, border-color .13s, color .13s;
-    }
-    .link-btn:hover {
-      background: #2563eb;
-      border-color: #2563eb;
-      color: #fff;
-    }
-    .link-arrow {
-      font-size: .72rem;
-      opacity: .45;
-    }
-    .link-btn:hover .link-arrow { opacity: 1; }
-
-    /* ── Bottom grid ── */
-    .dash-grid-bottom {
-      display: grid;
-      grid-template-columns: 1fr 1.3fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-
     /* ── Clock ── */
     .clock-time {
-      font-size: 2.6rem;
-      font-weight: 200;
-      letter-spacing: -.02em;
-      color: #0f172a;
+      font-family: var(--serif);
+      font-size: 3.2rem;
+      font-weight: 400;
       line-height: 1;
+      color: var(--ink);
       margin-bottom: 4px;
-      font-variant-numeric: tabular-nums;
+      font-variant-numeric: lining-nums tabular-nums;
     }
     .clock-ampm {
-      font-size: 1.1rem;
-      font-weight: 400;
-      color: #94a3b8;
-      margin-left: 3px;
+      font-family: var(--sans);
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--ink-2);
+      margin-left: 4px;
     }
     .clock-sub {
-      font-size: .75rem;
-      color: #94a3b8;
-      margin-top: 6px;
+      font-size: .8rem;
+      color: var(--muted);
+      margin-top: 8px;
       font-variant-numeric: tabular-nums;
     }
 
-    /* ── Quick Notes ── */
+    /* ── Quick notes: a legal pad ── */
     .notes-card {
       display: flex;
       flex-direction: column;
     }
-    .notes-card .notes-textarea {
-      flex: 1;
-    }
     .notes-textarea {
+      flex: 1;
       width: 100%;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 10px 12px;
-      font-family: inherit;
-      font-size: .85rem;
-      color: #1e293b;
+      min-height: 180px;
+      border: 0;
+      padding: 0 2px;
+      font-family: var(--sans);
+      font-size: .9rem;
+      line-height: 28px;
+      color: var(--ink);
       resize: vertical;
       outline: none;
-      line-height: 1.55;
-      background: #f8fafc;
-      transition: border-color .13s, box-shadow .13s;
+      background-color: transparent;
+      background-image: linear-gradient(to bottom, transparent 27px, var(--rule) 27px, var(--rule) 28px);
+      background-size: 100% 28px;
+      background-attachment: local;
     }
-    .notes-textarea:focus {
-      border-color: #2563eb;
-      background: #fff;
-      box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+    .notes-textarea:focus-visible {
+      outline: 2px solid var(--margin);
+      outline-offset: 6px;
     }
-    .notes-textarea::placeholder { color: #cbd5e1; }
+    .notes-textarea::placeholder { color: #A3ABBA; font-style: italic; }
 
-    /* ── Market Snapshot ── */
+    /* ── Headlines ── */
+    .headlines-list { list-style: none; }
+    .headlines-list li {
+      padding: 10px 0;
+      border-bottom: 1px dotted var(--rule);
+    }
+    .headlines-list li:first-child { padding-top: 0; }
+    .headlines-list li:last-child { border-bottom: none; padding-bottom: 0; }
+    .headline-link {
+      display: block;
+      font-family: var(--serif);
+      font-size: .98rem;
+      line-height: 1.45;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .headline-link:hover {
+      color: var(--margin);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1px;
+    }
+    .headline-time {
+      font-size: .72rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ── Markets ── */
     .market-row {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px solid #f1f5f9;
+      align-items: baseline;
+      padding: 9px 0;
+      border-bottom: 1px dotted var(--rule);
     }
+    .market-row:first-child { padding-top: 0; }
     .market-row:last-of-type { border-bottom: none; }
     .market-name {
-      font-size: .82rem;
+      font-size: .86rem;
       font-weight: 600;
-      color: #334155;
+      color: var(--ink);
     }
     .market-right { text-align: right; }
     .market-price {
-      font-size: .88rem;
-      color: #0f172a;
-      font-variant-numeric: tabular-nums;
+      font-family: var(--serif);
+      font-size: .98rem;
+      color: var(--ink);
+      font-variant-numeric: lining-nums tabular-nums;
     }
     .market-change {
-      font-size: .72rem;
+      font-size: .74rem;
+      font-weight: 500;
       font-variant-numeric: tabular-nums;
     }
-    .market-change.up   { color: #16a34a; }
-    .market-change.down { color: #dc2626; }
+    .market-change.up   { color: var(--up); }
+    .market-change.down { color: var(--down); }
     .market-status {
-      font-size: .65rem;
-      color: #94a3b8;
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: .78rem;
+      color: var(--muted);
       margin-top: 10px;
       text-align: right;
     }
-    .market-loading, .market-error {
-      font-size: .83rem;
-      color: #94a3b8;
-      padding: 8px 0;
+
+    /* ── Quick links: an index of authorities ── */
+    .links-card { margin-bottom: 0; }
+    .links-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 0 36px;
     }
+    .link-btn {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--rule);
+      font-size: .92rem;
+      font-weight: 500;
+      color: var(--ink);
+      text-decoration: none;
+      transition: color .12s, border-color .12s;
+    }
+    .link-btn:hover { color: var(--margin); border-color: var(--margin); }
+    .link-btn:focus-visible { outline: 2px solid var(--margin); outline-offset: 3px; }
+    .link-arrow { font-size: .78rem; color: var(--muted); }
+    .link-btn:hover .link-arrow { color: var(--margin); }
 
     /* ── Responsive ── */
     @media (max-width: 800px) {
-      .dash-grid { grid-template-columns: 1fr 1fr; }
-      .dash-grid-bottom { grid-template-columns: 1fr 1fr; }
-      .headlines-card { grid-column: 1 / -1; }
-      .notes-card { grid-column: 1 / -1; }
+      .dash-grid, .dash-grid-bottom { grid-template-columns: 1fr 1fr; }
+      .headlines-card, .notes-card { grid-column: 1 / -1; }
     }
-    @media (max-width: 520px) {
-      body { padding: 16px 12px; }
-      .dash-grid { grid-template-columns: 1fr; }
-      .dash-grid-bottom { grid-template-columns: 1fr; }
+    @media (max-width: 560px) {
+      body { padding: 0; }
+      :root { --gutter: 56px; }
+      .dashboard { padding: 28px 30px 32px var(--gutter); }
+      .dashboard::before { width: 28px; top: 28px; font-size: .62rem; }
+      .dashboard::after { left: 38px; width: 4px; }
+      .dash-title { font-size: 1.6rem; }
+      .dash-grid, .dash-grid-bottom { grid-template-columns: 1fr; gap: 28px; margin-bottom: 28px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
     }
   </style>
 </head>
@@ -307,13 +365,14 @@
 
     <header class="dash-header">
       <div class="dash-title">Work Dashboard</div>
+      <div class="dash-date" id="dash-date"></div>
     </header>
 
     <!-- Weather · Calendar · Clock -->
     <div class="dash-grid">
 
       <!-- Weather -->
-      <div class="card">
+      <div class="card weather-card">
         <div class="card-label">New York City</div>
         <div id="weather-content">
           <div class="weather-loading">Loading weather…</div>
@@ -321,14 +380,14 @@
       </div>
 
       <!-- Calendar -->
-      <div class="card">
+      <div class="card cal-card">
         <div class="card-label">Calendar</div>
         <div class="cal-month" id="cal-month"></div>
         <div class="cal-grid" id="cal-grid"></div>
       </div>
 
       <!-- Clock -->
-      <div class="card">
+      <div class="card clock-card">
         <div class="card-label">New York Time</div>
         <div class="clock-time">
           <span id="clock-hm"></span><span class="clock-ampm" id="clock-ampm"></span>
@@ -356,7 +415,7 @@
       </div>
 
       <!-- Market Snapshot -->
-      <div class="card">
+      <div class="card market-card">
         <div class="card-label">Markets</div>
         <div id="market-content">
           <div class="market-loading">Loading…</div>
@@ -366,7 +425,7 @@
     </div>
 
     <!-- Quick Links -->
-    <div class="card">
+    <div class="card links-card">
       <div class="card-label">Quick Links</div>
       <div class="links-grid">
         <a class="link-btn" href="https://lastpass.com/login/" target="_blank" rel="noopener">
@@ -398,6 +457,14 @@
 
   </div>
   <script>
+
+    // ── Header date ───────────────────────────────────────
+
+    document.getElementById('dash-date').textContent =
+      new Date().toLocaleDateString('en-US', {
+        weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+        timeZone: 'America/New_York'
+      });
 
     // ── Calendar ──────────────────────────────────────────
 
@@ -542,7 +609,7 @@
 
         if (data.updated) {
           const updated = document.createElement('div');
-          updated.className = 'headline-time';
+          updated.className = 'headline-time headline-asof';
           updated.style.cssText = 'margin-top:10px;text-align:right;';
           const d = new Date(data.updated);
           updated.textContent = 'As of ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
