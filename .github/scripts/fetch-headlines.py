@@ -12,6 +12,8 @@ RSS_URL          = 'https://news.google.com/rss/search?q=site:wsj.com&hl=en-US&g
 HEADLINES_OUTPUT = 'data/wsj-headlines.json'
 NYT_RSS_URL      = 'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml'
 NYT_OUTPUT       = 'data/nyt-headlines.json'
+TPM_RSS_URL      = 'https://talkingpointsmemo.com/edblog/feed'
+TPM_OUTPUT       = 'data/tpm-headlines.json'
 SKIP_TITLES      = ['print edition']
 
 def fetch_url(url):
@@ -128,6 +130,15 @@ def main():
             json.dump({'updated': now, 'items': nyt}, f, indent=2)
     except Exception as e:
         print(f"WARNING: NYT fetch failed ({e}), keeping existing data")
+
+    # TPM Editors' Blog (fail softly)
+    try:
+        tpm = parse_headlines(fetch_url(TPM_RSS_URL))
+        print(f"Fetched {len(tpm)} TPM headlines")
+        with open(TPM_OUTPUT, 'w') as f:
+            json.dump({'updated': now, 'items': tpm}, f, indent=2)
+    except Exception as e:
+        print(f"WARNING: TPM fetch failed ({e}), keeping existing data")
 
     # Stoic quote (fail softly)
     try:

@@ -396,7 +396,7 @@
             Date Calculator <span class="link-arrow">→</span>
           </a>
           <a class="link-btn" href="/nj-court-rules.html">
-            NJ Court Rules Full Text &amp; Citation Finder <span class="link-arrow">→</span>
+            NJ Court Rules <span class="link-arrow">→</span>
           </a>
           <a class="link-btn" href="/nj-motion-deadlines-calculator.html">
             NJ Motion Deadlines Calculator <span class="link-arrow">→</span>
@@ -455,6 +455,14 @@
       <div class="card headlines-card">
         <div class="card-label">New York Times</div>
         <div id="nyt-content">
+          <div class="headlines-loading">Loading headlines…</div>
+        </div>
+      </div>
+
+      <!-- TPM Editors' Blog -->
+      <div class="card headlines-card">
+        <div class="card-label">TPM Editor’s Blog</div>
+        <div id="tpm-content">
           <div class="headlines-loading">Loading headlines…</div>
         </div>
       </div>
@@ -604,7 +612,7 @@
       }
     }
 
-    // ── WSJ / NYT Headlines (read from daily-updated local JSON) ─
+    // ── WSJ / NYT / TPM Headlines (read from daily-updated local JSON) ─
 
     async function loadHeadlines(url, containerId) {
       try {
@@ -749,6 +757,7 @@
     loadStoic();
     loadHeadlines('/data/wsj-headlines.json', 'headlines-content');
     loadHeadlines('/data/nyt-headlines.json', 'nyt-content');
+    loadHeadlines('/data/tpm-headlines.json', 'tpm-content');
     loadMarket();
   </script>
 </body>
