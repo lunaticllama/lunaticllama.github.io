@@ -53,7 +53,7 @@
     }
     /* pleading line numbers */
     .dashboard::before {
-      content: "1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9\A 10\A 11\A 12\A 13\A 14\A 15\A 16\A 17\A 18\A 19\A 20\A 21\A 22\A 23\A 24\A 25\A 26\A 27\A 28\A 29\A 30\A 31\A 32\A 33\A 34\A 35\A 36\A 37\A 38\A 39\A 40";
+      content: "1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9\A 10\A 11\A 12\A 13\A 14\A 15\A 16\A 17\A 18\A 19\A 20\A 21\A 22\A 23\A 24\A 25\A 26\A 27\A 28\A 29\A 30\A 31\A 32\A 33\A 34\A 35\A 36\A 37\A 38\A 39\A 40\A 41\A 42\A 43\A 44\A 45\A 46\A 47\A 48\A 49\A 50\A 51\A 52\A 53\A 54\A 55\A 56\A 57\A 58\A 59\A 60";
       white-space: pre;
       position: absolute;
       top: 44px; bottom: 0; left: 0;
@@ -82,7 +82,7 @@
     .dash-header {
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
+      align-items: flex-end;
       flex-wrap: wrap;
       gap: 6px 24px;
       padding-bottom: 18px;
@@ -96,11 +96,19 @@
       line-height: 1.1;
       color: var(--ink);
     }
-    .dash-date {
+    .dash-when {
+      text-align: right;
+    }
+    .dash-date,
+    .dash-time {
       font-family: var(--serif);
       font-style: italic;
       font-size: .95rem;
       color: var(--ink-2);
+    }
+    .dash-time {
+      margin-top: 2px;
+      font-variant-numeric: lining-nums tabular-nums;
     }
 
     /* ── Sections (no boxes; ruled like paper) ── */
@@ -117,8 +125,7 @@
       margin-bottom: 16px;
     }
 
-    .dash-grid,
-    .dash-grid-bottom {
+    .dash-grid {
       display: grid;
       grid-template-columns: 1fr 1.3fr 1fr;
       gap: 32px 36px;
@@ -153,7 +160,8 @@
     }
     .weather-loading, .weather-error,
     .headlines-loading, .headlines-error,
-    .market-loading, .market-error {
+    .market-loading, .market-error,
+    .stoic-loading, .stoic-error {
       font-size: .85rem;
       color: var(--muted);
       padding: 6px 0;
@@ -198,28 +206,26 @@
     }
     .cal-day.empty { visibility: hidden; }
 
-    /* ── Clock ── */
-    .clock-time {
+    /* ── Daily Stoic ── */
+    .stoic-quote {
       font-family: var(--serif);
-      font-size: 3.2rem;
-      font-weight: 400;
-      line-height: 1;
+      font-size: 1.12rem;
+      line-height: 1.5;
       color: var(--ink);
-      margin-bottom: 4px;
-      font-variant-numeric: lining-nums tabular-nums;
+      text-indent: -.45em;
     }
-    .clock-ampm {
-      font-family: var(--sans);
-      font-size: 1rem;
-      font-weight: 500;
-      color: var(--ink-2);
-      margin-left: 4px;
+    .stoic-author {
+      font-size: .86rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-top: 14px;
     }
-    .clock-sub {
-      font-size: .8rem;
+    .stoic-source {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: .82rem;
       color: var(--muted);
-      margin-top: 8px;
-      font-variant-numeric: tabular-nums;
+      margin-top: 2px;
     }
 
     /* ── Headlines ── */
@@ -289,7 +295,6 @@
     }
 
     /* ── Quick links: an index of authorities ── */
-    .links-card { margin-bottom: 0; }
     .links-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -314,9 +319,11 @@
     .link-btn:hover .link-arrow { color: var(--margin); }
 
     /* ── Responsive ── */
+    .dash-grid:last-child { margin-bottom: 0; }
+
     @media (max-width: 800px) {
-      .dash-grid, .dash-grid-bottom { grid-template-columns: 1fr 1fr; }
-      .headlines-card, .tools-card { grid-column: 1 / -1; }
+      .dash-grid { grid-template-columns: 1fr 1fr; }
+      .stoic-card, .tools-card { grid-column: 1 / -1; }
     }
     @media (max-width: 560px) {
       body { padding: 0; }
@@ -325,7 +332,8 @@
       .dashboard::before { width: 28px; top: 28px; font-size: .62rem; }
       .dashboard::after { left: 38px; width: 4px; }
       .dash-title { font-size: 1.6rem; }
-      .dash-grid, .dash-grid-bottom { grid-template-columns: 1fr; gap: 28px; margin-bottom: 28px; }
+      .dash-grid { grid-template-columns: 1fr; gap: 28px; margin-bottom: 28px; }
+      .dash-when { text-align: left; }
     }
     @media (prefers-reduced-motion: reduce) {
       * { transition: none !important; }
@@ -336,11 +344,14 @@
   <div class="dashboard">
 
     <header class="dash-header">
-      <div class="dash-title">Work Dashboard</div>
-      <div class="dash-date" id="dash-date"></div>
+      <div class="dash-title" id="dash-greeting"></div>
+      <div class="dash-when">
+        <div class="dash-date" id="dash-date"></div>
+        <div class="dash-time" id="dash-time"></div>
+      </div>
     </header>
 
-    <!-- Weather · Calendar · Clock -->
+    <!-- Weather · Calendar · Daily Stoic -->
     <div class="dash-grid">
 
       <!-- Weather -->
@@ -358,19 +369,18 @@
         <div class="cal-grid" id="cal-grid"></div>
       </div>
 
-      <!-- Clock -->
-      <div class="card clock-card">
-        <div class="card-label">New York Time</div>
-        <div class="clock-time">
-          <span id="clock-hm"></span><span class="clock-ampm" id="clock-ampm"></span>
+      <!-- Daily Stoic -->
+      <div class="card stoic-card">
+        <div class="card-label">Daily Stoic</div>
+        <div id="stoic-content">
+          <div class="stoic-loading">Loading quote…</div>
         </div>
-        <div class="clock-sub" id="clock-sub"></div>
       </div>
 
     </div>
 
-    <!-- Tools · WSJ Headlines · Market -->
-    <div class="dash-grid-bottom">
+    <!-- Tools · Quick Links · Markets -->
+    <div class="dash-grid">
 
       <!-- Tools -->
       <div class="card tools-card">
@@ -403,28 +413,9 @@
         </div>
       </div>
 
-      <!-- WSJ Headlines -->
-      <div class="card headlines-card">
-        <div class="card-label">Wall Street Journal</div>
-        <div id="headlines-content">
-          <div class="headlines-loading">Loading headlines…</div>
-        </div>
-      </div>
-
-      <!-- Market Snapshot -->
-      <div class="card market-card">
-        <div class="card-label">Markets</div>
-        <div id="market-content">
-          <div class="market-loading">Loading…</div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Quick Links -->
-    <div class="card links-card">
-      <div class="card-label">Quick Links</div>
-      <div class="links-grid">
+      <!-- Quick Links -->
+      <div class="card links-card">
+        <div class="card-label">Quick Links</div>
         <a class="link-btn" href="https://lastpass.com/login/" target="_blank" rel="noopener">
           LastPass <span class="link-arrow">↗</span>
         </a>
@@ -437,28 +428,77 @@
         <a class="link-btn" href="https://1.next.westlaw.com/Search/Home.html?transitionType=Default&contextData=(sc.Default)&bhcp=1" target="_blank" rel="noopener">
           Westlaw <span class="link-arrow">↗</span>
         </a>
-        <a class="link-btn" href="https://iapps.courts.state.ny.us/nyscef/HomePage" target="_blank" rel="noopener">
-          NYSCEF <span class="link-arrow">↗</span>
-        </a>
-        <a class="link-btn" href="http://www.judiciary.state.nj.us/" target="_blank" rel="noopener">
-          NJ Courts <span class="link-arrow">↗</span>
-        </a>
-        <a class="link-btn" href="https://pacer.uscourts.gov/file-case/court-cmecf-lookup" target="_blank" rel="noopener">
-          PACER <span class="link-arrow">↗</span>
-        </a>
       </div>
+
+      <!-- Market Snapshot -->
+      <div class="card market-card">
+        <div class="card-label">Markets</div>
+        <div id="market-content">
+          <div class="market-loading">Loading…</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- WSJ · NY Times -->
+    <div class="dash-grid">
+
+      <!-- WSJ Headlines -->
+      <div class="card headlines-card">
+        <div class="card-label">Wall Street Journal</div>
+        <div id="headlines-content">
+          <div class="headlines-loading">Loading headlines…</div>
+        </div>
+      </div>
+
+      <!-- NYT Headlines -->
+      <div class="card headlines-card">
+        <div class="card-label">New York Times</div>
+        <div id="nyt-content">
+          <div class="headlines-loading">Loading headlines…</div>
+        </div>
+      </div>
+
     </div>
 
   </div>
   <script>
 
-    // ── Header date ───────────────────────────────────────
+    // ── Greeting (time of day in NY, random language per load) ─
+
+    (function () {
+      const GREETINGS = [
+        ['Good Morning',   'Good Afternoon',  'Good Evening'],
+        ['Buenos Días',    'Buenas Tardes',   'Buenas Noches'],
+        ['Buongiorno',     'Buon Pomeriggio', 'Buonasera'],
+      ];
+      const hour = Number(new Date().toLocaleString('en-US', {
+        hour: 'numeric', hourCycle: 'h23', timeZone: 'America/New_York'
+      }));
+      const period = hour < 12 ? 0 : hour < 17 ? 1 : 2;
+      const lang   = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+      document.getElementById('dash-greeting').textContent = lang[period];
+    })();
+
+    // ── Header date & time ────────────────────────────────
 
     document.getElementById('dash-date').textContent =
       new Date().toLocaleDateString('en-US', {
         weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
         timeZone: 'America/New_York'
       });
+
+    (function () {
+      function updateClock() {
+        document.getElementById('dash-time').textContent =
+          new Date().toLocaleTimeString('en-US', {
+            hour: 'numeric', minute: '2-digit', hour12: true,
+            timeZone: 'America/New_York'
+          }) + ' ET';
+      }
+      updateClock();
+      setInterval(updateClock, 1000);
+    })();
 
     // ── Calendar ──────────────────────────────────────────
 
@@ -564,14 +604,14 @@
       }
     }
 
-    // ── WSJ Headlines (read from daily-updated local JSON) ─
+    // ── WSJ / NYT Headlines (read from daily-updated local JSON) ─
 
-    async function loadHeadlines() {
+    async function loadHeadlines(url, containerId) {
       try {
-        const data = await fetch('/data/wsj-headlines.json').then(r => r.json());
+        const data = await fetch(url).then(r => r.json());
         if (!data.items?.length) throw new Error('empty');
 
-        const container = document.getElementById('headlines-content');
+        const container = document.getElementById(containerId);
         container.innerHTML = '';
 
         const list = document.createElement('ul');
@@ -611,30 +651,43 @@
           container.appendChild(updated);
         }
       } catch {
-        document.getElementById('headlines-content').innerHTML =
+        document.getElementById(containerId).innerHTML =
           '<div class="headlines-error">Headlines not yet available — check back after 7 AM.</div>';
       }
     }
 
-    // ── Live Clock ────────────────────────────────────────
+    // ── Daily Stoic (read from daily-updated local JSON) ──
 
-    (function () {
-      function updateClock() {
-        const now = new Date();
-        const full = now.toLocaleTimeString('en-US', {
-          hour: 'numeric', minute: '2-digit', second: '2-digit',
-          hour12: true, timeZone: 'America/New_York'
-        });
-        const m = full.match(/^(\d+:\d+):(\d+)\s*(AM|PM)$/i);
-        if (m) {
-          document.getElementById('clock-hm').textContent  = m[1];
-          document.getElementById('clock-ampm').textContent = ' ' + m[3];
-          document.getElementById('clock-sub').textContent  = ':' + m[2] + ' ET';
+    async function loadStoic() {
+      try {
+        const data = await fetch('/data/stoic-quote.json').then(r => r.json());
+        if (!data.quote) throw new Error('empty');
+
+        const container = document.getElementById('stoic-content');
+        container.innerHTML = '';
+
+        const quote = document.createElement('div');
+        quote.className   = 'stoic-quote';
+        quote.textContent = '“' + data.quote + '”';
+        container.appendChild(quote);
+
+        if (data.author) {
+          const author = document.createElement('div');
+          author.className   = 'stoic-author';
+          author.textContent = '— ' + data.author;
+          container.appendChild(author);
         }
+        if (data.source) {
+          const source = document.createElement('div');
+          source.className   = 'stoic-source';
+          source.textContent = data.source;
+          container.appendChild(source);
+        }
+      } catch {
+        document.getElementById('stoic-content').innerHTML =
+          '<div class="stoic-error">Quote unavailable.</div>';
       }
-      updateClock();
-      setInterval(updateClock, 1000);
-    })();
+    }
 
     // ── Market Snapshot (read from daily-updated local JSON) ─
 
@@ -693,7 +746,9 @@
     }
 
     loadWeather();
-    loadHeadlines();
+    loadStoic();
+    loadHeadlines('/data/wsj-headlines.json', 'headlines-content');
+    loadHeadlines('/data/nyt-headlines.json', 'nyt-content');
     loadMarket();
   </script>
 </body>
