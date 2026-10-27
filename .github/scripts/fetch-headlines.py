@@ -1,3 +1,5 @@
+import html
+import re
 import urllib.request
 import xml.etree.ElementTree as ET
 import json
@@ -8,15 +10,20 @@ from datetime import datetime, timezone
 
 RSS_URL          = 'https://news.google.com/rss/search?q=site:wsj.com&hl=en-US&gl=US&ceid=US:en'
 HEADLINES_OUTPUT = 'data/wsj-headlines.json'
+NYT_RSS_URL      = 'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml'
+NYT_OUTPUT       = 'data/nyt-headlines.json'
 SKIP_TITLES      = ['print edition']
 
-def fetch_rss():
+def fetch_url(url):
     req = urllib.request.Request(
-        RSS_URL,
+        url,
         headers={'User-Agent': 'Mozilla/5.0 (compatible; dashboard-bot/1.0)'}
     )
     with urllib.request.urlopen(req, timeout=30) as r:
         return r.read()
+
+def fetch_rss():
+    return fetch_url(RSS_URL)
 
 def parse_headlines(xml_bytes):
     root = ET.fromstring(xml_bytes)
@@ -33,6 +40,30 @@ def parse_headlines(xml_bytes):
         if len(headlines) == 5:
             break
     return headlines
+
+# -- Daily Stoic quote (scraped from server-rendered page) ------
+
+STOIC_URL    = 'https://dailymotivationforyou.com/tools/daily-stoic'
+STOIC_OUTPUT = 'data/stoic-quote.json'
+
+def strip_tags(s):
+    return html.unescape(re.sub(r'<[^>]+>', '', s)).strip()
+
+def fetch_stoic():
+    page = fetch_url(STOIC_URL).decode('utf-8', errors='replace')
+    m = re.search(
+        r'<blockquote[^>]*>(.*?)</blockquote>\s*<div[^>]*>\s*<p[^>]*>(.*?)</p>(?:\s*<p[^>]*>(.*?)</p>)?',
+        page, re.S)
+    if not m:
+        raise ValueError('quote not found in page')
+    quote = strip_tags(m.group(1))
+    if not quote:
+        raise ValueError('empty quote')
+    return {
+        'quote':  quote,
+        'author': strip_tags(m.group(2)),
+        'source': strip_tags(m.group(3) or ''),
+    }
 
 # -- Market data (Yahoo Finance v8 chart, one request per symbol) --
 
@@ -88,6 +119,24 @@ def main():
     print(f"Fetched {len(headlines)} headlines")
     with open(HEADLINES_OUTPUT, 'w') as f:
         json.dump({'updated': now, 'items': headlines}, f, indent=2)
+
+    # NYT headlines (fail softly)
+    try:
+        nyt = parse_headlines(fetch_url(NYT_RSS_URL))
+        print(f"Fetched {len(nyt)} NYT headlines")
+        with open(NYT_OUTPUT, 'w') as f:
+            json.dump({'updated': now, 'items': nyt}, f, indent=2)
+    except Exception as e:
+        print(f"WARNING: NYT fetch failed ({e}), keeping existing data")
+
+    # Stoic quote (fail softly)
+    try:
+        stoic = fetch_stoic()
+        print(f"Fetched stoic quote: {stoic['author']}")
+        with open(STOIC_OUTPUT, 'w') as f:
+            json.dump({'updated': now, **stoic}, f, indent=2)
+    except Exception as e:
+        print(f"WARNING: stoic fetch failed ({e}), keeping existing data")
 
     # Market data (fail softly — keep old file if fetch fails)
     try:
