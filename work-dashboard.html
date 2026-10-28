@@ -366,6 +366,131 @@
     .claude-submit:hover .link-arrow { color: var(--margin); }
     .claude-submit:focus-visible { outline: 2px solid var(--margin); outline-offset: 3px; }
 
+    /* ── Date Calculator ── */
+    .datecalc-card { grid-column: 2 / -1; }
+    .dc-modes {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .dc-mode {
+      font-family: var(--sans);
+      font-size: .82rem;
+      font-weight: 500;
+      color: var(--muted);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      padding: 0 0 6px;
+      cursor: pointer;
+      transition: color .12s, border-color .12s;
+    }
+    .dc-mode:hover { color: var(--ink); }
+    .dc-mode.active { color: var(--ink); border-bottom-color: var(--margin); }
+    .dc-mode:focus-visible { outline: 2px solid var(--margin); outline-offset: 3px; }
+    .dc-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .dc-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .dc-grow { flex: 1; }
+    .dc-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+      font-size: .7rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .dc-field input {
+      width: 100%;
+      padding: 4px 0;
+      font-family: var(--serif);
+      font-size: .92rem;
+      color: var(--ink);
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--rule);
+      border-radius: 0;
+      font-variant-numeric: lining-nums tabular-nums;
+      transition: border-color .12s;
+    }
+    .dc-field input:focus { outline: none; border-color: var(--margin); }
+    .dc-units {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .dc-op { display: flex; margin-bottom: 14px; }
+    .dc-op input { position: absolute; opacity: 0; pointer-events: none; }
+    .dc-op label {
+      flex: 1;
+      padding: 5px 0;
+      text-align: center;
+      font-size: .8rem;
+      font-weight: 500;
+      color: var(--ink-2);
+      border: 1px solid var(--rule);
+      cursor: pointer;
+      transition: color .12s, background .12s, border-color .12s;
+    }
+    .dc-op label + input + label { border-left: none; }
+    .dc-op input:checked + label { color: var(--paper); background: var(--ink); border-color: var(--ink); }
+    .dc-op input:focus-visible + label { outline: 2px solid var(--margin); outline-offset: 2px; }
+    .dc-small {
+      font-family: var(--sans);
+      font-size: .78rem;
+      font-weight: 500;
+      color: var(--ink);
+      background: none;
+      border: none;
+      border-bottom: 1px solid var(--ink);
+      padding: 2px 0;
+      margin-bottom: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color .12s, border-color .12s;
+    }
+    .dc-small:hover { color: var(--margin); border-color: var(--margin); }
+    .dc-small:focus-visible { outline: 2px solid var(--margin); outline-offset: 3px; }
+    .dc-result {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding-left: 24px;
+      border-left: 1px solid var(--rule);
+    }
+    .dc-result-main {
+      font-family: var(--serif);
+      font-size: 1.45rem;
+      line-height: 1.25;
+      color: var(--margin);
+    }
+    .dc-result-sub {
+      font-size: .8rem;
+      line-height: 1.5;
+      color: var(--ink-2);
+      margin-top: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+    .dc-result-empty {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: .9rem;
+      color: var(--muted);
+    }
+    .dc-result .dc-small { margin-top: 14px; }
+
     /* ── Quick links: an index of authorities ── */
     .links-grid {
       display: grid;
@@ -395,7 +520,7 @@
 
     @media (max-width: 800px) {
       .dash-grid { grid-template-columns: 1fr 1fr; }
-      .stoic-card, .tools-card { grid-column: 1 / -1; }
+      .stoic-card, .tools-card, .datecalc-card { grid-column: 1 / -1; }
     }
     @media (max-width: 560px) {
       body { padding: 0; }
@@ -406,6 +531,9 @@
       .dash-title { font-size: 1.6rem; }
       .dash-grid { grid-template-columns: 1fr; gap: 28px; margin-bottom: 28px; }
       .dash-when { text-align: left; }
+      .dc-body { grid-template-columns: 1fr; gap: 18px; }
+      .dc-units { grid-template-columns: repeat(2, 1fr); }
+      .dc-result { padding: 16px 0 0; border-left: none; border-top: 1px dotted var(--rule); }
     }
     @media (prefers-reduced-motion: reduce) {
       * { transition: none !important; }
@@ -562,7 +690,7 @@
 
     </div>
 
-    <!-- Markets -->
+    <!-- Markets · Date Calculator -->
     <div class="dash-grid">
 
       <!-- Market Snapshot -->
@@ -570,6 +698,57 @@
         <div class="card-label">Markets</div>
         <div id="market-content">
           <div class="market-loading">Loading…</div>
+        </div>
+      </div>
+
+      <!-- Date Calculator -->
+      <div class="card datecalc-card">
+        <div class="card-label">Date Calculator</div>
+        <div class="dc-modes" role="tablist">
+          <button type="button" class="dc-mode active" data-mode="add" role="tab" aria-selected="true">Add / Subtract</button>
+          <button type="button" class="dc-mode" data-mode="diff" role="tab" aria-selected="false">Between Dates</button>
+        </div>
+        <div class="dc-body">
+          <div class="dc-form">
+
+            <div class="dc-panel" id="dc-panel-add">
+              <div class="dc-row">
+                <label class="dc-field dc-grow">Start date
+                  <input type="date" id="dc-add-start">
+                </label>
+                <button type="button" class="dc-small" data-today="dc-add-start">Today</button>
+              </div>
+              <div class="dc-op">
+                <input type="radio" name="dc-op" id="dc-op-add" value="add" checked>
+                <label for="dc-op-add">+ Add</label>
+                <input type="radio" name="dc-op" id="dc-op-sub" value="subtract">
+                <label for="dc-op-sub">− Subtract</label>
+              </div>
+              <div class="dc-units">
+                <label class="dc-field">Years  <input type="number" id="dc-years"  min="0" value="0"></label>
+                <label class="dc-field">Months <input type="number" id="dc-months" min="0" value="0"></label>
+                <label class="dc-field">Weeks  <input type="number" id="dc-weeks"  min="0" value="0"></label>
+                <label class="dc-field">Days   <input type="number" id="dc-days"   min="0" value="0"></label>
+              </div>
+            </div>
+
+            <div class="dc-panel" id="dc-panel-diff" hidden>
+              <div class="dc-row">
+                <label class="dc-field dc-grow">Start date
+                  <input type="date" id="dc-diff-start">
+                </label>
+                <button type="button" class="dc-small" data-today="dc-diff-start">Today</button>
+              </div>
+              <div class="dc-row">
+                <label class="dc-field dc-grow">End date
+                  <input type="date" id="dc-diff-end">
+                </label>
+                <button type="button" class="dc-small" data-today="dc-diff-end">Today</button>
+              </div>
+            </div>
+
+          </div>
+          <div class="dc-result" id="dc-result" aria-live="polite"></div>
         </div>
       </div>
 
@@ -895,6 +1074,142 @@
           form.requestSubmit();
         }
       });
+    })();
+
+    // ── Date Calculator (live; same math as /date-calculator.html) ─
+
+    (function () {
+      const $ = id => document.getElementById(id);
+      const result = $('dc-result');
+      let mode = 'add';
+      let copyText = '';
+
+      const fmt    = d => d.toLocaleDateString('en-US',
+        { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const plural = (n, word) => `${n.toLocaleString()} ${word}${n !== 1 ? 's' : ''}`;
+      const num    = id => Math.max(0, parseInt($(id).value) || 0);
+
+      function todayStr() {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      }
+      function parse(id) {
+        const val = $(id).value;
+        if (!val) return null;
+        const [y, m, d] = val.split('-').map(Number);
+        return new Date(y, m - 1, d);
+      }
+
+      function calcAdd() {
+        const start = parse('dc-add-start');
+        if (!start) return null;
+        const years = num('dc-years'), months = num('dc-months'),
+              weeks = num('dc-weeks'), days   = num('dc-days');
+        const sign = $('dc-op-sub').checked ? -1 : 1;
+
+        const r = new Date(start);
+        r.setFullYear(r.getFullYear() + sign * years);
+        r.setMonth(r.getMonth() + sign * months);
+        r.setDate(r.getDate() + sign * (weeks * 7 + days));
+
+        const total = Math.round(Math.abs(r - start) / 86400000);
+        const direction = sign > 0 ? 'after' : 'before';
+        const parts = [];
+        if (years)  parts.push(plural(years, 'year'));
+        if (months) parts.push(plural(months, 'month'));
+        if (weeks)  parts.push(plural(weeks, 'week'));
+        if (days)   parts.push(plural(days, 'day'));
+
+        copyText =
+          `Start Date:  ${fmt(start)}\n` +
+          `Operation:   ${sign > 0 ? 'Add' : 'Subtract'} ${parts.join(', ') || '0 days'}\n` +
+          `Result:      ${fmt(r)}\n` +
+          `(${total.toLocaleString()} days ${direction} start date)`;
+        return { main: fmt(r), sub: `${plural(total, 'day')} ${direction} ${fmt(start)}` };
+      }
+
+      function calcDiff() {
+        const a = parse('dc-diff-start'), b = parse('dc-diff-end');
+        if (!a || !b) return null;
+        const from = a < b ? a : b;
+        const to   = a < b ? b : a;
+
+        const totalDays = Math.round((to - from) / 86400000);
+        const weeks = Math.floor(totalDays / 7), rem = totalDays % 7;
+
+        let y = to.getFullYear() - from.getFullYear();
+        let m = to.getMonth()    - from.getMonth();
+        let d = to.getDate()     - from.getDate();
+        if (d < 0) { m--; d += new Date(to.getFullYear(), to.getMonth(), 0).getDate(); }
+        if (m < 0) { y--; m += 12; }
+
+        const parts = [];
+        if (y) parts.push(plural(y, 'year'));
+        if (m) parts.push(plural(m, 'month'));
+        if (d) parts.push(plural(d, 'day'));
+        const duration = parts.join(', ') || '0 days';
+
+        copyText =
+          `From:     ${fmt(from)}\n` +
+          `To:       ${fmt(to)}\n` +
+          `Duration: ${duration}\n` +
+          `Total:    ${totalDays.toLocaleString()} days (${weeks.toLocaleString()} weeks + ${rem} days)`;
+        return {
+          main: duration,
+          sub: `${plural(totalDays, 'day')} total · ${plural(weeks, 'week')} + ${plural(rem, 'day')}`
+        };
+      }
+
+      function render() {
+        const out = mode === 'add' ? calcAdd() : calcDiff();
+        result.innerHTML = '';
+        if (!out) {
+          copyText = '';
+          const empty = document.createElement('div');
+          empty.className = 'dc-result-empty';
+          empty.textContent = mode === 'add' ? 'Enter a start date.' : 'Enter both dates.';
+          result.appendChild(empty);
+          return;
+        }
+        const main = document.createElement('div');
+        main.className = 'dc-result-main';
+        main.textContent = out.main;
+        const sub = document.createElement('div');
+        sub.className = 'dc-result-sub';
+        sub.textContent = out.sub;
+        const copy = document.createElement('button');
+        copy.type = 'button';
+        copy.className = 'dc-small';
+        copy.textContent = 'Copy result';
+        copy.addEventListener('click', () => {
+          navigator.clipboard.writeText(copyText).then(() => {
+            copy.textContent = 'Copied!';
+            setTimeout(() => { copy.textContent = 'Copy result'; }, 2000);
+          }).catch(() => {});
+        });
+        result.append(main, sub, copy);
+      }
+
+      document.querySelectorAll('.dc-mode').forEach(btn => {
+        btn.addEventListener('click', () => {
+          mode = btn.dataset.mode;
+          document.querySelectorAll('.dc-mode').forEach(b => {
+            b.classList.toggle('active', b === btn);
+            b.setAttribute('aria-selected', b === btn);
+          });
+          $('dc-panel-add').hidden  = mode !== 'add';
+          $('dc-panel-diff').hidden = mode !== 'diff';
+          render();
+        });
+      });
+      document.querySelectorAll('[data-today]').forEach(btn => {
+        btn.addEventListener('click', () => { $(btn.dataset.today).value = todayStr(); render(); });
+      });
+      document.querySelector('.datecalc-card .dc-form').addEventListener('input', render);
+
+      $('dc-add-start').value  = todayStr();
+      $('dc-diff-start').value = todayStr();
+      render();
     })();
 
     loadWeather();
