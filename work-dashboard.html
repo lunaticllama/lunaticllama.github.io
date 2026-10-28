@@ -315,11 +315,14 @@
       text-align: right;
     }
 
-    /* ── Ask Claude ── */
+    /* ── Ask Claude (fills the row height set by the link lists) ── */
+    .claude-card { display: flex; flex-direction: column; }
+    .claude-form { flex: 1; display: flex; flex-direction: column; }
     .claude-input {
       display: block;
+      flex: 1 1 0;
       width: 100%;
-      resize: vertical;
+      resize: none;
       min-height: 120px;
       padding: 10px 12px;
       font-family: var(--serif);
