@@ -168,12 +168,33 @@
     }
 
     /* ── Calendar ── */
+    .cal-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
     .cal-month {
       font-family: var(--serif);
       font-size: 1.05rem;
       color: var(--ink);
-      margin-bottom: 10px;
     }
+    .cal-arrow {
+      width: 28px;
+      height: 28px;
+      font-family: var(--serif);
+      font-size: 1.2rem;
+      line-height: 1;
+      color: var(--ink-2);
+      background: none;
+      border: 1px solid var(--rule);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: color .12s, border-color .12s;
+    }
+    .cal-arrow:hover:not(:disabled) { color: var(--margin); border-color: var(--margin); }
+    .cal-arrow:focus-visible { outline: 2px solid var(--margin); outline-offset: 2px; }
+    .cal-arrow:disabled { opacity: .3; cursor: default; }
     .cal-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -294,6 +315,54 @@
       text-align: right;
     }
 
+    /* ── Ask Claude ── */
+    .claude-input {
+      display: block;
+      width: 100%;
+      resize: vertical;
+      min-height: 120px;
+      padding: 10px 12px;
+      font-family: var(--serif);
+      font-size: .95rem;
+      line-height: 1.5;
+      color: var(--ink);
+      background: transparent;
+      border: 1px solid var(--rule);
+      border-radius: 0;
+      transition: border-color .12s;
+    }
+    .claude-input::placeholder { color: var(--muted); font-style: italic; }
+    .claude-input:focus { outline: none; border-color: var(--margin); }
+    .claude-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .claude-hint {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: .74rem;
+      color: var(--muted);
+    }
+    .claude-submit {
+      font-family: var(--sans);
+      font-size: .9rem;
+      font-weight: 500;
+      color: var(--ink);
+      background: none;
+      border: none;
+      border-bottom: 1px solid var(--ink);
+      padding: 2px 0;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color .12s, border-color .12s;
+    }
+    .claude-submit:hover { color: var(--margin); border-color: var(--margin); }
+    .claude-submit:hover .link-arrow { color: var(--margin); }
+    .claude-submit:focus-visible { outline: 2px solid var(--margin); outline-offset: 3px; }
+
     /* ── Quick links: an index of authorities ── */
     .links-grid {
       display: grid;
@@ -365,7 +434,11 @@
       <!-- Calendar -->
       <div class="card cal-card">
         <div class="card-label">Calendar</div>
-        <div class="cal-month" id="cal-month"></div>
+        <div class="cal-nav">
+          <button type="button" class="cal-arrow" id="cal-prev" aria-label="Previous month">‹</button>
+          <div class="cal-month" id="cal-month" aria-live="polite"></div>
+          <button type="button" class="cal-arrow" id="cal-next" aria-label="Next month">›</button>
+        </div>
         <div class="cal-grid" id="cal-grid"></div>
       </div>
 
@@ -379,7 +452,7 @@
 
     </div>
 
-    <!-- Tools · Quick Links · Markets -->
+    <!-- Tools · Quick Links · Ask Claude -->
     <div class="dash-grid">
 
       <!-- Tools -->
@@ -442,12 +515,17 @@
         </a>
       </div>
 
-      <!-- Market Snapshot -->
-      <div class="card market-card">
-        <div class="card-label">Markets</div>
-        <div id="market-content">
-          <div class="market-loading">Loading…</div>
-        </div>
+      <!-- Ask Claude -->
+      <div class="card claude-card">
+        <div class="card-label">Claude</div>
+        <form class="claude-form" id="claude-form">
+          <textarea class="claude-input" id="claude-input" rows="6"
+            placeholder="Ask anything…" aria-label="Prompt for Claude"></textarea>
+          <div class="claude-actions">
+            <span class="claude-hint">Enter to send · Shift+Enter for new line</span>
+            <button type="submit" class="claude-submit">Ask <span class="link-arrow">↗</span></button>
+          </div>
+        </form>
       </div>
 
     </div>
@@ -476,6 +554,19 @@
         <div class="card-label">TPM Editor’s Blog</div>
         <div id="tpm-content">
           <div class="headlines-loading">Loading headlines…</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Markets -->
+    <div class="dash-grid">
+
+      <!-- Market Snapshot -->
+      <div class="card market-card">
+        <div class="card-label">Markets</div>
+        <div id="market-content">
+          <div class="market-loading">Loading…</div>
         </div>
       </div>
 
@@ -524,36 +615,52 @@
 
     (function () {
       const now   = new Date();
-      const year  = now.getFullYear();
-      const month = now.getMonth();
-      const today = now.getDate();
+      const MAX_OFFSET = 6;
       const MONTHS = ['January','February','March','April','May','June',
                       'July','August','September','October','November','December'];
 
-      document.getElementById('cal-month').textContent = `${MONTHS[month]} ${year}`;
-
       const grid = document.getElementById('cal-grid');
-      ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(n => {
-        const el = document.createElement('div');
-        el.className = 'cal-day-name';
-        el.textContent = n;
-        grid.appendChild(el);
-      });
+      const prev = document.getElementById('cal-prev');
+      const next = document.getElementById('cal-next');
+      let offset = 0;
 
-      const firstDow    = new Date(year, month, 1).getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      function render() {
+        const view  = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+        const year  = view.getFullYear();
+        const month = view.getMonth();
+        const today = offset === 0 ? now.getDate() : null;
 
-      for (let i = 0; i < firstDow; i++) {
-        const el = document.createElement('div');
-        el.className = 'cal-day empty';
-        grid.appendChild(el);
+        document.getElementById('cal-month').textContent = `${MONTHS[month]} ${year}`;
+        prev.disabled = offset <= -MAX_OFFSET;
+        next.disabled = offset >= MAX_OFFSET;
+
+        grid.innerHTML = '';
+        ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(n => {
+          const el = document.createElement('div');
+          el.className = 'cal-day-name';
+          el.textContent = n;
+          grid.appendChild(el);
+        });
+
+        const firstDow    = view.getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for (let i = 0; i < firstDow; i++) {
+          const el = document.createElement('div');
+          el.className = 'cal-day empty';
+          grid.appendChild(el);
+        }
+        for (let d = 1; d <= daysInMonth; d++) {
+          const el = document.createElement('div');
+          el.className = 'cal-day' + (d === today ? ' today' : '');
+          el.textContent = d;
+          grid.appendChild(el);
+        }
       }
-      for (let d = 1; d <= daysInMonth; d++) {
-        const el = document.createElement('div');
-        el.className = 'cal-day' + (d === today ? ' today' : '');
-        el.textContent = d;
-        grid.appendChild(el);
-      }
+
+      prev.addEventListener('click', () => { if (offset > -MAX_OFFSET) { offset--; render(); } });
+      next.addEventListener('click', () => { if (offset < MAX_OFFSET)  { offset++; render(); } });
+      render();
     })();
 
     // ── Weather (Open-Meteo, no key required) ─────────────
@@ -764,6 +871,28 @@
           '<div class="market-error">Market data unavailable.</div>';
       }
     }
+
+    // ── Ask Claude (opens claude.ai with the prompt prefilled) ─
+
+    (function () {
+      const form  = document.getElementById('claude-form');
+      const input = document.getElementById('claude-input');
+
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const prompt = input.value.trim();
+        if (!prompt) { input.focus(); return; }
+        window.open('https://claude.ai/new?q=' + encodeURIComponent(prompt), '_blank', 'noopener');
+        input.value = '';
+      });
+
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+          e.preventDefault();
+          form.requestSubmit();
+        }
+      });
+    })();
 
     loadWeather();
     loadStoic();
