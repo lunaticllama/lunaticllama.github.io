@@ -10,7 +10,13 @@ Usage:
   python3 .github/scripts/build-nj-rules.py --check-date   # one request: has the "amendments through" date moved?
 
 The njcourts.gov site rejects requests that don't look like a browser, so
-requests carry browser-style headers.
+requests carry browser-style headers. When its bot protection blocks this
+script anyway, fetch from a real browser instead:
+
+  python3 .github/scripts/build-nj-rules.py --browser-script > fetch.js   # console script for whatever .nj-cache lacks
+  (paste fetch.js into the DevTools console on njcourts.gov; it downloads nj-rules-fetch.json)
+  python3 .github/scripts/build-nj-rules.py --import nj-rules-fetch.json  # load the download into .nj-cache
+  NJ_RULES_CACHE=.nj-cache python3 .github/scripts/build-nj-rules.py      # build from the cache
 """
 
 import datetime
@@ -39,21 +45,30 @@ MONTHS = "January|February|March|April|May|June|July|August|September|October|No
 
 DELAY = float(os.environ.get("NJ_RULES_DELAY", "1.5"))   # seconds between requests; the site rate-limits
 CACHE = os.environ.get("NJ_RULES_CACHE")                   # optional dir: saves responses so an interrupted run can resume
+OFFLINE = False                                            # --browser-script: never hit the network, just note cache misses
+MISSING = []
 
 
 class Blocked(Exception):
     pass
 
 
+def cache_path(path):
+    return os.path.join(CACHE, re.sub(r"[^A-Za-z0-9]+", "_", path) + ".txt")
+
+
 def get(url, as_json=True):
     cache_file = None
     if CACHE:
         os.makedirs(CACHE, exist_ok=True)
-        cache_file = os.path.join(CACHE, re.sub(r"[^A-Za-z0-9]+", "_", url[len(BASE):]) + ".txt")
+        cache_file = cache_path(url[len(BASE):])
         if os.path.exists(cache_file):
             with open(cache_file, encoding="utf-8") as f:
                 body = f.read()
             return json.loads(body) if as_json else body
+    if OFFLINE:
+        MISSING.append(url[len(BASE):])
+        return ({} if "get-term" in url else []) if as_json else ""
     for attempt in range(3):
         time.sleep(DELAY)
         try:
@@ -178,7 +193,7 @@ def fetch_all():
     chapters = []
     for i, ch in enumerate(tree, 1):
         chapters.append(build_chapter(ch))
-        print(f"  [{i}/{len(tree)}] {ch['title'][:70]}", flush=True)
+        print(f"  [{i}/{len(tree)}] {ch['title'][:70]}", file=sys.stderr if OFFLINE else sys.stdout, flush=True)
     chapters = [c for c in chapters if c["s"]]
     return chapters, fetch_through()
 
@@ -227,7 +242,7 @@ def write_report(old, new):
 
 def fetch_through():
     page = get(BASE + "/attorneys/rules-of-court", as_json=False)
-    m = re.search(r"amendments effective on or before\s*([^<.]+\d{4})", page)
+    m = re.search(r"amendments effective on or before\s*([^<]*?\d{4})", page)
     return html.unescape(m.group(1)).strip() if m else ""
 
 
@@ -258,9 +273,51 @@ def check_date():
     return 1
 
 
+def browser_script():
+    """Print a DevTools console script that fetches whatever the cache is missing."""
+    global OFFLINE
+    OFFLINE = True
+    fetch_all()
+    if not MISSING:
+        print("The cache is complete; build with NJ_RULES_CACHE=" + CACHE + ".", file=sys.stderr)
+        return 0
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "nj-rules-browser-fetch.js"), encoding="utf-8") as f:
+        template = f.read()
+    print(template.replace("__START__", json.dumps(MISSING)))
+    print(f"{len(MISSING)} requests missing from {CACHE} (more will turn up beneath them).", file=sys.stderr)
+    return 0
+
+
+def import_fetch(path):
+    """Write the console script's download into the cache, skipping anything that isn't real data."""
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    os.makedirs(CACHE, exist_ok=True)
+    written = 0
+    for url_path, body in data.items():
+        if "Pardon Our Interruption" in body:
+            continue
+        if url_path.startswith("/njcourts_rules_of_court/"):
+            try:
+                json.loads(body)
+            except ValueError:
+                continue
+        with open(cache_path(url_path), "w", encoding="utf-8") as f:
+            f.write(body)
+        written += 1
+    print(f"Imported {written} of {len(data)} responses into {CACHE}.")
+    return 0
+
+
 def main():
+    global CACHE
     if "--check-date" in sys.argv:
         return check_date()
+    if "--browser-script" in sys.argv or "--import" in sys.argv:
+        CACHE = CACHE or ".nj-cache"
+        if "--browser-script" in sys.argv:
+            return browser_script()
+        return import_fetch(sys.argv[sys.argv.index("--import") + 1])
     check_only = "--check" in sys.argv
     try:
         src, m, old = load_page_data()
