@@ -2,8 +2,9 @@ name: Fetch WSJ Headlines
 
 on:
   schedule:
-    - cron: '0 12 * * *'    # 7 AM ET — morning headlines + pre-market
-    - cron: '30 21 * * 1-5' # 4:30 PM ET weekdays — closing prices
+    - cron: '0 11-23 * * 1-5' # hourly, weekdays, ~7 AM–7 PM ET (UTC; shifts an hour with DST)
+    - cron: '30 21 * * 1-5'   # 4:30 PM ET weekdays — closing prices
+    - cron: '0 12 * * 0,6'    # weekends, ~8 AM ET
   workflow_dispatch:         # Allow manual trigger from GitHub Actions tab
 
 jobs:
