@@ -2,7 +2,8 @@
 """
 Pull the NJ Rules of Court (Parts I-VI, the parts that govern the Superior
 Court) from the Judiciary's rules-of-court data endpoints on njcourts.gov and
-embed them in nj-court-rules.html.
+embed them in nj-court-rules.html, with the Rules of Professional Conduct (the
+Part I appendix) in nj-rpc.html.
 
 Usage:
   python3 .github/scripts/build-nj-rules.py                # rebuild the page (about an hour: requests are rate-limited)
@@ -30,6 +31,17 @@ import urllib.request
 from html.parser import HTMLParser
 
 PAGE = "nj-court-rules.html"
+RPC_PAGE = "nj-rpc.html"
+RPC_ARTICLES = {
+    1: "Client-Lawyer Relationship",
+    2: "Counselor",
+    3: "Advocate",
+    4: "Transactions with Persons Other Than Clients",
+    5: "Law Firms and Associations",
+    6: "Public Service",
+    7: "Information About Legal Services",
+    8: "Maintaining the Integrity of the Profession",
+}
 BASE = "https://www.njcourts.gov"
 API = BASE + "/njcourts_rules_of_court/"
 PARTS = ["Part 1", "Part 2", "Part 3", "Part 4", "Part 5", "Part 6"]
@@ -89,6 +101,30 @@ def get(url, as_json=True):
         return result
 
 
+def roman(n):
+    out = ""
+    for value, numeral in ((10, "x"), (9, "ix"), (5, "v"), (4, "iv"), (1, "i")):
+        while n >= value:
+            out += numeral
+            n -= value
+    return out
+
+
+def list_label(kind, n):
+    """List item n of an <ol type=kind>, written the way the rules cite subparagraphs: (a), (1), (A), (i)."""
+    if kind is None:
+        return "•"
+    if kind in ("a", "A"):
+        s = ""
+        while n:
+            n, r = divmod(n - 1, 26)
+            s = chr(ord("a") + r) + s
+        return "(" + (s.upper() if kind == "A" else s) + ")"
+    if kind in ("i", "I"):
+        return "(" + (roman(n).upper() if kind == "I" else roman(n)) + ")"
+    return "(" + str(n) + ")"
+
+
 class TextExtractor(HTMLParser):
     """Turn the rule HTML into plain text, one paragraph per block element."""
     BLOCKS = {"p", "div", "li", "tr", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "table", "ul", "ol"}
@@ -96,6 +132,7 @@ class TextExtractor(HTMLParser):
     def __init__(self):
         super().__init__(convert_charrefs=True)
         self.parts = []
+        self.lists = []   # [type, count] per open <ol>/<ul>; the site numbers subparagraphs with <ol type=...>
 
     def handle_starttag(self, tag, attrs):
         if tag in self.BLOCKS:
@@ -104,10 +141,20 @@ class TextExtractor(HTMLParser):
             self.parts.append("\n")
         elif tag in ("td", "th"):
             self.parts.append("\t")
+        if tag in ("ol", "ul"):
+            a = dict(attrs)
+            start = int(a["start"]) if (a.get("start") or "").isdigit() else 1
+            self.lists.append([(a.get("type") or "1") if tag == "ol" else None, start - 1])
+        elif tag == "li" and self.lists:
+            lst = self.lists[-1]
+            lst[1] += 1
+            self.parts.append(list_label(lst[0], lst[1]) + " ")
 
     def handle_endtag(self, tag):
         if tag in self.BLOCKS:
             self.parts.append("\n\n")
+        if tag in ("ol", "ul") and self.lists:
+            self.lists.pop()
 
     def handle_data(self, data):
         self.parts.append(data)
@@ -191,24 +238,74 @@ def build_chapter(ch):
     }
 
 
+def build_rpc(node):
+    """The RPC appendix: rules grouped into their eight articles, then the Attorney Advertising Guidelines."""
+    articles = {}
+    guidelines = []
+    for child in fetch_children(node["key"]):
+        text = fetch_term(child["key"])
+        if not text:
+            continue
+        body, note = split_note(text)
+        m = re.match(r"\s*RPC\s+(\d+)\.(\d+)\s*-\s*(.*)", child["title"])
+        if m:
+            articles.setdefault(int(m.group(1)), []).append(
+                {"n": "RPC %s.%s" % (m.group(1), m.group(2)), "t": re.sub(r"\s+", " ", m.group(3)).strip(),
+                 "x": body, "m": note, "d": last_effective(note)})
+            continue
+        g = re.search(r"Guideline\s+(\d+)\s*$", child["title"])
+        if not g:
+            continue
+        # Some guidelines open with a one-line heading; use it as the title.
+        first, _, rest = body.partition("\n\n")
+        title = first if rest and len(first) < 120 and not first.endswith(".") else ""
+        guidelines.append({"n": "Guideline " + g.group(1), "t": title or "Attorney Advertising Guideline " + g.group(1),
+                           "x": rest if title else body, "m": note, "d": last_effective(note)})
+    chapters = [{"p": 1, "a": "Article " + str(k), "t": RPC_ARTICLES.get(k, ""), "f": v[0]["n"], "z": v[-1]["n"], "s": v}
+                for k, v in sorted(articles.items())]
+    if guidelines:
+        guidelines.sort(key=lambda r: int(r["n"].split()[-1]))
+        chapters.append({"p": 2, "a": "Guidelines", "t": "Attorney Advertising Guidelines",
+                         "f": guidelines[0]["n"], "z": guidelines[-1]["n"], "s": guidelines})
+    return chapters
+
+
 def fetch_all():
-    # The appendices (RPC, judicial conduct codes) sit under "Part 1" in the tree but aren't court rules.
-    tree = [c for c in get(API + "tree") if c.get("section") in PARTS and "Appendi" not in c["title"]]
+    tree = [c for c in get(API + "tree") if c.get("section") in PARTS]
+    # The appendices (RPC, judicial conduct codes) sit under "Part 1" in the tree but aren't court rules;
+    # the RPC gets its own page.
+    rpc = [c for c in tree if "Appendi" in c["title"] and "(RPC)" in c["title"]]
+    tree = [c for c in tree if "Appendi" not in c["title"]]
     chapters = []
     for i, ch in enumerate(tree, 1):
         chapters.append(build_chapter(ch))
         print(f"  [{i}/{len(tree)}] {ch['title'][:70]}", file=sys.stderr if OFFLINE else sys.stdout, flush=True)
     chapters = [c for c in chapters if c["s"]]
-    return chapters, fetch_through()
+    return chapters, (build_rpc(rpc[0]) if rpc else []), fetch_through()
 
 
-def load_page_data():
-    with open(PAGE, encoding="utf-8") as f:
+def load_page_data(page=PAGE):
+    with open(page, encoding="utf-8") as f:
         src = f.read()
     m = re.search(r'(<script type="application/json" id="nj-rules-data">)(.*?)(</script>)', src, re.S)
     if not m:
-        raise RuntimeError("Could not find the nj-rules-data block in " + PAGE)
+        raise RuntimeError("Could not find the nj-rules-data block in " + page)
     return src, m, json.loads(m.group(2) or "[]")
+
+
+def write_page(page, chapters, through, pulled):
+    src, m, _ = load_page_data(page)
+    data = json.dumps(chapters, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    out = src[: m.start(2)] + data + src[m.end(2):]
+    out = re.sub(r'(<span class="statute-tag" id="tag-through">)[^<]*(</span>)',
+                 lambda x: x.group(1) + "Amendments effective through " + (through or "—") + x.group(2), out)
+    out = re.sub(r'(<span class="statute-tag" id="tag-pulled">)[^<]*(</span>)',
+                 lambda x: x.group(1) + "Pulled " + pulled + x.group(2), out)
+    out = re.sub(r'(<span id="foot-through">)[^<]*(</span>)', lambda x: x.group(1) + (through or "—") + x.group(2), out)
+    out = re.sub(r'(<span id="foot-pulled">)[^<]*(</span>)', lambda x: x.group(1) + pulled + x.group(2), out)
+    with open(page, "w", encoding="utf-8", newline="\n") as f:
+        f.write(out)
+    print(f"Wrote {sum(len(c['s']) for c in chapters)} rules in {len(chapters)} chapters to {page}.")
 
 
 def flatten(chapters):
@@ -324,35 +421,27 @@ def main():
         return import_fetch(sys.argv[sys.argv.index("--import") + 1])
     check_only = "--check" in sys.argv
     try:
-        src, m, old = load_page_data()
-        chapters, through = fetch_all()
+        old = load_page_data(PAGE)[2]
+        old_rpc = load_page_data(RPC_PAGE)[2]
+        chapters, rpc, through = fetch_all()
     except Exception as e:
         print("Failed: " + str(e), file=sys.stderr)
         return 2
-    if not chapters or sum(len(c["s"]) for c in chapters) < 500:
-        print("Suspiciously little data came back; not touching the page.", file=sys.stderr)
+    if not chapters or sum(len(c["s"]) for c in chapters) < 500 or sum(len(c["s"]) for c in rpc) < 50:
+        print("Suspiciously little data came back; not touching the pages.", file=sys.stderr)
         return 2
 
-    stale = write_report(old, chapters)
+    stale = write_report(old + old_rpc, chapters + rpc)
     if check_only:
         return 1 if stale else 0
-    if not stale and old:
-        print("Page already up to date.")
+    if not stale and old and old_rpc:
+        print("Pages already up to date.")
         return 0
 
-    data = json.dumps(chapters, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
-    out = src[: m.start(2)] + data + src[m.end(2):]
     today = datetime.date.today()
     pulled = today.strftime("%b ") + str(today.day) + today.strftime(", %Y")
-    out = re.sub(r'(<span class="statute-tag" id="tag-through">)[^<]*(</span>)',
-                 lambda x: x.group(1) + "Amendments effective through " + (through or "—") + x.group(2), out)
-    out = re.sub(r'(<span class="statute-tag" id="tag-pulled">)[^<]*(</span>)',
-                 lambda x: x.group(1) + "Pulled " + pulled + x.group(2), out)
-    out = re.sub(r'(<span id="foot-through">)[^<]*(</span>)', lambda x: x.group(1) + (through or "—") + x.group(2), out)
-    out = re.sub(r'(<span id="foot-pulled">)[^<]*(</span>)', lambda x: x.group(1) + pulled + x.group(2), out)
-    with open(PAGE, "w", encoding="utf-8", newline="\n") as f:
-        f.write(out)
-    print(f"Wrote {sum(len(c['s']) for c in chapters)} rules in {len(chapters)} chapters to {PAGE}.")
+    write_page(PAGE, chapters, through, pulled)
+    write_page(RPC_PAGE, rpc, through, pulled)
     return 0
 
 
