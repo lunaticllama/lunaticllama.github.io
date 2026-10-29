@@ -147,9 +147,12 @@ def last_effective(note):
 
 def split_title(full):
     """'4:46-2-Motion and Proceedings Thereon' -> ('4:46-2', 'Motion and Proceedings Thereon')."""
-    m = re.match(r"\s*(\d+:\d+[A-Z]?(?:-\d+[A-Z]?)*(?:\([a-z0-9]+\))?)\s*-\s*(.*)", full)
+    # 'Former 1:22-7' and '[4:32-3]' are deleted rules whose numbers were reused, so they keep that marking;
+    # njcourts.gov also has a few '1.20-...' typos for '1:20-...'.
+    m = re.match(r"\s*((?:Former\s+)?\[?\d+[:.]\d+[A-Z]?(?:-\d+[A-Z]?)*(?:\([a-z0-9]+\))?\]?)\s*-\s*(.*)", full)
     if m:
-        return m.group(1), re.sub(r"\s+", " ", m.group(2)).strip()
+        num = re.sub(r"(\d+)\.(\d+)", r"\1:\2", m.group(1), count=1)
+        return num, re.sub(r"\s+", " ", m.group(2)).strip()
     return full.strip(), ""
 
 
@@ -189,7 +192,8 @@ def build_chapter(ch):
 
 
 def fetch_all():
-    tree = [c for c in get(API + "tree") if c.get("section") in PARTS]
+    # The appendices (RPC, judicial conduct codes) sit under "Part 1" in the tree but aren't court rules.
+    tree = [c for c in get(API + "tree") if c.get("section") in PARTS and "Appendi" not in c["title"]]
     chapters = []
     for i, ch in enumerate(tree, 1):
         chapters.append(build_chapter(ch))
