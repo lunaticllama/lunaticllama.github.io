@@ -968,12 +968,18 @@
       }
     }
 
-    // ── Daily Stoic (read from daily-updated local JSON) ──
+    // ── Daily Stoic (365-quote list, indexed by NY day of year) ──
 
     async function loadStoic() {
       try {
-        const data = await fetch('/data/stoic-quote.json').then(r => r.json());
-        if (!data.quote) throw new Error('empty');
+        const quotes = await fetch('/data/stoic-quotes.json').then(r => r.json());
+        if (!quotes.length) throw new Error('empty');
+
+        const [y, m, d] = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
+          .split('-').map(Number);
+        const dayOfYear = Math.round((Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 0)) / 86400000);
+        const data = quotes[Math.min(dayOfYear, quotes.length) - 1];
+        if (!data?.quote) throw new Error('empty');
 
         const container = document.getElementById('stoic-content');
         container.innerHTML = '';

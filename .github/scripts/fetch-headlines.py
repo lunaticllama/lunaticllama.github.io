@@ -1,5 +1,3 @@
-import html
-import re
 import urllib.request
 import xml.etree.ElementTree as ET
 import json
@@ -42,30 +40,6 @@ def parse_headlines(xml_bytes):
         if len(headlines) == 5:
             break
     return headlines
-
-# -- Daily Stoic quote (scraped from server-rendered page) ------
-
-STOIC_URL    = 'https://dailymotivationforyou.com/tools/daily-stoic'
-STOIC_OUTPUT = 'data/stoic-quote.json'
-
-def strip_tags(s):
-    return html.unescape(re.sub(r'<[^>]+>', '', s)).strip()
-
-def fetch_stoic():
-    page = fetch_url(STOIC_URL).decode('utf-8', errors='replace')
-    m = re.search(
-        r'<blockquote[^>]*>(.*?)</blockquote>\s*<div[^>]*>\s*<p[^>]*>(.*?)</p>(?:\s*<p[^>]*>(.*?)</p>)?',
-        page, re.S)
-    if not m:
-        raise ValueError('quote not found in page')
-    quote = strip_tags(m.group(1))
-    if not quote:
-        raise ValueError('empty quote')
-    return {
-        'quote':  quote,
-        'author': strip_tags(m.group(2)),
-        'source': strip_tags(m.group(3) or ''),
-    }
 
 # -- Market data (Yahoo Finance v8 chart, one request per symbol) --
 
@@ -139,15 +113,6 @@ def main():
             json.dump({'updated': now, 'items': tpm}, f, indent=2)
     except Exception as e:
         print(f"WARNING: TPM fetch failed ({e}), keeping existing data")
-
-    # Stoic quote (fail softly)
-    try:
-        stoic = fetch_stoic()
-        print(f"Fetched stoic quote: {stoic['author']}")
-        with open(STOIC_OUTPUT, 'w') as f:
-            json.dump({'updated': now, **stoic}, f, indent=2)
-    except Exception as e:
-        print(f"WARNING: stoic fetch failed ({e}), keeping existing data")
 
     # Market data (fail softly — keep old file if fetch fails)
     try:
