@@ -1,6 +1,11 @@
 {
-  "updated": "2026-10-30T01:17:38.080305+00:00",
+  "updated": "2026-10-30T02:24:36.483367+00:00",
   "items": [
+    {
+      "title": "Musings",
+      "link": "https://talkingpointsmemo.com/edblog/musings-3",
+      "pubDate": "Fri, 30 Oct 2026 01:35:57 +0000"
+    },
     {
       "title": "Sign of The Times",
       "link": "https://talkingpointsmemo.com/edblog/sign-of-the-times-13",
@@ -20,11 +25,6 @@
       "title": "Clown King",
       "link": "https://talkingpointsmemo.com/edblog/clown-king",
       "pubDate": "Thu, 29 Oct 2026 16:08:52 +0000"
-    },
-    {
-      "title": "Following the Midterms at TPM",
-      "link": "https://talkingpointsmemo.com/edblog/following-the-midterms-at-tpm",
-      "pubDate": "Thu, 29 Oct 2026 15:43:35 +0000"
     }
   ]
 }
