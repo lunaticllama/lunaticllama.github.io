@@ -1,11 +1,6 @@
 {
-  "updated": "2026-11-03T23:51:25.241928+00:00",
+  "updated": "2026-11-04T01:35:42.544294+00:00",
   "items": [
-    {
-      "title": "How We Model Election Results With the Needle",
-      "link": "https://www.nytimes.com/video/us/elections/100000011253864/how-we-model-election-results-with-the-needle.html",
-      "pubDate": "Tue, 03 Nov 2026 23:12:38 +0000"
-    },
     {
       "title": "More Iranians Call for Nuclear Weapons After War With U.S.",
       "link": "https://www.nytimes.com/2026/11/03/world/europe/iran-nuclear-weapons-war.html",
@@ -25,6 +20,11 @@
       "title": "A Test for Israeli Democracy: Should Jews Ask Arabs to Join the Government?",
       "link": "https://www.nytimes.com/2026/11/03/world/middleeast/israel-coalition-arab-lawmakers.html",
       "pubDate": "Tue, 03 Nov 2026 10:03:49 +0000"
+    },
+    {
+      "title": "America Votes",
+      "link": "https://www.nytimes.com/2026/11/03/briefing/election-night-house-senate-results.html",
+      "pubDate": "Tue, 03 Nov 2026 22:54:49 +0000"
     }
   ]
 }
