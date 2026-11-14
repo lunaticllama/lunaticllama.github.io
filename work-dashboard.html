@@ -124,6 +124,18 @@
       color: var(--ink-2);
       margin-bottom: 16px;
     }
+    .card-label-link {
+      color: inherit;
+      text-decoration: none;
+      transition: color .12s;
+    }
+    .card-label-link:hover {
+      color: var(--margin);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1px;
+    }
+    .card-label-link:focus-visible { outline: 2px solid var(--margin); outline-offset: 3px; }
 
     .dash-grid {
       display: grid;
@@ -513,14 +525,6 @@
     .link-btn:hover { color: var(--margin); border-color: var(--margin); }
     .link-btn:focus-visible { outline: 2px solid var(--margin); outline-offset: 3px; }
     .link-arrow { font-size: .78rem; color: var(--muted); }
-    /* Overview link sits apart from the alphabetical tool list */
-    .link-btn.all-tools {
-      margin-top: 14px;
-      border-top: 1px solid var(--ink);
-      border-bottom: none;
-      font-family: var(--serif);
-      font-style: italic;
-    }
     .link-btn:hover .link-arrow { color: var(--margin); }
 
     /* ── Responsive ── */
@@ -596,7 +600,7 @@
 
       <!-- Tools -->
       <div class="card tools-card">
-        <div class="card-label">Tools</div>
+        <div class="card-label"><a class="card-label-link" href="/tools.html">Legal Tools</a></div>
         <div class="links-grid">
           <a class="link-btn" href="/bluebook-abbreviations.html">
             Bluebook Abbreviations <span class="link-arrow">→</span>
@@ -626,9 +630,6 @@
             Redline <span class="link-arrow">→</span>
           </a>
         </div>
-        <a class="link-btn all-tools" href="/tools.html">
-          Legal Tools <span class="link-arrow">→</span>
-        </a>
       </div>
 
       <!-- Quick Links -->
