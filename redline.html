@@ -8,121 +8,104 @@
 <link rel="icon" type="image/svg+xml" href="/favicons/dc-favicon.svg">
 <link rel="apple-touch-icon" href="/favicons/dc-apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <style>
-  /* Side-by-side redlines need more room than a calculator card: widen the shared containers. */
-  .site-nav, .page-title, .card, .foot-note { max-width: 1040px; }
+  /* ── Page-specific: Redline ── */
   .page-title p { max-width: 70ch; }
   /* Let the toolbar stick while scrolling the redline (overflow:hidden would trap it). */
   .card { overflow: visible; }
 
   :root {
-    --mark: #c0392b;
+    --mark: var(--red);
     --mark-bg: rgba(192,57,43,0.07);
-    --current: rgba(201,79,42,0.08);
+    --current: var(--blue-tint);
   }
 
   /* ── Inputs ── */
-  .pane-head { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
-  .pane-head .pane-tag {
-    font-size: 0.72rem; font-weight: 500; color: var(--muted);
-    letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;
-  }
-  .pane-head .pane-tag { flex: 1; }
+  .pane-head { display: flex; align-items: center; gap: 8px; }
+  .pane-head .pane-tag { flex: 1; font-size: 13px; font-weight: 600; color: var(--text-2); white-space: nowrap; }
   .mini {
-    font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 500; color: var(--muted);
-    background: none; border: 1px solid var(--rule); border-radius: var(--radius);
-    padding: 4px 9px; cursor: pointer; white-space: nowrap; transition: all 0.15s;
+    font: 500 12px var(--font); color: var(--text-2);
+    background: var(--white); border: 1px solid var(--field); border-radius: 6px;
+    padding: 5px 10px; cursor: pointer; white-space: nowrap; transition: color .15s, border-color .15s;
   }
-  .mini:hover { color: var(--ink); border-color: var(--ink); }
+  .mini:hover { color: var(--navy); border-color: var(--navy); }
   textarea {
     width: 100%; height: 230px; resize: vertical;
-    font-family: 'DM Serif Display', serif; font-size: 0.95rem; line-height: 1.6; color: var(--ink);
-    background: var(--paper); border: 1px solid var(--rule); border-radius: var(--radius);
-    padding: 12px 14px; outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+    font: 400 15px/1.6 var(--font); color: var(--ink);
+    background: var(--white); border: 1px solid var(--field); border-radius: var(--radius);
+    padding: 12px 14px; outline: none; transition: border-color .15s, box-shadow .15s;
   }
-  textarea:focus {
-    border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,79,42,0.1); background: var(--white);
-  }
+  textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(31,95,214,0.15); }
   .form-row.inputs { margin-bottom: 10px; }
-  .example-note { font-size: 0.78rem; color: var(--muted); font-weight: 300; line-height: 1.5; }
+  .example-note { font-size: 13px; color: var(--muted); line-height: 1.5; }
 
   /* ── Toolbar ── */
   .toolbar {
     position: sticky; top: 0; z-index: 5;
-    background: var(--white); border: 1px solid var(--rule); border-radius: var(--radius);
+    background: var(--white); border: 1px solid var(--line); border-radius: 10px;
     padding: 10px 12px; margin-bottom: 14px;
     display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
     box-shadow: var(--shadow);
   }
   .group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .toolbar .toggle-group label { padding: 7px 12px; font-size: 0.78rem; }
-  .toolbar select {
-    width: auto; font-size: 0.8rem; padding: 7px 30px 7px 10px;
-  }
+  .toolbar .toggle-group label { padding: 6px 12px; font-size: 13px; white-space: nowrap; }
+  .toolbar select { width: auto; font-size: 13px; padding: 8px 34px 8px 12px; }
   .author {
-    width: 130px; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: var(--ink);
-    background: var(--paper); border: 1px solid var(--rule); border-radius: var(--radius);
-    padding: 7px 10px; outline: none;
+    width: 130px; font: 500 13px var(--font); color: var(--ink);
+    background: var(--white); border: 1px solid var(--field); border-radius: var(--radius);
+    padding: 8px 10px; outline: none;
   }
-  .author:focus { border-color: var(--accent); background: var(--white); }
-  label.chk { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--ink); cursor: pointer; }
-  label.chk input { accent-color: var(--accent); }
-  .stats {
-    font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--muted);
-    font-variant-numeric: tabular-nums; white-space: nowrap;
-  }
+  .author:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(31,95,214,0.15); }
+  label.chk { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-2); cursor: pointer; }
+  label.chk input { accent-color: var(--blue); }
+  .stats { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .stats b { color: var(--mark); font-weight: 500; }
   .export { margin-left: auto; }
-  .toolbar .btn-calculate { padding: 9px 18px; font-size: 0.8rem; }
+  .toolbar .btn-calculate { padding: 8px 18px; min-height: 38px; font-size: 13px; }
   .toolbar .btn-calculate:disabled { opacity: 0.6; cursor: progress; }
-  .toolbar .btn-reset { padding: 7px 12px; font-size: 0.78rem; }
+  .toolbar .btn-reset { padding: 7px 12px; min-height: 38px; font-size: 13px; }
   .toolbar .btn-reset:disabled { opacity: 0.45; cursor: default; }
-  .status { font-size: 0.75rem; color: var(--muted); width: 100%; }
+  .status { font-size: 13px; color: var(--muted); width: 100%; }
   .status.err { color: var(--mark); }
-  .status.ok { color: #4a7d4a; }
+  .status.ok { color: var(--green); }
 
   /* ── Legend ── */
-  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.75rem; color: var(--muted); align-items: center; margin-bottom: 14px; }
-  .legend .ins, .legend .del { font-family: 'DM Serif Display', serif; font-size: 0.9rem; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); align-items: center; margin-bottom: 14px; }
 
   /* ── Results ── */
-  .result { border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; background: var(--white); }
-  .colhead { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--rule); background: var(--cream); }
+  .result { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--white); }
+  .colhead { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--line); background: var(--bg); }
   .colhead div {
-    padding: 10px 18px; font-family: 'DM Mono', monospace; font-size: 0.65rem; font-weight: 500;
-    letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); min-width: 0; overflow-wrap: anywhere;
+    padding: 10px 18px; font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--muted); min-width: 0; overflow-wrap: anywhere;
   }
-  .colhead div + div { border-left: 1px solid var(--rule); }
+  .colhead div + div { border-left: 1px solid var(--line); }
   .row { display: grid; grid-template-columns: 1fr 1fr; scroll-margin: 120px; }
   .cell {
-    padding: 2px 18px; min-width: 0; font-family: 'DM Serif Display', serif; font-size: 1rem; line-height: 1.65;
+    padding: 2px 18px; min-width: 0; font-size: 15px; line-height: 1.65;
     overflow-wrap: anywhere; position: relative;
   }
-  .cell + .cell { border-left: 1px solid var(--rule); }
+  .cell + .cell { border-left: 1px solid var(--line); }
   .cell p, .blk p { padding: 4px 0; white-space: pre-wrap; }
   .row.chg .cell:first-child { box-shadow: inset 3px 0 0 var(--mark); }
-  .row.chg .cell.blank { background: repeating-linear-gradient(-45deg, transparent 0 6px, var(--cream) 6px 8px); }
+  .row.chg .cell.blank { background: repeating-linear-gradient(-45deg, transparent 0 6px, var(--line-soft) 6px 8px); }
   .row.current { background: var(--current); }
   .ins { color: var(--mark); text-decoration: underline; text-decoration-color: var(--mark); text-underline-offset: 3px; }
   .del { color: var(--mark); text-decoration: line-through; text-decoration-color: var(--mark); }
   .row.chg .ins, .row.chg .del, .blk.chg .ins, .blk.chg .del { background: var(--mark-bg); }
   .combined { padding: 14px 22px 18px; }
   .blk {
-    font-family: 'DM Serif Display', serif; font-size: 1rem; line-height: 1.65;
+    font-size: 15px; line-height: 1.65;
     padding: 2px 0 2px 14px; margin-left: -14px; scroll-margin: 120px;
   }
   .blk.chg { box-shadow: inset 3px 0 0 var(--mark); }
   .blk.current { background: var(--current); }
-  .empty-state { padding: 36px 20px; text-align: center; color: var(--muted); font-size: 0.88rem; font-weight: 300; }
+  .empty-state { padding: 36px 20px; text-align: center; color: var(--muted); font-size: 14px; }
   .side-label { display: none; }
 
-  .foot-note {
-    width: 100%; margin-top: 8px;
-    font-size: 0.75rem; color: var(--muted); line-height: 1.6; font-weight: 300;
-  }
+  .foot-note { margin-top: 18px; padding: 0 4px; font-size: 13px; color: var(--muted); line-height: 1.6; }
 
   @media (max-width: 600px) {
     textarea { height: 170px; }
@@ -131,11 +114,11 @@
     .row { grid-template-columns: 1fr; }
     .cell + .cell { border-left: 0; }
     .row:not(.chg) .cell + .cell { display: none; }
-    .row.chg { border-block: 1px solid var(--rule); margin-block: 6px; }
+    .row.chg { border-block: 1px solid var(--line); margin-block: 6px; }
     .row.chg .cell { box-shadow: inset 3px 0 0 var(--mark); }
     .row.chg .side-label {
-      display: block; font-family: 'DM Mono', monospace; font-size: 0.6rem; font-weight: 500;
-      letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding-top: 8px;
+      display: block; font-family: var(--mono); font-size: 10px; font-weight: 500;
+      letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding-top: 8px;
     }
     .row.chg .cell.blank { display: none; }
   }
@@ -144,120 +127,122 @@
 </head>
 <body>
 
-  <!-- Site Nav -->
-  <nav class="site-nav">
-    <a href="bluebook-abbreviations.html">Bluebook Abbreviations</a>
-    <span class="site-nav-sep">·</span>
-    <a href="cplr-provisions.html">CPLR Provisions</a>
-    <span class="site-nav-sep">·</span>
-    <a href="date-calculator.html">Date Calculator</a>
-    <span class="site-nav-sep">·</span>
-    <a href="nj-court-rules.html">NJ Court Rules</a>
-    <span class="site-nav-sep">·</span>
-    <a href="nj-motion-deadlines-calculator.html">NJ Motion Deadlines</a>
-    <span class="site-nav-sep">·</span>
-    <a href="nj-rpc.html">NJ RPC</a>
-    <span class="site-nav-sep">·</span>
-    <a href="ny-response-deadline-calculator.html">NY Answer Deadlines</a>
-    <span class="site-nav-sep">·</span>
-    <a href="ny-motion-deadlines-calculator.html">NY Motion Deadlines</a>
-    <span class="site-nav-sep">·</span>
-    <span class="site-nav-current">Redline</span>
-    <a href="https://www.philipmtaylor.com" class="site-nav-home">philipmtaylor.com</a>
-  </nav>
+  <header class="site-header">
+    <div class="wrap">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="https://www.philipmtaylor.com">philipmtaylor.com</a>
+        <span class="breadcrumb-sep" aria-hidden="true">›</span>
+        <span class="breadcrumb-current">Legal Tools</span>
+      </nav>
 
-  <!-- Page Title -->
-  <div class="page-title">
-    <h1>Redline</h1>
-    <p>Paste two versions of a text to see the changes in Word-style markup: insertions underlined, deletions struck through. Export the result to Word as tracked changes or a formatted redline.</p>
-    <span class="statute-tag">Runs in your browser &mdash; nothing is uploaded</span>
-  </div>
+      <nav class="site-nav" aria-label="Legal tools">
+        <ul>
+          <li><a href="bluebook-abbreviations.html" title="Bluebook Abbreviations">Bluebook</a></li>
+          <li><a href="cplr-provisions.html" title="CPLR Provisions">CPLR</a></li>
+          <li><a href="date-calculator.html">Date Calculator</a></li>
+          <li><a href="nj-court-rules.html" title="NJ Court Rules">NJ Rules</a></li>
+          <li><a href="nj-motion-deadlines-calculator.html" title="NJ Motion Deadlines">NJ Motions</a></li>
+          <li><a href="nj-rpc.html" title="NJ Rules of Professional Conduct">NJ RPC</a></li>
+          <li><a href="ny-response-deadline-calculator.html" title="NY Answer Deadlines">NY Answers</a></li>
+          <li><a href="ny-motion-deadlines-calculator.html" title="NY Motion Deadlines">NY Motions</a></li>
+          <li><a href="redline.html" aria-current="page">Redline</a></li>
+        </ul>
+      </nav>
 
-  <!-- Card -->
-  <div class="card">
-    <div class="card-inner">
-
-      <!-- ══════════ TEXTS ══════════ -->
-      <div class="section-label">Texts to Compare</div>
-      <div class="form-row cols-2 inputs">
-        <div class="field">
-          <div class="pane-head">
-            <span class="pane-tag">Original</span>
-            <button class="mini" type="button" data-open="A">Open file</button>
-            <button class="mini" type="button" data-clear="A">Clear</button>
-          </div>
-          <textarea id="textA" spellcheck="false" aria-label="Original text"></textarea>
-        </div>
-        <div class="field">
-          <div class="pane-head">
-            <span class="pane-tag">Revised</span>
-            <button class="mini" type="button" data-open="B">Open file</button>
-            <button class="mini" type="button" data-clear="B">Clear</button>
-          </div>
-          <textarea id="textB" spellcheck="false" aria-label="Revised text"></textarea>
-        </div>
+      <div class="page-title">
+        <h1>Redline</h1>
+        <p>Paste two versions of a text to see the changes in Word-style markup: insertions underlined, deletions struck through. Export the result to Word as tracked changes or a formatted redline.</p>
+        <span class="statute-tag">Runs in your browser &mdash; nothing is uploaded</span>
       </div>
-      <input type="file" id="fileInput" accept=".txt,.md,.docx,text/plain" hidden>
-      <p class="example-note">Paste text or open a file: .txt or .docx (a .docx with tracked changes is read as if all changes were accepted).</p>
+    </div>
+  </header>
 
-      <hr class="divider" />
+  <main class="wrap">
+    <div class="card">
+      <div class="card-inner">
 
-      <!-- ══════════ REDLINE ══════════ -->
-      <div class="section-label">Redline</div>
+        <!-- ══════════ TEXTS ══════════ -->
+        <div class="section-label">Texts to Compare</div>
+        <div class="form-row cols-2 inputs">
+          <div class="field">
+            <div class="pane-head">
+              <span class="pane-tag">Original</span>
+              <button class="mini" type="button" data-open="A">Open file</button>
+              <button class="mini" type="button" data-clear="A">Clear</button>
+            </div>
+            <textarea id="textA" spellcheck="false" aria-label="Original text"></textarea>
+          </div>
+          <div class="field">
+            <div class="pane-head">
+              <span class="pane-tag">Revised</span>
+              <button class="mini" type="button" data-open="B">Open file</button>
+              <button class="mini" type="button" data-clear="B">Clear</button>
+            </div>
+            <textarea id="textB" spellcheck="false" aria-label="Revised text"></textarea>
+          </div>
+        </div>
+        <input type="file" id="fileInput" accept=".txt,.md,.docx,text/plain" hidden>
+        <p class="example-note">Paste text or open a file: .txt or .docx (a .docx with tracked changes is read as if all changes were accepted).</p>
+  
+        <hr class="divider" />
+  
+        <!-- ══════════ REDLINE ══════════ -->
+        <div class="section-label">Redline</div>
+  
+        <div class="toolbar" role="toolbar" aria-label="Comparison controls">
+          <div class="group">
+            <div class="toggle-group" role="group" aria-label="View">
+              <input type="radio" name="view" id="viewSbs" value="sbs" checked><label for="viewSbs">Side by side</label>
+              <input type="radio" name="view" id="viewComb" value="comb"><label for="viewComb">Combined</label>
+            </div>
+            <div class="select-wrapper">
+              <select id="gran" aria-label="Compare by">
+                <option value="word">Compare words</option>
+                <option value="char">Compare characters</option>
+              </select>
+            </div>
+            <label class="chk"><input type="checkbox" id="ignoreWs"> Ignore extra spaces</label>
+          </div>
+          <div class="group">
+            <span class="stats" id="stats">–</span>
+            <button class="btn-reset" type="button" id="prev" aria-label="Previous change">↑ Prev</button>
+            <button class="btn-reset" type="button" id="next" aria-label="Next change">Next ↓</button>
+          </div>
+          <div class="group export">
+            <div class="select-wrapper">
+              <select id="exportMode" aria-label="Word export format">
+                <option value="tracked">Tracked changes</option>
+                <option value="formatted">Formatted redline</option>
+              </select>
+            </div>
+            <input class="author" id="author" value="Redline" aria-label="Author name for tracked changes" title="Author name shown on tracked changes">
+            <button class="btn-reset" type="button" id="copyBtn" title="Copy the redline with its formatting, ready to paste into Word or an email">Copy redline</button>
+            <button class="btn-calculate" type="button" id="exportBtn">Export to Word</button>
+          </div>
+          <p class="status" id="status" hidden></p>
+        </div>
+  
+        <div class="legend" aria-hidden="true">
+          <span><span class="ins">Inserted text</span></span>
+          <span><span class="del">Deleted text</span></span>
+          <span>Bar at left marks a changed paragraph</span>
+        </div>
+  
+        <section class="result" aria-live="polite">
+          <div id="sbs">
+            <div class="colhead"><div id="headA">Original</div><div id="headB">Revised</div></div>
+            <div id="rows"></div>
+          </div>
+          <div id="combined" class="combined" hidden></div>
+        </section>
 
-      <div class="toolbar" role="toolbar" aria-label="Comparison controls">
-        <div class="group">
-          <div class="toggle-group" role="group" aria-label="View">
-            <input type="radio" name="view" id="viewSbs" value="sbs" checked><label for="viewSbs">Side by side</label>
-            <input type="radio" name="view" id="viewComb" value="comb"><label for="viewComb">Combined</label>
-          </div>
-          <div class="select-wrapper">
-            <select id="gran" aria-label="Compare by">
-              <option value="word">Compare words</option>
-              <option value="char">Compare characters</option>
-            </select>
-          </div>
-          <label class="chk"><input type="checkbox" id="ignoreWs"> Ignore extra spaces</label>
-        </div>
-        <div class="group">
-          <span class="stats" id="stats">–</span>
-          <button class="btn-reset" type="button" id="prev" aria-label="Previous change">↑ Prev</button>
-          <button class="btn-reset" type="button" id="next" aria-label="Next change">Next ↓</button>
-        </div>
-        <div class="group export">
-          <div class="select-wrapper">
-            <select id="exportMode" aria-label="Word export format">
-              <option value="tracked">Tracked changes</option>
-              <option value="formatted">Formatted redline</option>
-            </select>
-          </div>
-          <input class="author" id="author" value="Redline" aria-label="Author name for tracked changes" title="Author name shown on tracked changes">
-          <button class="btn-reset" type="button" id="copyBtn" title="Copy the redline with its formatting, ready to paste into Word or an email">Copy redline</button>
-          <button class="btn-calculate" type="button" id="exportBtn">Export to Word</button>
-        </div>
-        <p class="status" id="status" hidden></p>
       </div>
+    </div>
 
-      <div class="legend" aria-hidden="true">
-        <span><span class="ins">Inserted text</span></span>
-        <span><span class="del">Deleted text</span></span>
-        <span>Bar at left marks a changed paragraph</span>
-      </div>
-
-      <section class="result" aria-live="polite">
-        <div id="sbs">
-          <div class="colhead"><div id="headA">Original</div><div id="headB">Revised</div></div>
-          <div id="rows"></div>
-        </div>
-        <div id="combined" class="combined" hidden></div>
-      </section>
-
-    </div><!-- /card-inner -->
-  </div><!-- /card -->
-
-  <p class="foot-note">
-    The comparison runs entirely in your browser; nothing you paste or open is sent anywhere. Tracked-changes exports open in Word with each change attributed to the author name above, so you can use Review &rsaquo; Accept or Reject. Formatting (bold, italics, numbering) is not carried over from .docx files &mdash; only the text is compared.
-  </p>
+    <p class="foot-note">
+      The comparison runs entirely in your browser; nothing you paste or open is sent anywhere. Tracked-changes exports open in Word with each change attributed to the author name above, so you can use Review &rsaquo; Accept or Reject. Formatting (bold, italics, numbering) is not carried over from .docx files &mdash; only the text is compared.
+    </p>
+  </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/diff_match_patch/20121119/diff_match_patch.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>

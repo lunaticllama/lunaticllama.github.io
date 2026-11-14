@@ -8,224 +8,186 @@
 <link rel="icon" type="image/svg+xml" href="/favicons/dc-favicon.svg">
 <link rel="apple-touch-icon" href="/favicons/dc-apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <style>
-  /* This page needs more room than a calculator card: widen the shared containers. */
-  .site-nav, .page-title, .card, .foot-note { max-width: 1040px; }
+  /* ── Page-specific: full-text reference pages (CPLR, NJ Rules, NJ RPC) ── */
   .page-title p { max-width: 70ch; }
 
   /* ── Search ── */
-  .search-field input[type="text"] {
-    width: 100%;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.95rem;
-    color: var(--ink);
-    background: var(--paper);
-    border: 1px solid var(--rule);
-    border-radius: var(--radius);
-    padding: 12px 16px;
-    outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .search-field input[type="text"]:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(201,79,42,0.1);
-    background: var(--white);
-  }
-  .search-hint {
-    font-size: 0.78rem;
-    color: var(--muted);
-    margin-top: 8px;
-  }
+  .search-field input[type="text"] { font-size: 16px; padding: 13px 16px; }
+  .search-hint { font-size: 13px; color: var(--muted); margin-top: 8px; }
   .search-results {
-    display: none;
-    flex-direction: column;
-    gap: 6px;
-    max-height: 420px;
-    overflow-y: auto;
-    margin-top: 14px;
+    display: none; flex-direction: column; gap: 6px;
+    max-height: 420px; overflow-y: auto; margin-top: 14px;
   }
   .search-results.show { display: flex; }
   .sr-item {
-    text-align: left;
-    background: var(--paper);
-    border: 1px solid var(--rule);
-    border-radius: var(--radius);
-    padding: 10px 14px;
-    cursor: pointer;
-    transition: border-color 0.15s;
+    text-align: left; background: var(--white);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 11px 14px; cursor: pointer; transition: border-color .15s, background .15s;
   }
-  .sr-item:hover { border-color: var(--accent); }
+  .sr-item:hover { border-color: var(--blue); background: var(--blue-tint); }
   .sr-item .sr-head {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--accent);
-    margin-bottom: 3px;
+    font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--blue); margin-bottom: 3px;
   }
-  .sr-item .sr-title { font-weight: 500; font-size: 0.9rem; color: var(--ink); }
-  .sr-item .sr-snippet { font-size: 0.8rem; color: var(--muted); margin-top: 4px; line-height: 1.5; }
-  .sr-empty { font-size: 0.85rem; color: var(--muted); font-style: italic; padding: 10px 2px; }
-  mark { background: var(--accent-soft); color: var(--ink); padding: 0 2px; border-radius: 2px; }
+  .sr-item .sr-title { font-weight: 600; font-size: 14px; color: var(--ink); }
+  .sr-item .sr-snippet { font-size: 13px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  .sr-empty { font-size: 14px; color: var(--muted); font-style: italic; padding: 10px 2px; }
+  mark { background: var(--blue-tint-2); color: var(--navy); padding: 0 2px; border-radius: 3px; }
 
   /* ── Browse layout: article list + section reader ── */
-  .layout { display: grid; grid-template-columns: 230px 1fr; gap: 32px; margin-top: 10px; }
-  @media (max-width: 720px) { .layout { grid-template-columns: 1fr; } }
+  .layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 32px; margin-top: 10px; }
+  @media (max-width: 720px) { .layout { grid-template-columns: minmax(0, 1fr); } }
 
   .toc { max-height: 70vh; overflow-y: auto; padding-right: 4px; }
   @media (max-width: 720px) {
-    .toc { max-height: 240px; border-bottom: 1px solid var(--rule); padding-bottom: 14px; margin-bottom: 6px; }
+    .toc { max-height: 240px; border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 6px; }
   }
   .toc-item {
     display: block; width: 100%; text-align: left;
     background: none; border: none; border-radius: var(--radius);
-    color: var(--ink); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 400;
-    padding: 7px 10px; cursor: pointer; line-height: 1.35;
+    color: var(--text-2); font: 400 13px/1.35 var(--font);
+    padding: 8px 10px; cursor: pointer; transition: background .15s, color .15s;
   }
-  .toc-item .num {
-    font-family: 'DM Mono', monospace; color: var(--accent);
-    font-size: 0.68rem; margin-right: 6px;
-  }
-  .toc-item:hover { background: var(--accent-soft); }
-  .toc-item.active { background: var(--cream); font-weight: 600; }
-  .toc-item .range { display: block; font-size: 0.68rem; color: var(--muted); margin-top: 1px; font-weight: 400; }
+  .toc-item .num { font-family: var(--mono); color: var(--blue); font-size: 11px; margin-right: 6px; }
+  .toc-item:hover { background: var(--blue-tint); color: var(--navy); }
+  .toc-item.active { background: var(--blue-tint-2); color: var(--navy); font-weight: 600; }
+  .toc-item .range { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; font-weight: 400; }
 
   .content h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.4rem; color: var(--ink); margin-bottom: 2px; letter-spacing: -0.01em; line-height: 1.2;
+    font-size: 22px; font-weight: 700; color: var(--navy);
+    margin-bottom: 4px; letter-spacing: -0.01em; line-height: 1.25;
   }
-  .content .content-range {
-    font-family: 'DM Mono', monospace; font-size: 0.72rem;
-    color: var(--muted); margin-bottom: 18px;
-  }
-  .empty-state { color: var(--muted); font-size: 0.88rem; line-height: 1.6; padding: 16px 0; font-weight: 300; }
+  .content .content-range { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+  .empty-state { color: var(--muted); font-size: 14px; line-height: 1.6; padding: 16px 0; }
 
   /* ── Section accordion ── */
-  .sec { border: 1px solid var(--rule); border-radius: var(--radius); margin-bottom: 10px; }
+  .sec { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; background: var(--white); }
   .sec-head {
     display: flex; align-items: baseline; gap: 10px; width: 100%; text-align: left;
-    background: none; border: none; cursor: pointer; padding: 12px 16px; color: var(--ink);
+    background: none; border: none; cursor: pointer; padding: 13px 16px; color: var(--ink);
+    font-family: var(--font);
   }
-  .sec-head .sec-num { font-family: 'DM Mono', monospace; color: var(--accent); font-weight: 500; font-size: 0.78rem; white-space: nowrap; }
-  .sec-head .sec-title { font-size: 0.85rem; font-weight: 500; flex: 1; }
-  .sec-head .sec-chevron { color: var(--muted); font-size: 0.7rem; transition: transform 0.15s ease; }
+  .sec-head .sec-num { font-family: var(--mono); color: var(--blue); font-weight: 500; font-size: 13px; white-space: nowrap; }
+  .sec-head .sec-title { font-size: 14px; font-weight: 600; flex: 1; }
+  .sec-head .sec-chevron { color: var(--muted); font-size: 11px; transition: transform .15s ease; }
+  .sec.open { border-color: #BFD2F5; }
   .sec.open .sec-chevron { transform: rotate(90deg); }
   .sec-body { display: none; padding: 0 16px 18px; }
   .sec.open .sec-body { display: block; }
   .sec-text {
-    font-family: 'DM Serif Display', serif; font-size: 0.95rem; line-height: 1.7; white-space: pre-wrap;
-    background: var(--paper); border: 1px solid var(--rule); border-radius: var(--radius);
+    font-size: 15px; line-height: 1.7; color: var(--ink); white-space: pre-wrap;
+    background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius);
     padding: 16px 18px; margin: 0 0 14px;
   }
-  .sec-meta { font-size: 0.7rem; color: var(--muted); margin-bottom: 12px; font-family: 'DM Mono', monospace; }
+  .sec-meta { font-size: 12px; color: var(--muted); margin-bottom: 12px; font-family: var(--mono); }
   .link-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
   .link-btn {
     display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
-    font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 500;
-    padding: 9px 16px; border-radius: var(--radius); border: 1px solid var(--rule);
-    cursor: pointer; background: var(--white); color: var(--muted); transition: all 0.15s;
+    font: 500 13px var(--font);
+    padding: 9px 16px; border-radius: var(--radius); border: 1px solid var(--field);
+    cursor: pointer; background: var(--white); color: var(--text-2); transition: color .15s, border-color .15s, background .15s;
   }
-  .link-btn:hover { color: var(--ink); border-color: var(--ink); }
-  .link-btn.check { color: var(--accent); border-color: rgba(201,79,42,0.35); }
-  .link-btn.check:hover { border-color: var(--accent); }
-  .link-btn.westlaw { color: var(--white); background: var(--accent); border-color: var(--accent); }
-  .link-btn.westlaw:hover { background: #b0431f; color: var(--white); }
-  .link-btn.westlaw.fallback { background: none; color: var(--accent); }
+  .link-btn:hover { color: var(--navy); border-color: var(--navy); }
+  .link-btn.check { color: var(--blue); border-color: #BFD2F5; }
+  .link-btn.check:hover { border-color: var(--blue); }
+  .link-btn.westlaw { color: var(--white); background: var(--blue); border-color: var(--blue); }
+  .link-btn.westlaw:hover { background: var(--blue-dark); border-color: var(--blue-dark); color: var(--white); }
+  .link-btn.westlaw.fallback { background: var(--white); color: var(--blue); border-color: #BFD2F5; }
 
   /* ── Toast ── */
   .toast {
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
-    background: var(--ink); color: var(--paper); font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+    background: var(--navy); color: var(--white); font: 500 14px var(--font);
     padding: 11px 18px; border-radius: var(--radius); box-shadow: var(--shadow-lg);
-    opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; z-index: 50;
+    opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease; z-index: 50;
     max-width: 90vw; text-align: center;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  .foot-note {
-    width: 100%; margin-top: 8px;
-    font-size: 0.75rem; color: var(--muted); line-height: 1.6; font-weight: 300;
-  }
+  .foot-note { margin-top: 18px; padding: 0 4px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .foot-note a { color: var(--blue); text-underline-offset: 3px; }
 
   /* ── NJ additions: Part headings in the TOC, history note ── */
   .toc-part {
-    font-family: 'DM Mono', monospace; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em;
-    color: var(--muted); padding: 14px 10px 4px; border-top: 1px solid var(--rule); margin-top: 6px;
+    font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .1em;
+    color: var(--muted); padding: 14px 10px 4px; border-top: 1px solid var(--line); margin-top: 6px;
   }
   .toc-part:first-child { border-top: none; margin-top: 0; padding-top: 4px; }
   .sec-note {
-    font-size: 0.75rem; color: var(--muted); line-height: 1.6; font-weight: 300;
-    border-left: 2px solid var(--rule); padding: 2px 0 2px 12px; margin: 0 0 4px;
+    font-size: 13px; color: var(--muted); line-height: 1.6;
+    border-left: 2px solid var(--line); padding: 2px 0 2px 12px; margin: 0 0 4px;
   }
   .sec-note strong { font-weight: 600; color: var(--ink); }
 </style>
 </head>
 <body>
 
-  <!-- Site Nav -->
-  <nav class="site-nav">
-    <a href="bluebook-abbreviations.html">Bluebook Abbreviations</a>
-    <span class="site-nav-sep">·</span>
-    <a href="cplr-provisions.html">CPLR Provisions</a>
-    <span class="site-nav-sep">·</span>
-    <a href="date-calculator.html">Date Calculator</a>
-    <span class="site-nav-sep">·</span>
-    <span class="site-nav-current">NJ Court Rules</span>
-    <span class="site-nav-sep">·</span>
-    <a href="nj-motion-deadlines-calculator.html">NJ Motion Deadlines</a>
-    <span class="site-nav-sep">·</span>
-    <a href="nj-rpc.html">NJ RPC</a>
-    <span class="site-nav-sep">·</span>
-    <a href="ny-response-deadline-calculator.html">NY Answer Deadlines</a>
-    <span class="site-nav-sep">·</span>
-    <a href="ny-motion-deadlines-calculator.html">NY Motion Deadlines</a>
-    <span class="site-nav-sep">·</span>
-    <a href="redline.html">Redline</a>
-    <a href="https://www.philipmtaylor.com" class="site-nav-home">philipmtaylor.com</a>
-  </nav>
+  <header class="site-header">
+    <div class="wrap">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="https://www.philipmtaylor.com">philipmtaylor.com</a>
+        <span class="breadcrumb-sep" aria-hidden="true">›</span>
+        <span class="breadcrumb-current">Legal Tools</span>
+      </nav>
 
-  <!-- Page Title -->
-  <div class="page-title">
-    <h1>NJ Court Rules Full Text &amp; Citation Finder</h1>
-    <p>The complete text of the Rules Governing the Courts of the State of New Jersey that apply in the Superior Court (Parts I&ndash;VI), browsable by chapter or searchable by keyword or rule number. Each rule carries a link to check the current official version and a shortcut to look it up on Westlaw.</p>
-    <span class="statute-tag" id="tag-through">Amendments effective through Sept. 1, 2026</span>
-    <span class="statute-tag" id="tag-pulled">Pulled Oct 28, 2026</span>
-  </div>
+      <nav class="site-nav" aria-label="Legal tools">
+        <ul>
+          <li><a href="bluebook-abbreviations.html" title="Bluebook Abbreviations">Bluebook</a></li>
+          <li><a href="cplr-provisions.html" title="CPLR Provisions">CPLR</a></li>
+          <li><a href="date-calculator.html">Date Calculator</a></li>
+          <li><a href="nj-court-rules.html" title="NJ Court Rules" aria-current="page">NJ Rules</a></li>
+          <li><a href="nj-motion-deadlines-calculator.html" title="NJ Motion Deadlines">NJ Motions</a></li>
+          <li><a href="nj-rpc.html" title="NJ Rules of Professional Conduct">NJ RPC</a></li>
+          <li><a href="ny-response-deadline-calculator.html" title="NY Answer Deadlines">NY Answers</a></li>
+          <li><a href="ny-motion-deadlines-calculator.html" title="NY Motion Deadlines">NY Motions</a></li>
+          <li><a href="redline.html">Redline</a></li>
+        </ul>
+      </nav>
 
-  <!-- Card -->
-  <div class="card">
-    <div class="card-inner">
-
-      <!-- ══════════ SEARCH ══════════ -->
-      <div class="section-label">Search</div>
-      <div class="search-field">
-        <input type="text" id="searchInput" placeholder='Search the full text, or jump to a rule number (e.g. 4:46-2, &quot;summary judgment&quot;, 1:6-3)' autocomplete="off">
+      <div class="page-title">
+        <h1>NJ Court Rules Full Text &amp; Citation Finder</h1>
+        <p>The complete text of the Rules Governing the Courts of the State of New Jersey that apply in the Superior Court (Parts I&ndash;VI), browsable by chapter or searchable by keyword or rule number. Each rule carries a link to check the current official version and a shortcut to look it up on Westlaw.</p>
+        <span class="statute-tag" id="tag-through">Amendments effective through Sept. 1, 2026</span>
+        <span class="statute-tag" id="tag-pulled">Pulled Oct 28, 2026</span>
       </div>
-      <div class="search-hint">Or browse by chapter below.</div>
-      <div class="search-results" id="searchResults"></div>
+    </div>
+  </header>
 
-      <hr class="divider" />
+  <main class="wrap">
+    <div class="card">
+      <div class="card-inner">
 
-      <!-- ══════════ BROWSE ══════════ -->
-      <div class="section-label">Browse by Chapter</div>
-      <div class="layout">
-        <nav class="toc" id="toc"></nav>
-        <div class="content">
-          <div id="contentHead"></div>
-          <div id="sectionList"></div>
-          <div id="emptyState" class="empty-state">Select a chapter on the left, or search above.</div>
+        <!-- ══════════ SEARCH ══════════ -->
+        <div class="section-label">Search</div>
+        <div class="search-field">
+          <input type="text" id="searchInput" placeholder='Search the full text, or jump to a rule number (e.g. 4:46-2, &quot;summary judgment&quot;, 1:6-3)' autocomplete="off">
         </div>
+        <div class="search-hint">Or browse by chapter below.</div>
+        <div class="search-results" id="searchResults"></div>
+
+        <hr class="divider" />
+
+        <!-- ══════════ BROWSE ══════════ -->
+        <div class="section-label">Browse by Chapter</div>
+        <div class="layout">
+          <nav class="toc" id="toc"></nav>
+          <div class="content">
+            <div id="contentHead"></div>
+            <div id="sectionList"></div>
+            <div id="emptyState" class="empty-state">Select a chapter on the left, or search above.</div>
+          </div>
+        </div>
+
       </div>
+    </div>
 
-    </div><!-- /card-inner -->
-  </div><!-- /card -->
-
-  <p class="foot-note">
-    Full text pulled from the New Jersey Judiciary's Rules of Court at njcourts.gov, which includes amendments effective on or before <span id="foot-through">Sept. 1, 2026</span> (pulled <span id="foot-pulled">Oct 28, 2026</span>). Each rule's source and amendment history appears beneath its text. This is a static snapshot, not a live feed &mdash; the Supreme Court amends the rules periodically, so use the "Check current version" link on any rule before relying on it in a filing. Parts VII (Municipal Courts), VIII (Tax Court) and the Appendices are not included.
-  </p>
+    <p class="foot-note">
+      Full text pulled from the New Jersey Judiciary's Rules of Court at njcourts.gov, which includes amendments effective on or before <span id="foot-through">Sept. 1, 2026</span> (pulled <span id="foot-pulled">Oct 28, 2026</span>). Each rule's source and amendment history appears beneath its text. This is a static snapshot, not a live feed &mdash; the Supreme Court amends the rules periodically, so use the "Check current version" link on any rule before relying on it in a filing. Parts VII (Municipal Courts), VIII (Tax Court) and the Appendices are not included.
+    </p>
+  </main>
 
 <div class="toast" id="toast"></div>
 

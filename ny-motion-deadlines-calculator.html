@@ -7,113 +7,122 @@
   <link rel="icon" type="image/x-icon" href="/favicons/dc-favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicons/dc-favicon.svg">
   <link rel="apple-touch-icon" href="/favicons/dc-apple-touch-icon.png">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ── Page-specific: NY Motion Deadlines ── */
+    .result-box {
+      background: var(--blue-tint);
+      border-top: 1px solid var(--blue-line);
+      padding: 28px;
+    }
+    .result-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .result-box .btn-copy { background: var(--white); }
+    @media (max-width: 600px) { .result-box { padding: 24px 18px; } }
+  </style>
 </head>
 <body>
 
-  <!-- Site Nav -->
-  <nav class="site-nav">
-    <a href="bluebook-abbreviations.html">Bluebook Abbreviations</a>
-    <span class="site-nav-sep">·</span>
-    <a href="cplr-provisions.html">CPLR Provisions</a>
-    <span class="site-nav-sep">·</span>
-    <a href="date-calculator.html">Date Calculator</a>
-    <span class="site-nav-sep">·</span>
-    <a href="nj-court-rules.html">NJ Court Rules</a>
-    <span class="site-nav-sep">·</span>
-    <a href="nj-motion-deadlines-calculator.html">NJ Motion Deadlines</a>
-    <span class="site-nav-sep">·</span>
-    <a href="nj-rpc.html">NJ RPC</a>
-    <span class="site-nav-sep">·</span>
-    <a href="ny-response-deadline-calculator.html">NY Answer Deadlines</a>
-    <span class="site-nav-sep">·</span>
-    <span class="site-nav-current">NY Motion Deadlines</span>
-    <span class="site-nav-sep">·</span>
-    <a href="redline.html">Redline</a>
-    <a href="https://www.philipmtaylor.com" class="site-nav-home">philipmtaylor.com</a>
-  </nav>
+  <header class="site-header">
+    <div class="wrap">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="https://www.philipmtaylor.com">philipmtaylor.com</a>
+        <span class="breadcrumb-sep" aria-hidden="true">›</span>
+        <span class="breadcrumb-current">Legal Tools</span>
+      </nav>
 
-  <!-- Page Title -->
-  <div class="page-title">
-    <h1>NY Motion Deadlines Calculator</h1>
-    <p>Enter either the return date or the filing date to calculate all typical motion deadlines.</p>
-    <div class="statute-tag">CPLR § 2214 — Notice of Motion</div>
-  </div>
+      <nav class="site-nav" aria-label="Legal tools">
+        <ul>
+          <li><a href="bluebook-abbreviations.html" title="Bluebook Abbreviations">Bluebook</a></li>
+          <li><a href="cplr-provisions.html" title="CPLR Provisions">CPLR</a></li>
+          <li><a href="date-calculator.html">Date Calculator</a></li>
+          <li><a href="nj-court-rules.html" title="NJ Court Rules">NJ Rules</a></li>
+          <li><a href="nj-motion-deadlines-calculator.html" title="NJ Motion Deadlines">NJ Motions</a></li>
+          <li><a href="nj-rpc.html" title="NJ Rules of Professional Conduct">NJ RPC</a></li>
+          <li><a href="ny-response-deadline-calculator.html" title="NY Answer Deadlines">NY Answers</a></li>
+          <li><a href="ny-motion-deadlines-calculator.html" title="NY Motion Deadlines" aria-current="page">NY Motions</a></li>
+          <li><a href="redline.html">Redline</a></li>
+        </ul>
+      </nav>
 
-  <!-- Tabs -->
-  <div class="tabs" role="tablist">
-    <button class="tab-btn active" id="tab-return" onclick="switchTab('return', this)" role="tab">📅 Based On the Return Date</button>
-    <button class="tab-btn" id="tab-filing" onclick="switchTab('filing', this)" role="tab">📄 Based On the Filing Date</button>
-  </div>
+      <div class="page-title">
+        <h1>NY Motion Deadlines Calculator</h1>
+        <p>Enter either the return date or the filing date to calculate all typical motion deadlines.</p>
+        <span class="statute-tag">CPLR § 2214 — Notice of Motion</span>
+      </div>
+    </div>
+  </header>
 
-  <!-- Card -->
-  <div class="card">
-    <div class="card-inner">
+  <main class="wrap">
+    <div class="card">
+
+      <div class="tabs" role="tablist">
+        <button class="tab-btn active" id="tab-return" onclick="switchTab('return', this)" role="tab">Based On the Return Date</button>
+        <button class="tab-btn" id="tab-filing" onclick="switchTab('filing', this)" role="tab">Based On the Filing Date</button>
+      </div>
 
       <!-- ══════════ PANEL 1: RETURN DATE ══════════ -->
-      <div class="panel active" id="panel-return">
-
-        <div class="section-label">Return Date</div>
-        <div class="form-row cols-2">
-          <div class="field">
-            <label>Return Date (Argument / Appearance)</label>
-            <input type="date" id="return-date-input" title="Enter Return Date" oninput="document.getElementById('return-date-error').classList.remove('visible')"/>
-            <div class="field-error" id="return-date-error"></div>
+      <div class="panel active" id="panel-return" role="tabpanel">
+        <div class="card-inner">
+          <div class="form-row cols-2">
+            <div class="field">
+              <label for="return-date-input">Return date (argument / appearance)</label>
+              <div class="field-inline">
+                <input type="date" id="return-date-input" title="Enter Return Date" oninput="document.getElementById('return-date-error').classList.remove('visible')"/>
+                <button class="btn-reset" onclick="setToday('return-date-input')">Today</button>
+              </div>
+              <div class="field-error" id="return-date-error"></div>
+            </div>
           </div>
-          <div class="field" style="display:flex;align-items:flex-end;">
-            <button class="btn-reset" onclick="setToday('return-date-input')" style="width:auto;">Use Today</button>
+
+          <div class="action-row">
+            <button class="btn-calculate" onclick="calculateFromReturn()">Calculate Deadlines</button>
+            <button class="btn-reset" onclick="resetPanel('return')">Clear</button>
           </div>
         </div>
 
-        <div class="action-row">
-          <button class="btn-calculate" onclick="calculateFromReturn()">Calculate Deadlines</button>
-          <button class="btn-reset" onclick="resetPanel('return')">Clear</button>
-        </div>
-
-        <hr class="divider" />
-
-        <div class="result-box" id="return-result">
-          <div class="deadline-grid" id="return-deadline-grid"></div>
-          <div class="copy-row">
+        <section class="result-box" id="return-result" aria-live="polite">
+          <div class="result-head">
+            <div class="result-label">Deadlines</div>
             <button class="btn-copy" onclick="copyDeadlines(this)">Copy Deadlines</button>
           </div>
+          <div class="deadline-grid" id="return-deadline-grid"></div>
           <div class="gcl-note" id="return-gcl-note">
             <strong>Gen. Construction Law § 25-a —</strong> Public holiday, Saturday or Sunday in statutes; extension of time where performance of act is due on Saturday, Sunday or public holiday. 1. When any period of time, computed from a certain day, within which or after which or before which an act is authorized or required to be done, ends on a Saturday, Sunday or a public holiday, such act may be done on the next succeeding business day and if the period ends at a specified hour, such act may be done at or before the same hour of such next succeeding business day, except that where a period of time specified by contract ends on a Saturday, Sunday or a public holiday, the extension of such period is governed by section twenty-five of this chapter.
           </div>
           <div class="statute-note">
             <strong>CPLR § 2214(b) — Time for service of notice and affidavits.</strong> A notice of motion and supporting affidavits shall be served at least eight days before the time at which the motion is noticed to be heard. Answering affidavits shall be served at least two days before such time. Answering affidavits and any notice of cross-motion, with supporting papers, if any, shall be served at least seven days before such time if a notice of motion served at least sixteen days before such time so demands; whereupon any reply or responding affidavits shall be served at least one day before such time.
           </div>
-        </div>
+        </section>
       </div>
 
       <!-- ══════════ PANEL 2: FILING DATE ══════════ -->
-      <div class="panel" id="panel-filing">
-
-        <div class="section-label">Filing / Service Date</div>
-        <div class="form-row cols-2">
-          <div class="field">
-            <label>Filing Date (Date Motion is Served)</label>
-            <input type="date" id="filing-date-input" title="Enter Filing Date" oninput="document.getElementById('filing-date-error').classList.remove('visible')"/>
-            <div class="field-error" id="filing-date-error"></div>
+      <div class="panel" id="panel-filing" role="tabpanel">
+        <div class="card-inner">
+          <div class="form-row cols-2">
+            <div class="field">
+              <label for="filing-date-input">Filing date (date motion is served)</label>
+              <div class="field-inline">
+                <input type="date" id="filing-date-input" title="Enter Filing Date" oninput="document.getElementById('filing-date-error').classList.remove('visible')"/>
+                <button class="btn-reset" onclick="setToday('filing-date-input')">Today</button>
+              </div>
+              <div class="field-error" id="filing-date-error"></div>
+            </div>
           </div>
-          <div class="field" style="display:flex;align-items:flex-end;">
-            <button class="btn-reset" onclick="setToday('filing-date-input')" style="width:auto;">Use Today</button>
+
+          <div class="action-row">
+            <button class="btn-calculate" onclick="calculateFromFiling()">Calculate Deadlines</button>
+            <button class="btn-reset" onclick="resetPanel('filing')">Clear</button>
           </div>
         </div>
 
-        <div class="action-row">
-          <button class="btn-calculate" onclick="calculateFromFiling()">Calculate Deadlines</button>
-          <button class="btn-reset" onclick="resetPanel('filing')">Clear</button>
-        </div>
-
-        <hr class="divider" />
-
-        <div class="result-box" id="filing-result">
-          <div class="deadline-grid" id="filing-deadline-grid"></div>
-          <div class="copy-row">
+        <section class="result-box" id="filing-result" aria-live="polite">
+          <div class="result-head">
+            <div class="result-label">Deadlines</div>
             <button class="btn-copy" onclick="copyDeadlines(this)">Copy Deadlines</button>
           </div>
+          <div class="deadline-grid" id="filing-deadline-grid"></div>
           <div class="impermissible-box" id="filing-impermissible-box"></div>
           <div class="gcl-note" id="filing-gcl-note">
             <strong>Gen. Construction Law § 25-a —</strong> Public holiday, Saturday or Sunday in statutes; extension of time where performance of act is due on Saturday, Sunday or public holiday. 1. When any period of time, computed from a certain day, within which or after which or before which an act is authorized or required to be done, ends on a Saturday, Sunday or a public holiday, such act may be done on the next succeeding business day and if the period ends at a specified hour, such act may be done at or before the same hour of such next succeeding business day, except that where a period of time specified by contract ends on a Saturday, Sunday or a public holiday, the extension of such period is governed by section twenty-five of this chapter.
@@ -121,11 +130,11 @@
           <div class="statute-note" id="filing-statute-note">
             <strong>CPLR § 2214(b) — Time for service of notice and affidavits.</strong> A notice of motion and supporting affidavits shall be served at least eight days before the time at which the motion is noticed to be heard. Answering affidavits shall be served at least two days before such time. Answering affidavits and any notice of cross-motion, with supporting papers, if any, shall be served at least seven days before such time if a notice of motion served at least sixteen days before such time so demands; whereupon any reply or responding affidavits shall be served at least one day before such time.
           </div>
-        </div>
+        </section>
       </div>
 
-    </div><!-- /card-inner -->
-  </div><!-- /card -->
+    </div>
+  </main>
 
   <script>
     // ── Constants ─────────────────────────────────────

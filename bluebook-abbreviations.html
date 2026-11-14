@@ -8,138 +8,89 @@
   <link rel="icon" type="image/svg+xml" href="/favicons/dc-favicon.svg">
   <link rel="apple-touch-icon" href="/favicons/dc-apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <style>
-    .search-field input[type="text"] {
-      width: 100%;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.95rem;
-      color: var(--ink);
-      background: var(--paper);
-      border: 1px solid var(--rule);
-      border-radius: var(--radius);
-      padding: 12px 16px;
-      outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .search-field input[type="text"]:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(201,79,42,0.1);
-      background: var(--white);
-    }
+    /* ── Page-specific: Bluebook Abbreviations ── */
+    .search-field input[type="text"] { font-size: 16px; padding: 13px 16px; }
     .result-count {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.68rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      margin: 10px 0 4px;
-      min-height: 1em;
+      font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--muted);
+      margin: 10px 0 4px; min-height: 1em;
     }
     .abbr-group-title {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.62rem;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: var(--accent);
-      margin: 26px 0 8px;
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: .14em;
+      color: var(--blue); margin: 28px 0 8px;
     }
-    .abbr-group-title:first-of-type { margin-top: 4px; }
-    ul.abbr-entries {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      border-top: 1px solid var(--rule);
-    }
+    .abbr-group-title:first-of-type { margin-top: 6px; }
+    ul.abbr-entries { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
     li.abbr-entry {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 10px 2px;
-      border-bottom: 1px solid var(--rule);
+      display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+      padding: 10px 4px; border-bottom: 1px solid var(--line-soft);
     }
-    .abbr-word {
-      font-size: 0.9rem;
-      color: var(--ink);
-      font-weight: 300;
-    }
+    li.abbr-entry:hover { background: var(--blue-tint); }
+    .abbr-word { font-size: 14px; color: var(--ink); }
     .abbr-short {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.85rem;
-      color: var(--muted);
-      white-space: nowrap;
-      padding-left: 16px;
-      text-align: right;
+      font-family: var(--mono); font-size: 14px; font-weight: 500; color: var(--navy);
+      white-space: nowrap; padding-left: 16px; text-align: right;
     }
-    mark {
-      background: var(--accent-soft);
-      color: var(--ink);
-      padding: 0 2px;
-      border-radius: 2px;
-    }
-    .abbr-empty {
-      padding: 32px 0;
-      text-align: center;
-      color: var(--muted);
-      font-style: italic;
-      font-size: 0.9rem;
-    }
+    mark { background: var(--blue-tint-2); color: var(--navy); padding: 0 2px; border-radius: 3px; }
+    .abbr-empty { padding: 32px 0; text-align: center; color: var(--muted); font-style: italic; font-size: 14px; }
   </style>
 </head>
 <body>
 
-  <!-- Site Nav -->
-  <nav class="site-nav">
-    <span class="site-nav-current">Bluebook Abbreviations</span>
-    <span class="site-nav-sep">·</span>
-    <a href="cplr-provisions.html">CPLR Provisions</a>
-    <span class="site-nav-sep">·</span>
-    <a href="date-calculator.html">Date Calculator</a>
-    <span class="site-nav-sep">·</span>
-    <a href="nj-court-rules.html">NJ Court Rules</a>
-    <span class="site-nav-sep">·</span>
-    <a href="nj-motion-deadlines-calculator.html">NJ Motion Deadlines</a>
-    <span class="site-nav-sep">·</span>
-    <a href="nj-rpc.html">NJ RPC</a>
-    <span class="site-nav-sep">·</span>
-    <a href="ny-response-deadline-calculator.html">NY Answer Deadlines</a>
-    <span class="site-nav-sep">·</span>
-    <a href="ny-motion-deadlines-calculator.html">NY Motion Deadlines</a>
-    <span class="site-nav-sep">·</span>
-    <a href="redline.html">Redline</a>
-    <a href="https://www.philipmtaylor.com" class="site-nav-home">philipmtaylor.com</a>
-  </nav>
+  <header class="site-header">
+    <div class="wrap">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="https://www.philipmtaylor.com">philipmtaylor.com</a>
+        <span class="breadcrumb-sep" aria-hidden="true">›</span>
+        <span class="breadcrumb-current">Legal Tools</span>
+      </nav>
 
-  <!-- Page Title -->
-  <div class="page-title">
-    <h1>Bluebook Word Abbreviations</h1>
-    <p>Search common case-name and citation word abbreviations.</p>
-    <span class="statute-tag">Table 6 — Case Names &amp; Institutional Authors</span>
-    <span class="statute-tag">Table 10 — Geographic Terms</span>
-  </div>
+      <nav class="site-nav" aria-label="Legal tools">
+        <ul>
+          <li><a href="bluebook-abbreviations.html" title="Bluebook Abbreviations" aria-current="page">Bluebook</a></li>
+          <li><a href="cplr-provisions.html" title="CPLR Provisions">CPLR</a></li>
+          <li><a href="date-calculator.html">Date Calculator</a></li>
+          <li><a href="nj-court-rules.html" title="NJ Court Rules">NJ Rules</a></li>
+          <li><a href="nj-motion-deadlines-calculator.html" title="NJ Motion Deadlines">NJ Motions</a></li>
+          <li><a href="nj-rpc.html" title="NJ Rules of Professional Conduct">NJ RPC</a></li>
+          <li><a href="ny-response-deadline-calculator.html" title="NY Answer Deadlines">NY Answers</a></li>
+          <li><a href="ny-motion-deadlines-calculator.html" title="NY Motion Deadlines">NY Motions</a></li>
+          <li><a href="redline.html">Redline</a></li>
+        </ul>
+      </nav>
 
-  <!-- Card -->
-  <div class="card">
-    <div class="card-inner">
-
-      <div class="section-label">Search</div>
-      <div class="search-field">
-        <input type="text" id="search" placeholder='Search a word, e.g. &quot;association&quot; or &quot;department&quot;' autocomplete="off" autofocus>
+      <div class="page-title">
+        <h1>Bluebook Word Abbreviations</h1>
+        <p>Search common case-name and citation word abbreviations.</p>
+        <span class="statute-tag">Table 6 — Case Names &amp; Institutional Authors</span>
+        <span class="statute-tag">Table 10 — Geographic Terms</span>
       </div>
-      <div class="result-count" id="count"></div>
-
-      <div id="results"></div>
-
-      <div class="statute-note">
-        Covers general words (Table 6), geographic terms (Table 10 — U.S. states, territories &amp; cities; Australian states &amp; Canadian provinces; foreign countries &amp; regions), and common court/publication terms. For anything not listed here, use full spelling in citations that aren't case names, and check the current print edition for edge cases.
-      </div>
-
     </div>
-  </div>
+  </header>
+
+  <main class="wrap">
+    <div class="card">
+      <div class="card-inner">
+
+        <div class="section-label">Search</div>
+        <div class="search-field">
+          <input type="text" id="search" aria-label="Search abbreviations" placeholder='Search a word, e.g. &quot;association&quot; or &quot;department&quot;' autocomplete="off" autofocus>
+        </div>
+        <div class="result-count" id="count"></div>
+
+        <div id="results"></div>
+
+        <div class="statute-note">
+          Covers general words (Table 6), geographic terms (Table 10 — U.S. states, territories &amp; cities; Australian states &amp; Canadian provinces; foreign countries &amp; regions), and common court/publication terms. For anything not listed here, use full spelling in citations that aren't case names, and check the current print edition for edge cases.
+        </div>
+
+      </div>
+    </div>
+  </main>
 
   <script>
     const data = [

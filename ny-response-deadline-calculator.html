@@ -8,136 +8,124 @@
   <link rel="icon" type="image/svg+xml" href="/favicons/dc-favicon.svg">
   <link rel="apple-touch-icon" href="/favicons/dc-apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <style>
-    .result-label {
-      font-family: 'DM Mono', monospace;
-      font-size: .7rem;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      color: var(--muted);
-      margin-bottom: .35rem;
+    /* ── Page-specific: NY Answer Deadlines ── */
+    .result-box {
+      background: var(--blue-tint);
+      border-top: 1px solid var(--blue-line);
+      padding: 28px;
     }
+    .result-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; align-items: flex-start; }
     .result-date {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.75rem;
-      line-height: 1.2;
-      color: var(--ink);
-      margin-bottom: .5rem;
+      font-size: clamp(24px, 4vw, 32px); font-weight: 700; letter-spacing: -0.02em;
+      color: var(--navy); line-height: 1.15; margin: 6px 0 4px;
     }
-    .result-breakdown {
-      font-size: .875rem;
-      color: var(--muted);
-      margin-bottom: 0;
-    }
+    .result-breakdown { font-size: 14px; color: var(--muted); }
     .adjustment-note {
-      margin-top: .75rem;
-      font-size: .8125rem;
-      color: var(--accent);
-      background: color-mix(in srgb, var(--accent) 8%, transparent);
-      border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
-      border-radius: 6px;
-      padding: .5rem .75rem;
+      margin-top: 14px; padding: 10px 14px;
+      font-size: 13px; line-height: 1.55; color: #1F4D2F;
+      background: var(--green-tint); border: 1px solid #CFE6D6; border-radius: var(--radius);
     }
     .adjustment-note.hidden { display: none; }
     .affidavit-row { transition: opacity .15s; }
     .affidavit-row.hidden { display: none; }
+    .result-box .btn-copy { background: var(--white); }
+    @media (max-width: 600px) { .result-box { padding: 24px 18px; } }
   </style>
 </head>
 <body>
 
-  <!-- Site Nav -->
-  <nav class="site-nav">
-    <a href="bluebook-abbreviations.html">Bluebook Abbreviations</a>
-    <span class="site-nav-sep">·</span>
-    <a href="cplr-provisions.html">CPLR Provisions</a>
-    <span class="site-nav-sep">·</span>
-    <a href="date-calculator.html">Date Calculator</a>
-    <span class="site-nav-sep">·</span>
-    <a href="nj-court-rules.html">NJ Court Rules</a>
-    <span class="site-nav-sep">·</span>
-    <a href="nj-motion-deadlines-calculator.html">NJ Motion Deadlines</a>
-    <span class="site-nav-sep">·</span>
-    <a href="nj-rpc.html">NJ RPC</a>
-    <span class="site-nav-sep">·</span>
-    <span class="site-nav-current">NY Answer Deadlines</span>
-    <span class="site-nav-sep">·</span>
-    <a href="ny-motion-deadlines-calculator.html">NY Motion Deadlines</a>
-    <span class="site-nav-sep">·</span>
-    <a href="redline.html">Redline</a>
-    <a href="https://www.philipmtaylor.com" class="site-nav-home">philipmtaylor.com</a>
-  </nav>
+  <header class="site-header">
+    <div class="wrap">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="https://www.philipmtaylor.com">philipmtaylor.com</a>
+        <span class="breadcrumb-sep" aria-hidden="true">›</span>
+        <span class="breadcrumb-current">Legal Tools</span>
+      </nav>
 
-  <!-- Page Title -->
-  <div class="page-title">
-    <h1>NY Answer Deadlines</h1>
-    <p>Calculate the deadline for a defendant to respond to a Summons and Complaint in New York State court based on the method of service.</p>
-    <div class="statute-tag">CPLR § 320 — Defendant's appearance</div>
-    <div class="statute-tag" style="margin-left:8px;">CPLR § 308 — Personal service upon a natural person</div>
-  </div>
+      <nav class="site-nav" aria-label="Legal tools">
+        <ul>
+          <li><a href="bluebook-abbreviations.html" title="Bluebook Abbreviations">Bluebook</a></li>
+          <li><a href="cplr-provisions.html" title="CPLR Provisions">CPLR</a></li>
+          <li><a href="date-calculator.html">Date Calculator</a></li>
+          <li><a href="nj-court-rules.html" title="NJ Court Rules">NJ Rules</a></li>
+          <li><a href="nj-motion-deadlines-calculator.html" title="NJ Motion Deadlines">NJ Motions</a></li>
+          <li><a href="nj-rpc.html" title="NJ Rules of Professional Conduct">NJ RPC</a></li>
+          <li><a href="ny-response-deadline-calculator.html" title="NY Answer Deadlines" aria-current="page">NY Answers</a></li>
+          <li><a href="ny-motion-deadlines-calculator.html" title="NY Motion Deadlines">NY Motions</a></li>
+          <li><a href="redline.html">Redline</a></li>
+        </ul>
+      </nav>
 
-  <!-- Card -->
-  <div class="card">
-    <div class="card-inner">
+      <div class="page-title">
+        <h1>NY Answer Deadlines</h1>
+        <p>Calculate the deadline for a defendant to respond to a Summons and Complaint in New York State court based on the method of service.</p>
+        <span class="statute-tag">CPLR § 320 — Defendant's appearance</span>
+        <span class="statute-tag">CPLR § 308 — Personal service upon a natural person</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="card">
       <div class="panel active" id="panel-main">
-
-        <div class="section-label">Service Details</div>
-
-        <div class="form-row cols-2">
-          <div class="field">
-            <label for="service-method">Service Method</label>
-            <div class="select-wrapper">
-              <select id="service-method" onchange="onMethodChange()">
-                <option value="1">§ 308(1) — Personal Service (20 days)</option>
-                <option value="2">§ 308(2) — Service on Household Member (30 days + affidavit)</option>
-                <option value="3">§ 308(3) — Service on Agent (30 days)</option>
-                <option value="4">§ 308(4) — Nail and Mail (30 days + affidavit)</option>
-              </select>
+        <div class="card-inner">
+          <div class="form-row cols-2">
+            <div class="field">
+              <label for="service-method">Service method</label>
+              <div class="select-wrapper">
+                <select id="service-method" onchange="onMethodChange()">
+                  <option value="1">§ 308(1) — Personal Service (20 days)</option>
+                  <option value="2">§ 308(2) — Service on Household Member (30 days + affidavit)</option>
+                  <option value="3">§ 308(3) — Service on Agent (30 days)</option>
+                  <option value="4">§ 308(4) — Nail and Mail (30 days + affidavit)</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="service-date">Date of service</label>
+              <input type="date" id="service-date" title="Date of Service"
+                oninput="document.getElementById('service-date-error').classList.remove('visible')">
+              <span class="field-error" id="service-date-error"></span>
             </div>
           </div>
-          <div class="field">
-            <label for="service-date">Date of Service</label>
-            <input type="date" id="service-date" title="Date of Service"
-              oninput="document.getElementById('service-date-error').classList.remove('visible')">
-            <span class="field-error" id="service-date-error"></span>
+
+          <div class="form-row cols-2 affidavit-row hidden" id="affidavit-row">
+            <div class="field">
+              <label for="affidavit-date">Date of filing of affidavit of service</label>
+              <input type="date" id="affidavit-date" title="Date Affidavit of Service Was Filed"
+                oninput="document.getElementById('affidavit-date-error').classList.remove('visible')">
+              <span class="field-error" id="affidavit-date-error"></span>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button class="btn-calculate" onclick="calculate()">Calculate Deadline</button>
+            <button class="btn-reset" onclick="reset()">Clear</button>
           </div>
         </div>
 
-        <div class="form-row cols-2 affidavit-row hidden" id="affidavit-row">
-          <div class="field">
-            <label for="affidavit-date">Date of Filing of Affidavit of Service</label>
-            <input type="date" id="affidavit-date" title="Date Affidavit of Service Was Filed"
-              oninput="document.getElementById('affidavit-date-error').classList.remove('visible')">
-            <span class="field-error" id="affidavit-date-error"></span>
-          </div>
-        </div>
-
-        <div class="action-row">
-          <button class="btn-calculate" onclick="calculate()">Calculate Deadline</button>
-          <button class="btn-reset" onclick="reset()">Clear</button>
-        </div>
-
-        <hr class="divider">
-
-        <div class="result-box" id="result-box">
-          <div class="result-label">Response Deadline</div>
-          <div class="result-date" id="result-date"></div>
-          <div class="result-breakdown" id="result-breakdown"></div>
-          <div class="adjustment-note hidden" id="adjustment-note"></div>
-          <div class="copy-row">
+        <section class="result-box" id="result-box" aria-live="polite">
+          <div class="result-head">
+            <div>
+              <div class="result-label">Response Deadline</div>
+              <div class="result-date" id="result-date"></div>
+              <div class="result-breakdown" id="result-breakdown"></div>
+            </div>
             <button class="btn-copy" onclick="copyResult(this)">Copy Result</button>
           </div>
-        </div>
+          <div class="adjustment-note hidden" id="adjustment-note"></div>
 
-        <div class="statute-note" id="statute-note" style="display:none;">
-          <strong>CPLR § 320(a)</strong> — The defendant appears by serving an answer or a notice of appearance, or by making a motion which has the effect of extending the time to answer. An appearance shall be made within twenty days after service of the summons, except that if the summons was served pursuant to section 308(2), 308(4), or 313, the appearance shall be made within thirty days after service is complete.
-        </div>
+          <div class="statute-note" id="statute-note" style="display:none;">
+            <strong>CPLR § 320(a)</strong> — The defendant appears by serving an answer or a notice of appearance, or by making a motion which has the effect of extending the time to answer. An appearance shall be made within twenty days after service of the summons, except that if the summons was served pursuant to section 308(2), 308(4), or 313, the appearance shall be made within thirty days after service is complete.
+          </div>
+        </section>
 
       </div>
     </div>
-  </div>
+  </main>
 
   <script>
     // ── Date helpers ──────────────────────────────────────

@@ -7,224 +7,181 @@
   <link rel="icon" type="image/x-icon" href="/favicons/dc-favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicons/dc-favicon.svg">
   <link rel="apple-touch-icon" href="/favicons/dc-apple-touch-icon.png">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <style>
-    /* Result box: filled orange background */
+    /* ── Page-specific: Date Calculator ── */
     .result-box {
-      background: var(--accent-soft);
-      border: 1px solid rgba(201,79,42,0.2);
-      border-radius: var(--radius);
-      padding: 28px 32px;
+      background: var(--blue-tint);
+      border-top: 1px solid var(--blue-line);
+      padding: 28px;
     }
-
-    /* Copy button: accent-tinted border to match result box */
-    .copy-row { margin-top: 20px; }
-    .btn-copy { border-color: rgba(201,79,42,0.3); }
-    .btn-copy:hover { border-color: rgba(201,79,42,0.6); }
-
-    /* Result content */
+    .result-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; align-items: flex-start; }
     .result-main {
-      font-family: 'DM Serif Display', serif;
-      font-size: clamp(1.6rem, 4vw, 2.4rem);
-      color: var(--accent);
-      line-height: 1.1;
-      margin-bottom: 6px;
+      font-size: clamp(24px, 4vw, 32px); font-weight: 700; letter-spacing: -0.02em;
+      color: var(--navy); line-height: 1.15; margin: 6px 0 4px;
     }
-    .result-sub {
-      font-size: 0.82rem;
-      color: var(--muted);
-      margin-bottom: 18px;
-    }
-    .result-breakdown {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
+    .result-sub { font-size: 14px; color: var(--muted); }
+    .result-breakdown { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
     .breakdown-chip {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.75rem;
-      background: rgba(201,79,42,0.1);
-      color: var(--accent);
-      border: 1px solid rgba(201,79,42,0.2);
-      border-radius: 2px;
-      padding: 5px 12px;
+      font-family: var(--mono); font-size: 12px; color: #1F4A8F;
+      background: var(--blue-tint-2); border-radius: 999px; padding: 6px 12px;
     }
-
-    /* Repeat results */
-    .repeat-results { margin-top: 20px; }
+    .repeat-results:empty { display: none; }
+    .repeat-results {
+      margin-top: 18px; background: var(--white);
+      border: 1px solid var(--blue-line); border-radius: 10px; overflow: hidden;
+    }
+    /* The sequence header is built by the script with inline styles; restyle it here. */
+    .repeat-results > div:first-child {
+      font-family: var(--mono) !important; font-size: 12px !important; letter-spacing: .12em !important;
+      color: var(--muted) !important; margin: 0 !important; padding: 12px 18px;
+    }
     .repeat-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(201,79,42,0.12);
-      font-size: 0.85rem;
+      display: flex; justify-content: space-between; gap: 12px;
+      padding: 11px 18px; border-top: 1px solid var(--line-soft); font-size: 14px;
     }
-    .repeat-row:last-child { border-bottom: none; }
-    .repeat-label { color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.72rem; }
+    .repeat-label { color: var(--muted); }
     .repeat-value { font-weight: 600; color: var(--ink); }
-    .repeat-day { color: var(--muted); font-size: 0.75rem; margin-left: 8px; font-weight: 400; }
+    .repeat-day { color: var(--muted); font-weight: 400; margin-left: 8px; }
+    .result-box .btn-copy { background: var(--white); }
+    @media (max-width: 600px) { .result-box { padding: 24px 18px; } }
   </style>
 </head>
 <body>
 
-  <!-- Site Nav -->
-  <nav class="site-nav">
-    <a href="bluebook-abbreviations.html">Bluebook Abbreviations</a>
-    <span class="site-nav-sep">·</span>
-    <a href="cplr-provisions.html">CPLR Provisions</a>
-    <span class="site-nav-sep">·</span>
-    <span class="site-nav-current">Date Calculator</span>
-    <span class="site-nav-sep">·</span>
-    <a href="nj-court-rules.html">NJ Court Rules</a>
-    <span class="site-nav-sep">·</span>
-    <a href="nj-motion-deadlines-calculator.html">NJ Motion Deadlines</a>
-    <span class="site-nav-sep">·</span>
-    <a href="nj-rpc.html">NJ RPC</a>
-    <span class="site-nav-sep">·</span>
-    <a href="ny-response-deadline-calculator.html">NY Answer Deadlines</a>
-    <span class="site-nav-sep">·</span>
-    <a href="ny-motion-deadlines-calculator.html">NY Motion Deadlines</a>
-    <span class="site-nav-sep">·</span>
-    <a href="redline.html">Redline</a>
-    <a href="https://www.philipmtaylor.com" class="site-nav-home">philipmtaylor.com</a>
-  </nav>
+  <header class="site-header">
+    <div class="wrap">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="https://www.philipmtaylor.com">philipmtaylor.com</a>
+        <span class="breadcrumb-sep" aria-hidden="true">›</span>
+        <span class="breadcrumb-current">Legal Tools</span>
+      </nav>
 
-  <!-- Page Title -->
-  <div class="page-title">
-    <h1>Date Calculator</h1>
-    <p>Add or subtract days, weeks, months, and years from any date — or calculate the duration between two dates.</p>
-  </div>
+      <nav class="site-nav" aria-label="Legal tools">
+        <ul>
+          <li><a href="bluebook-abbreviations.html" title="Bluebook Abbreviations">Bluebook</a></li>
+          <li><a href="cplr-provisions.html" title="CPLR Provisions">CPLR</a></li>
+          <li><a href="date-calculator.html" aria-current="page">Date Calculator</a></li>
+          <li><a href="nj-court-rules.html" title="NJ Court Rules">NJ Rules</a></li>
+          <li><a href="nj-motion-deadlines-calculator.html" title="NJ Motion Deadlines">NJ Motions</a></li>
+          <li><a href="nj-rpc.html" title="NJ Rules of Professional Conduct">NJ RPC</a></li>
+          <li><a href="ny-response-deadline-calculator.html" title="NY Answer Deadlines">NY Answers</a></li>
+          <li><a href="ny-motion-deadlines-calculator.html" title="NY Motion Deadlines">NY Motions</a></li>
+          <li><a href="redline.html">Redline</a></li>
+        </ul>
+      </nav>
 
-  <!-- Tabs -->
-  <div class="tabs" role="tablist">
-    <button class="tab-btn active" onclick="switchTab('add')" role="tab">➕ Add / Subtract from Date</button>
-    <button class="tab-btn" onclick="switchTab('diff')" role="tab">📏 Duration Between Dates</button>
-  </div>
+      <div class="page-title">
+        <h1>Date Calculator</h1>
+        <p>Add or subtract days, weeks, months, and years from any date — or calculate the duration between two dates.</p>
+      </div>
+    </div>
+  </header>
 
-  <!-- Card -->
-  <div class="card">
-    <div class="card-inner">
+  <main class="wrap">
+    <div class="card">
 
-      <!-- ══════════ PANEL 1: ADD/SUBTRACT ══════════ -->
-      <div class="panel active" id="panel-add">
+      <div class="tabs" role="tablist">
+        <button class="tab-btn active" onclick="switchTab('add')" role="tab">Add / Subtract</button>
+        <button class="tab-btn" onclick="switchTab('diff')" role="tab">Duration Between Dates</button>
+      </div>
 
-        <div class="section-label">Start Date</div>
-        <div class="form-row cols-2">
-          <div class="field">
-            <label for="add-start-date">Date</label>
-            <input type="date" id="add-start-date" oninput="document.getElementById('add-start-error').classList.remove('visible')" />
-            <div class="field-error" id="add-start-error"></div>
-          </div>
-          <div class="field" style="display:flex;align-items:flex-end;">
-            <button class="btn-reset" onclick="setToday('add-start-date')" style="width:auto;">Use Today</button>
-          </div>
-        </div>
-
-        <div class="section-label">Operation</div>
-        <div class="form-row cols-1" style="margin-bottom:16px;">
-          <div class="field">
-            <label>Add or Subtract</label>
-            <div class="toggle-group">
-              <input type="radio" name="add-op" id="op-add" value="add" checked />
-              <label for="op-add">( + ) Add</label>
-              <input type="radio" name="add-op" id="op-sub" value="subtract" />
-              <label for="op-sub">( − ) Subtract</label>
+      <!-- ══════════ PANEL 1: ADD / SUBTRACT ══════════ -->
+      <div class="panel active" id="panel-add" role="tabpanel">
+        <div class="card-inner">
+          <div class="form-row cols-2 align-end">
+            <div class="field">
+              <label for="add-start-date">Start date</label>
+              <div class="field-inline">
+                <input type="date" id="add-start-date" oninput="document.getElementById('add-start-error').classList.remove('visible')" />
+                <button class="btn-reset" onclick="setToday('add-start-date')">Today</button>
+              </div>
+              <div class="field-error" id="add-start-error"></div>
+            </div>
+            <div class="field">
+              <span class="label" id="op-label">Operation</span>
+              <div class="toggle-group" role="radiogroup" aria-labelledby="op-label">
+                <input type="radio" name="add-op" id="op-add" value="add" checked />
+                <label for="op-add">+ Add</label>
+                <input type="radio" name="add-op" id="op-sub" value="subtract" />
+                <label for="op-sub">− Subtract</label>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="form-row cols-4">
-          <div class="field">
-            <label for="add-years">Years</label>
-            <input type="number" id="add-years" min="0" value="0" />
+          <div class="form-row cols-5">
+            <div class="field"><label for="add-years">Years</label><input type="number" id="add-years" min="0" value="0" /></div>
+            <div class="field"><label for="add-months">Months</label><input type="number" id="add-months" min="0" value="0" /></div>
+            <div class="field"><label for="add-weeks">Weeks</label><input type="number" id="add-weeks" min="0" value="0" /></div>
+            <div class="field"><label for="add-days">Days</label><input type="number" id="add-days" min="0" value="0" /></div>
+            <div class="field"><label for="add-repeat">Repeat</label><input type="number" id="add-repeat" min="1" max="25" value="1" title="Show up to 25 sequential results" /></div>
           </div>
-          <div class="field">
-            <label for="add-months">Months</label>
-            <input type="number" id="add-months" min="0" value="0" />
-          </div>
-          <div class="field">
-            <label for="add-weeks">Weeks</label>
-            <input type="number" id="add-weeks" min="0" value="0" />
-          </div>
-          <div class="field">
-            <label for="add-days">Days</label>
-            <input type="number" id="add-days" min="0" value="0" />
+
+          <div class="action-row">
+            <button class="btn-calculate" onclick="calculateAdd()">Calculate</button>
+            <button class="btn-reset" onclick="resetAdd()">Clear</button>
           </div>
         </div>
 
-        <div class="form-row cols-2">
-          <div class="field">
-            <label>Repeat</label>
-            <input type="number" id="add-repeat" min="1" max="25" value="1" title="Calculate multiple times in sequence" />
-          </div>
-          <div class="field" style="display:flex;align-items:flex-end;">
-            <span style="font-size:0.78rem;color:var(--muted);padding-bottom:12px;">Show up to 25 sequential results</span>
-          </div>
-        </div>
-
-        <div class="action-row">
-          <button class="btn-calculate" onclick="calculateAdd()">Calculate</button>
-          <button class="btn-reset" onclick="resetAdd()">Clear</button>
-        </div>
-
-        <hr class="divider" />
-
-        <div class="result-box" id="add-result">
-          <div class="result-main" id="add-result-date"></div>
-          <div class="result-sub" id="add-result-sub"></div>
-          <div class="result-breakdown" id="add-result-chips"></div>
-          <div class="repeat-results" id="add-repeat-list"></div>
-          <div class="copy-row">
+        <section class="result-box" id="add-result" aria-live="polite">
+          <div class="result-head">
+            <div>
+              <div class="result-label">Result</div>
+              <div class="result-main" id="add-result-date"></div>
+              <div class="result-sub" id="add-result-sub"></div>
+            </div>
             <button class="btn-copy" onclick="copyResult('add', this)">Copy Result</button>
           </div>
-        </div>
+          <div class="result-breakdown" id="add-result-chips"></div>
+          <div class="repeat-results" id="add-repeat-list"></div>
+        </section>
       </div>
 
       <!-- ══════════ PANEL 2: DURATION ══════════ -->
-      <div class="panel" id="panel-diff">
-
-        <div class="section-label">Date Range</div>
-        <div class="form-row cols-2">
-          <div class="field">
-            <label for="diff-start">Start Date</label>
-            <input type="date" id="diff-start" oninput="document.getElementById('diff-start-error').classList.remove('visible')" />
-            <div class="field-error" id="diff-start-error"></div>
+      <div class="panel" id="panel-diff" role="tabpanel">
+        <div class="card-inner">
+          <div class="form-row cols-2">
+            <div class="field">
+              <label for="diff-start">Start date</label>
+              <div class="field-inline">
+                <input type="date" id="diff-start" oninput="document.getElementById('diff-start-error').classList.remove('visible')" />
+                <button class="btn-reset" onclick="setToday('diff-start')">Today</button>
+              </div>
+              <div class="field-error" id="diff-start-error"></div>
+            </div>
+            <div class="field">
+              <label for="diff-end">End date</label>
+              <div class="field-inline">
+                <input type="date" id="diff-end" oninput="document.getElementById('diff-end-error').classList.remove('visible')" />
+                <button class="btn-reset" onclick="setToday('diff-end')">Today</button>
+              </div>
+              <div class="field-error" id="diff-end-error"></div>
+            </div>
           </div>
-          <div class="field">
-            <label for="diff-end">End Date</label>
-            <input type="date" id="diff-end" oninput="document.getElementById('diff-end-error').classList.remove('visible')" />
-            <div class="field-error" id="diff-end-error"></div>
+
+          <div class="action-row">
+            <button class="btn-calculate" onclick="calculateDiff()">Calculate Duration</button>
+            <button class="btn-reset" onclick="resetDiff()">Clear</button>
           </div>
         </div>
 
-        <div class="form-row cols-2">
-          <div class="field" style="display:flex;align-items:flex-end;gap:8px;">
-            <button class="btn-reset" onclick="setToday('diff-start')">Start = Today</button>
-            <button class="btn-reset" onclick="setToday('diff-end')">End = Today</button>
-          </div>
-        </div>
-
-        <div class="action-row">
-          <button class="btn-calculate" onclick="calculateDiff()">Calculate Duration</button>
-          <button class="btn-reset" onclick="resetDiff()">Clear</button>
-        </div>
-
-        <hr class="divider" />
-
-        <div class="result-box" id="diff-result">
-          <div class="result-main" id="diff-result-main"></div>
-          <div class="result-sub" id="diff-result-sub"></div>
-          <div class="result-breakdown" id="diff-chips"></div>
-          <div class="copy-row">
+        <section class="result-box" id="diff-result" aria-live="polite">
+          <div class="result-head">
+            <div>
+              <div class="result-label">Duration</div>
+              <div class="result-main" id="diff-result-main"></div>
+              <div class="result-sub" id="diff-result-sub"></div>
+            </div>
             <button class="btn-copy" onclick="copyResult('diff', this)">Copy Result</button>
           </div>
-        </div>
+          <div class="result-breakdown" id="diff-chips"></div>
+        </section>
       </div>
 
-    </div><!-- /card-inner -->
-  </div><!-- /card -->
+    </div>
+  </main>
 
   <script>
     // ── Helpers ──────────────────────────────────────
