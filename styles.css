@@ -59,6 +59,7 @@ body {
 .breadcrumb a:hover { color: var(--white); text-decoration-color: var(--blue-light); }
 .breadcrumb-sep { color: var(--navy-muted); font-size: 16px; }
 .breadcrumb-current { color: var(--white); font-weight: 700; }
+.breadcrumb a.breadcrumb-current { color: var(--white); }   /* "Legal Tools" links to tools.html */
 
 .site-nav { padding-top: 16px; }
 .site-nav ul {

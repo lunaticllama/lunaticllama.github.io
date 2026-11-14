@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Legal Tools</title>
+  <link rel="icon" type="image/x-icon" href="/favicons/dc-favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/favicons/dc-favicon.svg">
+  <link rel="apple-touch-icon" href="/favicons/dc-apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ── Page-specific: Legal Tools landing ── */
+    .tool-grid {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;
+      list-style: none;
+    }
+    .tool {
+      position: relative; display: flex; flex-direction: column; height: 100%;
+      background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+      padding: 20px 20px 18px; text-decoration: none; color: inherit;
+      transition: border-color .15s, box-shadow .15s, transform .15s;
+    }
+    .tool:hover { border-color: #BFD2F5; box-shadow: 0 6px 20px rgba(15,39,71,0.08); transform: translateY(-2px); }
+    .tool:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+    .tool-kind {
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+      letter-spacing: .12em; text-transform: uppercase; color: var(--blue);
+    }
+    .tool-kind .juris { color: var(--muted); }
+    .tool-name {
+      margin-top: 10px; font-size: 18px; font-weight: 700; letter-spacing: -0.01em;
+      color: var(--navy); line-height: 1.25;
+    }
+    .tool-desc { margin-top: 6px; font-size: 14px; line-height: 1.55; color: var(--muted); flex: 1; }
+    .tool-foot {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft);
+    }
+    .tool-cite { font-family: var(--mono); font-size: 11px; color: var(--text-2); }
+    .tool-arrow { color: var(--blue); font-size: 16px; transition: transform .15s; }
+    .tool:hover .tool-arrow { transform: translateX(3px); }
+
+    @media (max-width: 860px) { .tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 560px) { .tool-grid { grid-template-columns: minmax(0, 1fr); } }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="wrap">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="https://www.philipmtaylor.com">philipmtaylor.com</a>
+        <span class="breadcrumb-sep" aria-hidden="true">›</span>
+        <span class="breadcrumb-current">Legal Tools</span>
+      </nav>
+
+      <nav class="site-nav" aria-label="Legal tools">
+        <ul>
+          <li><a href="bluebook-abbreviations.html" title="Bluebook Abbreviations">Bluebook</a></li>
+          <li><a href="date-calculator.html">Date Calculator</a></li>
+          <li><a href="nj-motion-deadlines-calculator.html" title="NJ Motion Deadlines">NJ Motions</a></li>
+          <li><a href="nj-rpc.html" title="NJ Rules of Professional Conduct">NJ RPC</a></li>
+          <li><a href="nj-court-rules.html" title="NJ Court Rules">NJ Rules</a></li>
+          <li><a href="ny-response-deadline-calculator.html" title="NY Answer Deadlines">NY Answers</a></li>
+          <li><a href="ny-cplr.html">NY CPLR</a></li>
+          <li><a href="ny-motion-deadlines-calculator.html" title="NY Motion Deadlines">NY Motions</a></li>
+          <li><a href="redline.html">Redline</a></li>
+        </ul>
+      </nav>
+
+      <div class="page-title">
+        <h1>Legal Tools</h1>
+        <p>Deadline calculators, full-text court rules, and drafting utilities for New York and New Jersey practice. Everything runs in your browser.</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="card">
+      <div class="card-inner">
+        <ul class="tool-grid">
+          <li><a class="tool" href="bluebook-abbreviations.html">
+            <span class="tool-kind">Reference</span>
+            <span class="tool-name">Bluebook Abbreviations</span>
+            <span class="tool-desc">Search word abbreviations for case names, institutional authors, and geographic terms.</span>
+            <span class="tool-foot"><span class="tool-cite">Tables 6 &amp; 10</span><span class="tool-arrow" aria-hidden="true">→</span></span>
+          </a></li>
+          <li><a class="tool" href="date-calculator.html">
+            <span class="tool-kind">Calculator</span>
+            <span class="tool-name">Date Calculator</span>
+            <span class="tool-desc">Add or subtract days, weeks, months, and years from a date, or measure the time between two dates.</span>
+            <span class="tool-foot"><span class="tool-cite">Calendar days</span><span class="tool-arrow" aria-hidden="true">→</span></span>
+          </a></li>
+          <li><a class="tool" href="nj-court-rules.html">
+            <span class="tool-kind">Reference <span class="juris">· NJ</span></span>
+            <span class="tool-name">NJ Court Rules</span>
+            <span class="tool-desc">Full text of the Rules Governing the Courts of New Jersey, Parts I–VI, searchable by keyword or rule number.</span>
+            <span class="tool-foot"><span class="tool-cite">R. 1:1 – R. 6:12</span><span class="tool-arrow" aria-hidden="true">→</span></span>
+          </a></li>
+          <li><a class="tool" href="nj-motion-deadlines-calculator.html">
+            <span class="tool-kind">Calculator <span class="juris">· NJ</span></span>
+            <span class="tool-name">NJ Motion Deadlines Calculator</span>
+            <span class="tool-desc">Filing, opposition, and reply deadlines for regular and summary judgment motions from a scheduled motion day.</span>
+            <span class="tool-foot"><span class="tool-cite">R. 1:6-3 · R. 4:46-1</span><span class="tool-arrow" aria-hidden="true">→</span></span>
+          </a></li>
+          <li><a class="tool" href="nj-rpc.html">
+            <span class="tool-kind">Reference <span class="juris">· NJ</span></span>
+            <span class="tool-name">NJ Rules of Professional Conduct</span>
+            <span class="tool-desc">Full text of the RPCs and the Attorney Advertising Guidelines, browsable by article or searchable.</span>
+            <span class="tool-foot"><span class="tool-cite">RPC 1.0 – 8.5</span><span class="tool-arrow" aria-hidden="true">→</span></span>
+          </a></li>
+          <li><a class="tool" href="ny-response-deadline-calculator.html">
+            <span class="tool-kind">Calculator <span class="juris">· NY</span></span>
+            <span class="tool-name">NY Answer Deadline Calculator</span>
+            <span class="tool-desc">When a defendant must answer or appear, based on the method of service and the affidavit filing date.</span>
+            <span class="tool-foot"><span class="tool-cite">CPLR 308 · 320</span><span class="tool-arrow" aria-hidden="true">→</span></span>
+          </a></li>
+          <li><a class="tool" href="ny-cplr.html">
+            <span class="tool-kind">Reference <span class="juris">· NY</span></span>
+            <span class="tool-name">NY CPLR</span>
+            <span class="tool-desc">Full text of the Civil Practice Law &amp; Rules, browsable by article or searchable by keyword or section.</span>
+            <span class="tool-foot"><span class="tool-cite">Arts. 1 – 100</span><span class="tool-arrow" aria-hidden="true">→</span></span>
+          </a></li>
+          <li><a class="tool" href="ny-motion-deadlines-calculator.html">
+            <span class="tool-kind">Calculator <span class="juris">· NY</span></span>
+            <span class="tool-name">NY Motion Deadlines Calculator</span>
+            <span class="tool-desc">Motion, opposition, and reply deadlines from either the return date or the filing date.</span>
+            <span class="tool-foot"><span class="tool-cite">CPLR 2214</span><span class="tool-arrow" aria-hidden="true">→</span></span>
+          </a></li>
+          <li><a class="tool" href="redline.html">
+            <span class="tool-kind">Drafting</span>
+            <span class="tool-name">Redline</span>
+            <span class="tool-desc">Compare two versions of a text and export the changes to Word as tracked changes or a formatted redline.</span>
+            <span class="tool-foot"><span class="tool-cite">.txt · .docx</span><span class="tool-arrow" aria-hidden="true">→</span></span>
+          </a></li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

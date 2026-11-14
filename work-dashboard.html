@@ -513,6 +513,14 @@
     .link-btn:hover { color: var(--margin); border-color: var(--margin); }
     .link-btn:focus-visible { outline: 2px solid var(--margin); outline-offset: 3px; }
     .link-arrow { font-size: .78rem; color: var(--muted); }
+    /* Overview link sits apart from the alphabetical tool list */
+    .link-btn.all-tools {
+      margin-top: 14px;
+      border-top: 1px solid var(--ink);
+      border-bottom: none;
+      font-family: var(--serif);
+      font-style: italic;
+    }
     .link-btn:hover .link-arrow { color: var(--margin); }
 
     /* ── Responsive ── */
@@ -618,6 +626,9 @@
             Redline <span class="link-arrow">→</span>
           </a>
         </div>
+        <a class="link-btn all-tools" href="/tools.html">
+          Legal Tools <span class="link-arrow">→</span>
+        </a>
       </div>
 
       <!-- Quick Links -->
