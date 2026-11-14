@@ -1,10 +1,15 @@
 {
-  "updated": "2026-11-14T00:09:21.146139+00:00",
+  "updated": "2026-11-14T01:39:10.855275+00:00",
   "items": [
+    {
+      "title": "Airports Fill Up With Stuck Families and Stranded Travelers",
+      "link": "https://www.nytimes.com/2026/11/13/us/airports-stranded-travelers.html",
+      "pubDate": "Sat, 14 Nov 2026 00:45:13 +0000"
+    },
     {
       "title": "Flight Canceled During the FAA Ground Stop? Here\u2019s What to Do.",
       "link": "https://www.nytimes.com/2026/11/13/us/ground-stop-flight-delays-cancellations-tips.html",
-      "pubDate": "Fri, 13 Nov 2026 23:42:43 +0000"
+      "pubDate": "Sat, 14 Nov 2026 01:04:25 +0000"
     },
     {
       "title": "A Nationwide Ground Stop",
@@ -20,11 +25,6 @@
       "title": "Europe Agrees on a Team to Represent It in Talks With Russia",
       "link": "https://www.nytimes.com/2026/11/13/world/europe/europe-ukraine-talks-russia.html",
       "pubDate": "Fri, 13 Nov 2026 22:47:13 +0000"
-    },
-    {
-      "title": "Jensen Huang\u2019s Resignation From Nvidia Worries the A.I. Start-Up World",
-      "link": "https://www.nytimes.com/2026/11/13/technology/jensen-huang-silicon-valley-start-ups.html",
-      "pubDate": "Fri, 13 Nov 2026 16:36:28 +0000"
     }
   ]
 }
