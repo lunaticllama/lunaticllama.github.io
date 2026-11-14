@@ -92,6 +92,9 @@ def main():
     # Headlines (fail loudly — this is the primary purpose)
     xml_bytes = fetch_rss()
     headlines = parse_headlines(xml_bytes)
+    for h in headlines:
+        # Google News appends the publisher name to each title
+        h['title'] = h['title'].removesuffix(' - WSJ').strip()
     print(f"Fetched {len(headlines)} headlines")
     with open(HEADLINES_OUTPUT, 'w') as f:
         json.dump({'updated': now, 'items': headlines}, f, indent=2)
