@@ -1,6 +1,11 @@
 {
-  "updated": "2026-11-20T02:30:52.628541+00:00",
+  "updated": "2026-11-20T18:57:14.382783+00:00",
   "items": [
+    {
+      "title": "Everything is Breaking",
+      "link": "https://talkingpointsmemo.com/edblog/everything-is-breaking",
+      "pubDate": "Fri, 20 Nov 2026 17:20:04 +0000"
+    },
     {
       "title": "The Dictator Thing",
       "link": "https://talkingpointsmemo.com/edblog/the-dictator-thing",
@@ -20,11 +25,6 @@
       "title": "GAOing Very Strongly",
       "link": "https://talkingpointsmemo.com/edblog/gaoing-very-strongly",
       "pubDate": "Tue, 17 Nov 2026 19:22:36 +0000"
-    },
-    {
-      "title": "Is Netanyahu Feeding Trump Scary Iran Intel In a Desperate Bid to Remain in Power?",
-      "link": "https://talkingpointsmemo.com/edblog/is-netanyahu-feeding-trump-scary-iran-intel-in-a-desperate-bid-to-remain-in-power",
-      "pubDate": "Tue, 17 Nov 2026 00:28:23 +0000"
     }
   ]
 }
