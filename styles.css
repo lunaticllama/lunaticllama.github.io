@@ -302,6 +302,10 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 .gcl-note { display: none; background: var(--green-tint); border: 1px solid #CFE6D6; color: #1F4D2F; }
 .gcl-note.visible { display: block; }
 .gcl-note strong { color: var(--green); }
+.service-note { margin-top: 14px; padding: 14px 18px; border-radius: var(--radius); font-size: 13px; line-height: 1.65; background: #FFF8E6; border: 1px solid #EBD9A6; color: #5C4410; }
+.service-note strong { color: #3F2E05; font-weight: 600; }
+.calc-disclaimer { margin: 18px 0 40px; padding: 0 4px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+.calc-disclaimer strong { color: var(--text-2); font-weight: 600; }
 .impermissible-box { display: none; background: var(--red-tint); border: 1px solid #F1C9C4; color: #7A2020; }
 .impermissible-box.visible { display: block; }
 .impermissible-box strong { color: var(--red); }

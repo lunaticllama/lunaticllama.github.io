@@ -89,10 +89,13 @@
           </div>
           <div class="deadline-grid" id="return-deadline-grid"></div>
           <div class="gcl-note" id="return-gcl-note">
-            <strong>Gen. Construction Law § 25-a —</strong> Public holiday, Saturday or Sunday in statutes; extension of time where performance of act is due on Saturday, Sunday or public holiday. 1. When any period of time, computed from a certain day, within which or after which or before which an act is authorized or required to be done, ends on a Saturday, Sunday or a public holiday, such act may be done on the next succeeding business day and if the period ends at a specified hour, such act may be done at or before the same hour of such next succeeding business day, except that where a period of time specified by contract ends on a Saturday, Sunday or a public holiday, the extension of such period is governed by section twenty-five of this chapter.
+            <strong>Weekend / holiday adjustment —</strong> These periods are counted backward from the return date and require service <em>at least</em> a set number of days before it. When the computed day is a Saturday, Sunday or court holiday, the deadline shown has been moved back to the preceding court day, so the full notice period is preserved. Moving it forward to the next business day would leave fewer days than CPLR 2214(b) requires. Gen. Construction Law § 25-a's next-business-day extension is not applied here. Whether § 25-a can extend a backward-counted motion period is not settled, and the earlier date is the safe one.
           </div>
           <div class="statute-note">
             <strong>CPLR § 2214(b) — Time for service of notice and affidavits.</strong> A notice of motion and supporting affidavits shall be served at least eight days before the time at which the motion is noticed to be heard. Answering affidavits shall be served at least two days before such time. Answering affidavits and any notice of cross-motion, with supporting papers, if any, shall be served at least seven days before such time if a notice of motion served at least sixteen days before such time so demands; whereupon any reply or responding affidavits shall be served at least one day before such time.
+          </div>
+          <div class="service-note">
+            <strong>Assumes personal delivery or e-filing (NYSCEF).</strong> These dates do not add time for service by mail or overnight delivery. Under CPLR 2103(b)(2), mailing adds 5 days within New York, or 6 days from outside the state but within the U.S.; under CPLR 2103(b)(6), overnight delivery adds one business day. If papers will be served by mail or overnight courier, serve them earlier by that many days.
           </div>
         </section>
       </div>
@@ -125,17 +128,22 @@
           <div class="deadline-grid" id="filing-deadline-grid"></div>
           <div class="impermissible-box" id="filing-impermissible-box"></div>
           <div class="gcl-note" id="filing-gcl-note">
-            <strong>Gen. Construction Law § 25-a —</strong> Public holiday, Saturday or Sunday in statutes; extension of time where performance of act is due on Saturday, Sunday or public holiday. 1. When any period of time, computed from a certain day, within which or after which or before which an act is authorized or required to be done, ends on a Saturday, Sunday or a public holiday, such act may be done on the next succeeding business day and if the period ends at a specified hour, such act may be done at or before the same hour of such next succeeding business day, except that where a period of time specified by contract ends on a Saturday, Sunday or a public holiday, the extension of such period is governed by section twenty-five of this chapter.
+            <strong>Weekend / holiday adjustment —</strong> These periods are counted backward from the return date and require service <em>at least</em> a set number of days before it. When the computed day is a Saturday, Sunday or court holiday, the deadline shown has been moved back to the preceding court day, so the full notice period is preserved. Moving it forward to the next business day would leave fewer days than CPLR 2214(b) requires. Gen. Construction Law § 25-a's next-business-day extension is not applied here. Whether § 25-a can extend a backward-counted motion period is not settled, and the earlier date is the safe one.
           </div>
           <div class="statute-note" id="filing-statute-note">
             <strong>CPLR § 2214(b) — Time for service of notice and affidavits.</strong> A notice of motion and supporting affidavits shall be served at least eight days before the time at which the motion is noticed to be heard. Answering affidavits shall be served at least two days before such time. Answering affidavits and any notice of cross-motion, with supporting papers, if any, shall be served at least seven days before such time if a notice of motion served at least sixteen days before such time so demands; whereupon any reply or responding affidavits shall be served at least one day before such time.
+          </div>
+          <div class="service-note">
+            <strong>Assumes personal delivery or e-filing (NYSCEF).</strong> These dates do not add time for service by mail or overnight delivery. Under CPLR 2103(b)(2), mailing adds 5 days within New York, or 6 days from outside the state but within the U.S.; under CPLR 2103(b)(6), overnight delivery adds one business day. If papers will be served by mail or overnight courier, serve them earlier by that many days.
           </div>
         </section>
       </div>
 
     </div>
+    <p class="calc-disclaimer"><strong>Not legal advice.</strong> This calculator is a convenience tool. It applies CPLR 2214(b) and New York court holidays (federal holidays plus Lincoln's Birthday and Election Day) as programmed, and it does not account for court- or part-specific rules, scheduling orders, adjournments, or stipulations. Always verify deadlines independently against the CPLR, any applicable court rules and orders, and the court's official calendar.</p>
   </main>
 
+  <script src="court-days.js"></script>
   <script>
     // ── Constants ─────────────────────────────────────
 
@@ -145,84 +153,14 @@
     const OPPOSITION_BEFORE_RETURN =  7;
     const REPLY_BEFORE_RETURN      =  1;
 
-    // ── Federal holidays (observed dates) ─────────────
+    // ── Court days (NY holidays from court-days.js) ───
+    // Deadlines here are counted BACKWARD from the return date ("at least N days
+    // before"), so one landing on a non-court day moves to the PRECEDING court
+    // day — moving it later would shorten the notice period below the minimum.
 
-    function getFederalHolidaysForYear(year) {
-      const holidays = new Set();
-
-      function ymd(d) {
-        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-      }
-
-      // Fixed date, observed Mon if Sun / Fri if Sat
-      function fixedObs(month, day) {
-        const d = new Date(year, month - 1, day);
-        const dow = d.getDay();
-        if (dow === 0) d.setDate(d.getDate() + 1);
-        if (dow === 6) d.setDate(d.getDate() - 1);
-        return d;
-      }
-
-      // Nth weekday of month (weekday: 0=Sun…6=Sat)
-      function nthWeekday(month, weekday, n) {
-        const d = new Date(year, month - 1, 1);
-        let count = 0;
-        while (true) {
-          if (d.getDay() === weekday) { if (++count === n) return new Date(d); }
-          d.setDate(d.getDate() + 1);
-        }
-      }
-
-      // Last occurrence of weekday in month
-      function lastWeekday(month, weekday) {
-        const d = new Date(year, month, 0);
-        while (d.getDay() !== weekday) d.setDate(d.getDate() - 1);
-        return d;
-      }
-
-      holidays.add(ymd(fixedObs(1, 1)));        // New Year's Day
-      holidays.add(ymd(nthWeekday(1, 1, 3)));   // MLK Day (3rd Mon Jan)
-      holidays.add(ymd(nthWeekday(2, 1, 3)));   // Presidents' Day (3rd Mon Feb)
-      holidays.add(ymd(lastWeekday(5, 1)));      // Memorial Day (last Mon May)
-      holidays.add(ymd(fixedObs(6, 19)));        // Juneteenth
-      holidays.add(ymd(fixedObs(7, 4)));         // Independence Day
-      holidays.add(ymd(nthWeekday(9, 1, 1)));    // Labor Day (1st Mon Sep)
-      holidays.add(ymd(nthWeekday(10, 1, 2)));   // Columbus Day (2nd Mon Oct)
-      holidays.add(ymd(fixedObs(11, 11)));       // Veterans Day
-      holidays.add(ymd(nthWeekday(11, 4, 4)));   // Thanksgiving (4th Thu Nov)
-      holidays.add(ymd(fixedObs(12, 25)));       // Christmas
-
-      return holidays;
-    }
-
-    function dateKey(date) {
-      return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
-    }
-
-    function isFederalHoliday(date) {
-      return getFederalHolidaysForYear(date.getFullYear()).has(dateKey(date));
-    }
-
-    function isWeekend(date) {
-      return date.getDay() === 0 || date.getDay() === 6;
-    }
-
-    function isNonBusinessDay(date) {
-      return isWeekend(date) || isFederalHoliday(date);
-    }
-
-    function nonBusinessReason(date) {
-      if (date.getDay() === 6) return 'Saturday';
-      if (date.getDay() === 0) return 'Sunday';
-      if (isFederalHoliday(date)) return 'Federal Holiday';
-      return null;
-    }
-
-    function nextBusinessDay(date) {
-      let d = new Date(date);
-      while (isNonBusinessDay(d)) d.setDate(d.getDate() + 1);
-      return d;
-    }
+    const isNonBusinessDay  = d => !CourtDays.isCourtDay(d, 'NY');
+    const nonBusinessReason = d => CourtDays.reason(d, 'NY');
+    const prevBusinessDay   = d => CourtDays.prevCourtDay(d, 'NY');
 
     // ── Date helpers ──────────────────────────────────
 
@@ -285,7 +223,7 @@
       if (isImpermissible) {
         dowHtml = `<div class="deadline-dow impermissible-note">Falls on ${reason} — court not in session</div>`;
       } else if (wasAdjusted) {
-        dowHtml = `<div class="deadline-dow adjusted">Advanced to ${DAY_NAMES[displayDate.getDay()]} (was ${reason})</div>`;
+        dowHtml = `<div class="deadline-dow adjusted">Moved back to ${DAY_NAMES[displayDate.getDay()]} (${fmtShort(rawDate)} is ${reason === "Saturday" || reason === "Sunday" ? "a " + reason : reason})</div>`;
       } else {
         dowHtml = `<div class="deadline-dow">${DAY_NAMES[displayDate.getDay()]}</div>`;
       }
@@ -320,9 +258,9 @@
       const rawOpposition = subtractDays(returnDate, OPPOSITION_BEFORE_RETURN);
       const rawReply      = subtractDays(returnDate, REPLY_BEFORE_RETURN);
 
-      const adjFiling     = nextBusinessDay(rawFiling);
-      const adjOpposition = nextBusinessDay(rawOpposition);
-      const adjReply      = nextBusinessDay(rawReply);
+      const adjFiling     = prevBusinessDay(rawFiling);
+      const adjOpposition = prevBusinessDay(rawOpposition);
+      const adjReply      = prevBusinessDay(rawReply);
 
       const grid = document.getElementById('return-deadline-grid');
       grid.innerHTML = '';
@@ -416,8 +354,8 @@
         // Valid return date — compute all deadlines
         const rawOpposition = subtractDays(rawReturn, OPPOSITION_BEFORE_RETURN);
         const rawReply      = subtractDays(rawReturn, REPLY_BEFORE_RETURN);
-        const adjOpposition = nextBusinessDay(rawOpposition);
-        const adjReply      = nextBusinessDay(rawReply);
+        const adjOpposition = prevBusinessDay(rawOpposition);
+        const adjReply      = prevBusinessDay(rawReply);
 
         grid.appendChild(buildRow({
           className: 'filing', name: 'Filing Date',

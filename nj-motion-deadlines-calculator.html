@@ -138,13 +138,21 @@
         </div>
         <div class="deadline-grid" id="deadline-grid"></div>
         <div class="gcl-note" id="gcl-note">
-          <strong>Note on Weekend / Holiday Adjustments —</strong> When any period of time ends on a Saturday, Sunday, or public holiday, the act may be done on the next succeeding business day. See <em>R. 1:3-1</em> (incorporating N.J.S.A. 1:1-2 and Gen. Construction principles). Where a deadline falls on a non-court day, the deadline shown above has been advanced to the next business day.
+          <strong>Weekend / holiday adjustment —</strong> These periods are counted backward from the return date. When a 16-, 8-, 28- or 10-day deadline lands on a Saturday, Sunday, legal holiday or court recess day, it has been moved back to the preceding court day, so the full period is preserved. The 4-day reply period is under 7 days, so under <em>R. 1:3-1</em> it is counted in court days, excluding Saturdays, Sundays and legal holidays.
+        </div>
+        <div class="impermissible-box" id="projected-note">
+          <strong>Holiday schedule not yet confirmed.</strong> The Supreme Court's legal-holiday and court-recess orders built into this calculator run through June 30, 2027. For later dates the calculator uses projected holidays: federal holidays, Good Friday and Election Day. Recess days such as the Judicial College or year-end recess are not included. Check the court's order for that court year before relying on these dates.
         </div>
         <div class="statute-note" id="statute-note-text"></div>
+        <div class="service-note">
+          <strong>Assumes e-filing (eCourts) or hand delivery.</strong> These dates do not account for service by mail. Under <em>R. 1:6-3(c)</em>, service of motion papers is complete only on receipt at adverse counsel's office or a self-represented party's address, and receipt by ordinary mail is presumed on the third business day after mailing. If papers will be mailed, mail them early enough to be received by the deadline shown.
+        </div>
       </section>
     </div>
+    <p class="calc-disclaimer"><strong>Not legal advice.</strong> This calculator is a convenience tool. It applies R. 1:6-3(a), R. 4:46-1, R. 1:3-1 and the New Jersey Judiciary's published holiday and recess schedule as programmed, and it does not account for judge- or vicinage-specific practices, scheduling orders, adjournments, or relaxation of time by the court. Always verify deadlines independently against the Rules of Court, any applicable orders, and the Judiciary's official calendar.</p>
   </main>
 
+  <script src="court-days.js"></script>
   <script>
     // ── NJ Court Rules ────────────────────────────────
     // Regular Motion (R. 1:6-3(a))
@@ -159,65 +167,21 @@
 
     const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
-    // ── NJ/Federal holidays ───────────────────────────
-    function getHolidaysForYear(year) {
-      const h = new Set();
-      function ymd(d) {
-        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-      }
-      function fixedObs(month, day) {
-        const d = new Date(year, month - 1, day);
-        const dow = d.getDay();
-        if (dow === 0) d.setDate(d.getDate() + 1);
-        if (dow === 6) d.setDate(d.getDate() - 1);
-        return d;
-      }
-      function nthWeekday(month, weekday, n) {
-        const d = new Date(year, month - 1, 1);
-        let count = 0;
-        while (true) {
-          if (d.getDay() === weekday) { if (++count === n) return new Date(d); }
-          d.setDate(d.getDate() + 1);
-        }
-      }
-      function lastWeekday(month, weekday) {
-        const d = new Date(year, month, 0);
-        while (d.getDay() !== weekday) d.setDate(d.getDate() - 1);
-        return d;
-      }
-      h.add(ymd(fixedObs(1, 1)));
-        h.add(ymd(nthWeekday(1, 1, 3)));
-      h.add(ymd(nthWeekday(2, 1, 3)));
-      h.add(ymd(lastWeekday(5, 1)));
-      h.add(ymd(fixedObs(6, 19)));
-      h.add(ymd(fixedObs(7, 4)));
-      h.add(ymd(nthWeekday(9, 1, 1)));
-      h.add(ymd(nthWeekday(10, 1, 2)));
-      h.add(ymd(fixedObs(11, 11)));
-      h.add(ymd(nthWeekday(11, 4, 4)));
-      h.add(ymd(fixedObs(12, 25)));
-      return h;
-    }
+    // ── Court days (NJ closures from court-days.js) ───
+    // All three deadlines are counted BACKWARD from the return date. Periods of
+    // 7+ days that land on a non-court day move to the PRECEDING court day, so the
+    // full period is preserved. Periods under 7 days (the 4-day reply) are counted
+    // in court days, excluding Saturdays, Sundays and legal holidays (R. 1:3-1).
 
-    function dateKey(d) {
-      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    }
-
-    function isHoliday(d) { return getHolidaysForYear(d.getFullYear()).has(dateKey(d)); }
-    function isWeekend(d) { return d.getDay() === 0 || d.getDay() === 6; }
-    function isNonBusiness(d) { return isWeekend(d) || isHoliday(d); }
-
-    function nonBusinessReason(d) {
-      if (d.getDay() === 6) return 'Saturday';
-      if (d.getDay() === 0) return 'Sunday';
-      if (isHoliday(d))    return 'Holiday';
-      return null;
-    }
-
-    function nextBusiness(d) {
-      let x = new Date(d);
-      while (isNonBusiness(x)) x.setDate(x.getDate() + 1);
-      return x;
+    const nonBusinessReason = d => CourtDays.reason(d, 'NJ');
+    const prevBusiness      = d => CourtDays.prevCourtDay(d, 'NJ');
+    function deadlineBefore(returnDate, days) {
+      if (days < 7) {
+        const d = CourtDays.subtractCourtDays(returnDate, days, 'NJ');
+        return { raw: d, adj: d, courtDays: true };
+      }
+      const raw = subtractDays(returnDate, days);
+      return { raw, adj: prevBusiness(raw), courtDays: false };
     }
 
     function subtractDays(d, n) {
@@ -252,7 +216,7 @@
 
       let dowHtml = '';
       if (wasAdjusted && !isInput) {
-        dowHtml = `<div class="deadline-dow adjusted">Advanced to ${DAY_NAMES[displayDate.getDay()]} (was ${reason})</div>`;
+        dowHtml = `<div class="deadline-dow adjusted">Moved back to ${DAY_NAMES[displayDate.getDay()]} (${fmtShort(rawDate)} is ${reason === 'Saturday' || reason === 'Sunday' ? 'a ' + reason : reason})</div>`;
       } else {
         dowHtml = `<div class="deadline-dow">${DAY_NAMES[displayDate.getDay()]}</div>`;
       }
@@ -292,26 +256,26 @@
       const oppositionDays = isSJ ? SJ_OPPOSITION_BEFORE_RETURN : REG_OPPOSITION_BEFORE_RETURN;
       const replyDays      = isSJ ? SJ_REPLY_BEFORE_RETURN      : REG_REPLY_BEFORE_RETURN;
 
-      const rawFiling     = subtractDays(returnDate, filingDays);
-      const rawOpposition = subtractDays(returnDate, oppositionDays);
-      const rawReply      = subtractDays(returnDate, replyDays);
-
-      const adjFiling     = nextBusiness(rawFiling);
-      const adjOpposition = nextBusiness(rawOpposition);
-      const adjReply      = nextBusiness(rawReply);
+      const fil = deadlineBefore(returnDate, filingDays);
+      const opp = deadlineBefore(returnDate, oppositionDays);
+      const rep = deadlineBefore(returnDate, replyDays);
+      const rawFiling = fil.raw, adjFiling = fil.adj;
+      const rawOpposition = opp.raw, adjOpposition = opp.adj;
+      const rawReply = rep.raw, adjReply = rep.adj;
+      const unit = r => r.courtDays ? 'court days' : 'days';
 
       const grid = document.getElementById('deadline-grid');
       grid.innerHTML = '';
 
       const filingRule = isSJ
-        ? `Served and filed not later than ${filingDays} days before return date (R. 4:46-1)`
-        : `Filed and served not later than ${filingDays} days before return date (R. 1:6-3(a))`;
+        ? `Served and filed not later than ${filingDays} ${unit(fil)} before return date (R. 4:46-1)`
+        : `Filed and served not later than ${filingDays} ${unit(fil)} before return date (R. 1:6-3(a))`;
       const oppositionRule = isSJ
-        ? `Opposing papers served and filed not later than ${oppositionDays} days before return date (R. 4:46-1)`
-        : `Opposing papers filed and served not later than ${oppositionDays} days before return date (R. 1:6-3(a))`;
+        ? `Opposing papers served and filed not later than ${oppositionDays} ${unit(opp)} before return date (R. 4:46-1)`
+        : `Opposing papers filed and served not later than ${oppositionDays} ${unit(opp)} before return date (R. 1:6-3(a))`;
       const replyRule = isSJ
-        ? `Reply papers served and filed not later than ${replyDays} days before return date (R. 4:46-1)`
-        : `Reply papers filed and served not later than ${replyDays} days before return date (R. 1:6-3(a))`;
+        ? `Reply papers served and filed not later than ${replyDays} ${unit(rep)} before return date (R. 4:46-1; R. 1:3-1)`
+        : `Reply papers filed and served not later than ${replyDays} ${unit(rep)} before return date (R. 1:6-3(a); R. 1:3-1)`;
 
       grid.appendChild(buildRow({
         className: 'filing', name: 'Last Day to File & Serve Motion',
@@ -345,6 +309,10 @@
         rawReply.getTime()      !== adjReply.getTime();
       const gclNote = document.getElementById('gcl-note');
       anyAdjusted ? gclNote.classList.add('visible') : gclNote.classList.remove('visible');
+
+      const projNote = document.getElementById('projected-note');
+      const projected = [adjFiling, returnDate].some(CourtDays.njProjected);
+      projNote.classList.toggle('visible', projected);
 
       // Statute note
       const statuteEl = document.getElementById('statute-note-text');

@@ -31,6 +31,8 @@
     .adjustment-note.hidden { display: none; }
     .affidavit-row { transition: opacity .15s; }
     .affidavit-row.hidden { display: none; }
+    .method-hint { font-size: 13px; line-height: 1.55; color: var(--muted); margin: -4px 0 18px; }
+    .method-hint:empty { display: none; }
     .result-box .btn-copy { background: var(--white); }
     @media (max-width: 600px) { .result-box { padding: 24px 18px; } }
   </style>
@@ -77,15 +79,20 @@
               <label for="service-method">Service method</label>
               <div class="select-wrapper">
                 <select id="service-method" onchange="onMethodChange()">
-                  <option value="1">§ 308(1) — Personal Service (20 days)</option>
-                  <option value="2">§ 308(2) — Service on Household Member (30 days + affidavit)</option>
-                  <option value="3">§ 308(3) — Service on Agent (30 days)</option>
-                  <option value="4">§ 308(4) — Nail and Mail (30 days + affidavit)</option>
+                  <option value="1">§ 308(1) — Personal delivery (20 days)</option>
+                  <option value="2">§ 308(2) — Deliver &amp; mail / person of suitable age (30 days after completion)</option>
+                  <option value="3">§ 308(3) — Agent designated under CPLR 318 (30 days)</option>
+                  <option value="4">§ 308(4) — Affix &amp; mail / "nail and mail" (30 days after completion)</option>
+                  <option value="5">§ 308(5) — Court-ordered method (30 days after completion)</option>
+                  <option value="state">State official, e.g. Secretary of State (30 days after completion)</option>
+                  <option value="303">§ 303 — Designee of non-resident plaintiff (30 days after completion)</option>
+                  <option value="313">§ 313 — Service outside New York (30 days after completion)</option>
+                  <option value="314">§§ 314 / 315 — Out-of-state service or publication (30 days after completion)</option>
                 </select>
               </div>
             </div>
             <div class="field">
-              <label for="service-date">Date of service</label>
+              <label for="service-date" id="service-date-label">Date of service</label>
               <input type="date" id="service-date" title="Date of Service"
                 oninput="document.getElementById('service-date-error').classList.remove('visible')">
               <span class="field-error" id="service-date-error"></span>
@@ -100,6 +107,8 @@
               <span class="field-error" id="affidavit-date-error"></span>
             </div>
           </div>
+
+          <p class="method-hint" id="method-hint"></p>
 
           <div class="action-row">
             <button class="btn-calculate" onclick="calculate()">Calculate Deadline</button>
@@ -119,14 +128,19 @@
           <div class="adjustment-note hidden" id="adjustment-note"></div>
 
           <div class="statute-note" id="statute-note" style="display:none;">
-            <strong>CPLR § 320(a)</strong> — The defendant appears by serving an answer or a notice of appearance, or by making a motion which has the effect of extending the time to answer. An appearance shall be made within twenty days after service of the summons, except that if the summons was served pursuant to section 308(2), 308(4), or 313, the appearance shall be made within thirty days after service is complete.
+            <strong>CPLR 320(a)</strong> — The defendant appears by serving an answer or a notice of appearance, or by making a motion which has the effect of extending the time to answer. An appearance shall be made within twenty days after service of the summons, except that if the summons was served on the defendant by delivering it to an official of the state authorized to receive service in his behalf or if it was served pursuant to section 303, subdivision two, three, four or five of section 308, or sections 313, 314 or 315, the appearance shall be made within thirty days after service is complete. If the complaint is not served with the summons, the time to appear may be extended as provided in subdivision (b) of section 3012.
+          </div>
+          <div class="service-note">
+            <strong>Not covered here:</strong> service by mail with acknowledgment under CPLR 312-a, where the 20-day period runs from the date the signed acknowledgment is mailed back, and service on corporations and other entities under CPLR 311 or 311-a, which is generally 20 days for personal delivery. Also not covered: extensions by stipulation or court order, and a complaint served after the summons (CPLR 3012(b)).
           </div>
         </section>
 
       </div>
     </div>
+    <p class="calc-disclaimer"><strong>Not legal advice.</strong> This calculator is a convenience tool. It applies CPLR 320(a), CPLR 308 and New York court holidays as programmed. When service is complete depends on the method and the statute involved, and the calculator relies on the date you enter. Always verify deadlines independently against the CPLR and any other applicable statute.</p>
   </main>
 
+  <script src="court-days.js"></script>
   <script>
     // ── Date helpers ──────────────────────────────────────
 
@@ -155,80 +169,41 @@
       return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     }
 
-    // ── Federal holidays (observed) ───────────────────────
+    // ── Court days (NY holidays from court-days.js) ────────
+    // The answer period runs FORWARD from service, so a deadline that lands on a
+    // Saturday, Sunday or public holiday extends to the next business day
+    // (Gen. Construction Law § 25-a).
 
-    function getFederalHolidaysForYear(year) {
-      const holidays = new Set();
-
-      function ymd(d) {
-        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-      }
-      function fixedObs(month, day) {
-        const d = new Date(year, month - 1, day);
-        const dow = d.getDay();
-        if (dow === 0) d.setDate(d.getDate() + 1);
-        if (dow === 6) d.setDate(d.getDate() - 1);
-        return d;
-      }
-      function nthWeekday(month, weekday, n) {
-        const d = new Date(year, month - 1, 1);
-        let count = 0;
-        while (true) {
-          if (d.getDay() === weekday) { if (++count === n) return new Date(d); }
-          d.setDate(d.getDate() + 1);
-        }
-      }
-      function lastWeekday(month, weekday) {
-        const d = new Date(year, month, 0);
-        while (d.getDay() !== weekday) d.setDate(d.getDate() - 1);
-        return d;
-      }
-
-      holidays.add(ymd(fixedObs(1, 1)));        // New Year's Day
-      holidays.add(ymd(nthWeekday(1, 1, 3)));   // MLK Day
-      holidays.add(ymd(nthWeekday(2, 1, 3)));   // Presidents' Day
-      holidays.add(ymd(lastWeekday(5, 1)));      // Memorial Day
-      holidays.add(ymd(fixedObs(6, 19)));        // Juneteenth
-      holidays.add(ymd(fixedObs(7, 4)));         // Independence Day
-      holidays.add(ymd(nthWeekday(9, 1, 1)));    // Labor Day
-      holidays.add(ymd(nthWeekday(10, 1, 2)));   // Columbus Day
-      holidays.add(ymd(fixedObs(11, 11)));       // Veterans Day
-      holidays.add(ymd(nthWeekday(11, 4, 4)));   // Thanksgiving
-      holidays.add(ymd(fixedObs(12, 25)));       // Christmas
-
-      return holidays;
-    }
-
-    function isFederalHoliday(date) {
-      return getFederalHolidaysForYear(date.getFullYear()).has(dateKey(date));
-    }
-
-    function isWeekend(date) {
-      return date.getDay() === 0 || date.getDay() === 6;
-    }
-
-    function isNonBusinessDay(date) {
-      return isWeekend(date) || isFederalHoliday(date);
-    }
-
-    function nonBusinessReason(date) {
-      if (date.getDay() === 6) return 'Saturday';
-      if (date.getDay() === 0) return 'Sunday';
-      if (isFederalHoliday(date)) return 'Federal Holiday';
-      return null;
-    }
-
-    function nextBusinessDay(date) {
-      let d = new Date(date);
-      while (isNonBusinessDay(d)) d.setDate(d.getDate() + 1);
-      return d;
-    }
+    const nonBusinessReason = d => CourtDays.reason(d, 'NY');
+    const nextBusinessDay   = d => CourtDays.nextCourtDay(d, 'NY');
 
     // ── UI ────────────────────────────────────────────────
 
+    // days: answer period; from: 'service' | 'affidavit' (10 days after filing proof) | 'complete'
+    const METHODS = {
+      '1':     { days: 20, from: 'service' },
+      '2':     { days: 30, from: 'affidavit', label: '308(2)' },
+      '3':     { days: 30, from: 'service' },
+      '4':     { days: 30, from: 'affidavit', label: '308(4)' },
+      '5':     { days: 30, from: 'complete',
+                 hint: 'Service is complete as the court’s order directs. Enter that date.' },
+      'state': { days: 30, from: 'complete',
+                 hint: 'Enter the date service on the state official was complete. For example, service on the Secretary of State under BCL § 306 or LLC Law § 303 is complete when the papers are delivered to the Secretary of State. Other statutes, such as VTL § 253, have their own completion rules.' },
+      '303':   { days: 30, from: 'complete',
+                 hint: 'Enter the date service on the plaintiff’s designee under CPLR 303 was complete.' },
+      '313':   { days: 30, from: 'complete',
+                 hint: 'Service outside the state is made in the same manner as service within the state, so it is complete under the method used. For example, if it was made in the § 308(2) or (4) manner, it is complete 10 days after proof of service is filed. Enter the completion date.' },
+      '314':   { days: 30, from: 'complete',
+                 hint: 'Enter the date service was complete under CPLR 314 or 315 (for publication, see CPLR 316 and the order directing it).' },
+    };
+
     function onMethodChange() {
       const method = document.getElementById('service-method').value;
-      const needsAffidavit = method === '2' || method === '4';
+      const cfg = METHODS[method];
+      const needsAffidavit = cfg.from === 'affidavit';
+      document.getElementById('service-date-label').textContent =
+        cfg.from === 'complete' ? 'Date service was complete' : 'Date of service';
+      document.getElementById('method-hint').textContent = cfg.hint || '';
       document.getElementById('affidavit-row').classList.toggle('hidden', !needsAffidavit);
       if (!needsAffidavit) {
         document.getElementById('affidavit-date').value = '';
@@ -258,12 +233,13 @@
       const method = document.getElementById('service-method').value;
       let rawDeadline, basis;
 
-      if (method === '1') {
-        rawDeadline = addDays(serviceDate, 20);
-        basis = `20 days from date of service (${formatShort(serviceDate)})`;
-      } else if (method === '3') {
-        rawDeadline = addDays(serviceDate, 30);
-        basis = `30 days from date of service (${formatShort(serviceDate)})`;
+      const cfg = METHODS[method];
+      if (cfg.from === 'service') {
+        rawDeadline = addDays(serviceDate, cfg.days);
+        basis = `${cfg.days} days from date of service (${formatShort(serviceDate)})`;
+      } else if (cfg.from === 'complete') {
+        rawDeadline = addDays(serviceDate, cfg.days);
+        basis = `${cfg.days} days after service was complete (${formatShort(serviceDate)})`;
       } else {
         const affDate = parseDateInput('affidavit-date');
         if (!affDate) {
@@ -272,9 +248,8 @@
           err.classList.add('visible');
           return;
         }
-        const methodLabel = method === '2' ? '308(2)' : '308(4)';
         rawDeadline = addDays(affDate, 40);
-        basis = `40 days from affidavit filing (${formatShort(affDate)})`;
+        basis = `40 days from filing of proof of service (${formatShort(affDate)}): service is complete 10 days after filing under § ${cfg.label}, plus 30 days`;
       }
 
       const adjDeadline = nextBusinessDay(rawDeadline);
@@ -286,7 +261,7 @@
       const adjNote = document.getElementById('adjustment-note');
       if (wasAdjusted) {
         const reason = nonBusinessReason(rawDeadline);
-        adjNote.textContent = `Raw deadline was ${formatShort(rawDeadline)} (${reason}) — advanced to the next business day per General Construction Law § 25-a.`;
+        adjNote.textContent = `Raw deadline was ${formatShort(rawDeadline)} (${reason}) — extended to the next business day under General Construction Law § 25-a.`;
         adjNote.classList.remove('hidden');
       } else {
         adjNote.classList.add('hidden');
@@ -296,7 +271,7 @@
       document.getElementById('statute-note').style.display = '';
 
       const params = { method, service: document.getElementById('service-date').value };
-      if (method === '2' || method === '4') {
+      if (cfg.from === 'affidavit') {
         params.affidavit = document.getElementById('affidavit-date').value;
       }
       history.replaceState(null, '', '?' + new URLSearchParams(params).toString());
@@ -306,7 +281,7 @@
       document.getElementById('service-date').value = '';
       document.getElementById('affidavit-date').value = '';
       document.getElementById('service-method').value = '1';
-      document.getElementById('affidavit-row').classList.add('hidden');
+      onMethodChange();
       document.getElementById('result-box').classList.remove('visible');
       document.getElementById('statute-note').style.display = 'none';
       ['service-date-error', 'affidavit-date-error'].forEach(id => {
@@ -352,7 +327,7 @@
       const service = p.get('service');
       const affidavit = p.get('affidavit');
 
-      if (method && ['1','2','3','4'].includes(method)) {
+      if (method && METHODS[method]) {
         document.getElementById('service-method').value = method;
         onMethodChange();
       }
@@ -360,9 +335,8 @@
       if (affidavit) document.getElementById('affidavit-date').value = affidavit;
 
       if (service) {
-        const m = method || '1';
-        if ((m === '2' || m === '4') && affidavit) calculate();
-        else if (m === '1' || m === '3') calculate();
+        const cfg = METHODS[METHODS[method] ? method : '1'];
+        if (cfg.from !== 'affidavit' || affidavit) calculate();
       }
     })();
   </script>
