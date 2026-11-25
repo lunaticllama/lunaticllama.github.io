@@ -6,241 +6,132 @@
   <meta name="description" content="Philip M. Taylor — Attorney">
   <meta name="author" content="Philip M. Taylor">
   <title>Philip M. Taylor</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="icon" type="image/x-icon" href="/favicons/favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg">
   <link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20261125">
   <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    /* ── Page-specific: home ── */
+    .home .wrap { max-width: 820px; }
+    .home .page-title { padding: 40px 0 96px; }
+    .page-title .role {
+      display: inline-block; margin-top: 14px;
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--white); border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 999px; padding: 4px 10px;
     }
 
-    html, body {
-      height: 100%;
+    .home-grid {
+      display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 32px;
     }
-
-    body {
-      font-family: 'Jost', sans-serif;
-      font-weight: 300;
-      background: linear-gradient(135deg, #0d2a4a 0%, #1a4a7a 40%, #0a1f3d 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-    }
-
-    .card-wrapper {
-      width: 100%;
-      max-width: 520px;
-      opacity: 0;
-      transform: translateY(18px);
-      animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
-    }
-
-    @keyframes fadeUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .card {
-      background: #f7f5f1;
-      border-radius: 10px;
-      border-left: 4px solid #bfae8e;
-      border-bottom: 4px solid #bfae8e;
-      padding: 3rem 3rem 2.75rem;
-    }
-
-    .name {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(36px, 8vw, 46px);
-      font-weight: 400;
-      color: #1a1a1a;
-      line-height: 1.1;
-      margin-bottom: 0.5rem;
-      opacity: 0;
-      animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards;
-    }
-
-    .subtitle {
-      font-size: 11px;
-      color: #1a4a7a;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      font-weight: 400;
-      margin-bottom: 2.75rem;
-      opacity: 0;
-      animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.45s forwards;
-    }
-
-    .link-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      opacity: 0;
-      animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.55s forwards;
-    }
-
-    .profile-col {
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Photo fills the space Tools leaves free, so this column never runs longer */
+    .profile { display: flex; flex-direction: column; gap: 24px; }
     .photo {
-      position: relative;
-      flex: 1;
-      min-height: 120px;
-      margin-bottom: 1.5rem;
-      border-radius: 4px;
-      overflow: hidden;
-      background: #ddd;
+      aspect-ratio: 4 / 5; max-width: 100%;
+      border-radius: 12px; overflow: hidden;
+      background: var(--line-soft); border: 1px solid var(--line);
     }
+    .photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; }
 
-    .photo img {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: 50% 12%;
+    .profile .section-label, .home-grid > section > .section-label { margin-bottom: 4px; }
+    .link-list { list-style: none; }
+    .link-row {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+      padding: 11px 2px; border-bottom: 1px solid var(--line-soft);
+      text-decoration: none; color: var(--navy);
+      font-size: 15px; font-weight: 600;
+      transition: color .15s;
     }
+    .link-row:hover { color: var(--blue); }
+    .link-row:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
+    .link-meta { display: inline-flex; align-items: baseline; gap: 10px; flex-shrink: 0; }
+    .link-cite { font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--muted); }
+    .link-arrow { color: var(--blue); font-size: 15px; transition: transform .15s; }
+    .link-row:hover .link-arrow { transform: translateX(3px); }
+    .link-row.all-tools { border-bottom: none; margin-top: 6px; color: var(--blue); }
 
-    .section-label {
-      font-size: 10px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: #999;
-      border-bottom: 0.5px solid #ddd;
-      padding-bottom: 0.5rem;
-      margin-bottom: 0.9rem;
-    }
-
-    .nav-link {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      font-size: 14px;
-      color: #555;
-      text-decoration: none;
-      padding: 0.38rem 0;
-      transition: color 0.2s ease;
-      font-weight: 300;
-      letter-spacing: 0.02em;
-    }
-
-    .nav-link:hover {
-      color: #1a4a7a;
-    }
-
-    /* Overview link sits apart from the alphabetical tool list */
-    .nav-link.all-tools {
-      margin-top: 0.6rem;
-      padding-top: 0.8rem;
-      border-top: 0.5px solid #ddd;
-      color: #1a4a7a;
-      font-weight: 400;
-    }
-
-    .arrow {
-      font-size: 12px;
-      color: #1a4a7a;
-      display: inline-block;
-      transition: transform 0.2s ease;
-      line-height: 1;
-    }
-
-    .nav-link:hover .arrow {
-      transform: translateX(3px);
-    }
-
-    .domain {
-      display: block;
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.3);
-      text-align: right;
-      margin-top: 1.25rem;
-      font-family: 'Jost', sans-serif;
-      font-weight: 300;
-    }
-
-    @media (max-width: 480px) {
-      .card {
-        padding: 2.25rem 2rem 2rem;
-      }
-      .link-grid {
-        grid-template-columns: 1fr;
-        gap: 1.75rem;
-      }
-      .photo {
-        flex: none;
-        height: 260px;
-      }
+    @media (max-width: 640px) {
+      .home-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+      .photo { aspect-ratio: 1 / 1; }
+      .link-cite { display: none; }
     }
   </style>
 </head>
-<body>
-  <div class="card-wrapper">
-    <div class="card">
-      <h1 class="name">Philip M. Taylor</h1>
-      <p class="subtitle">Attorney at Law</p>
-      <div class="link-grid">
-        <div class="profile-col">
-          <div class="photo">
-            <img src="/images/headshot.jpg" alt="Philip M. Taylor">
-          </div>
-          <p class="section-label">Professional</p>
-          <a class="nav-link" href="https://www.windelsmarx.com/attorney_detail.cfm?id=208" target="_blank" rel="noopener">
-            <span class="arrow">→</span> Windels Marx
-          </a>
-          <a class="nav-link" href="https://www.linkedin.com/in/philipmtaylor14/" target="_blank" rel="noopener">
-            <span class="arrow">→</span> LinkedIn
-          </a>
-        </div>
-        <div>
-          <p class="section-label">Tools</p>
-          <a class="nav-link" href="/bluebook-abbreviations.html">
-            <span class="arrow">→</span> Bluebook Abbreviations
-          </a>
-          <a class="nav-link" href="/date-calculator.html">
-            <span class="arrow">→</span> Date Calculator
-          </a>
-          <a class="nav-link" href="/nj-court-rules.html">
-            <span class="arrow">→</span> NJ Court Rules
-          </a>
-          <a class="nav-link" href="/nj-motion-deadlines-calculator.html">
-            <span class="arrow">→</span> NJ Motion Deadlines Calculator
-          </a>
-          <a class="nav-link" href="/nj-rpc.html">
-            <span class="arrow">→</span> NJ Rules of Professional Conduct
-          </a>
-          <a class="nav-link" href="/ny-response-deadline-calculator.html">
-            <span class="arrow">→</span> NY Answer Deadline Calculator
-          </a>
-          <a class="nav-link" href="/ny-cplr.html">
-            <span class="arrow">→</span> NY CPLR
-          </a>
-          <a class="nav-link" href="/ny-motion-deadlines-calculator.html">
-            <span class="arrow">→</span> NY Motion Deadlines Calculator
-          </a>
-          <a class="nav-link" href="/redline.html">
-            <span class="arrow">→</span> Redline
-          </a>
-          <a class="nav-link all-tools" href="/tools.html">
-            <span class="arrow">→</span> Legal Tools
-          </a>
-        </div>
+<body class="home">
+
+  <header class="site-header">
+    <div class="wrap">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <span class="breadcrumb-current">philipmtaylor.com</span>
+      </nav>
+
+      <div class="page-title">
+        <h1>Philip M. Taylor</h1>
+        <span class="role">Attorney at Law</span>
       </div>
     </div>
-    <span class="domain">philipmtaylor.com</span>
-  </div>
+  </header>
+
+  <main class="wrap">
+    <div class="card">
+      <div class="card-inner home-grid">
+
+        <section class="profile" aria-label="Profile">
+          <div class="photo">
+            <img src="images/headshot.jpg" alt="Philip M. Taylor">
+          </div>
+          <div>
+            <h2 class="section-label">Professional</h2>
+            <ul class="link-list">
+              <li><a class="link-row" href="https://www.windelsmarx.com/attorney_detail.cfm?id=208" target="_blank" rel="noopener">
+                Windels Marx <span class="link-meta"><span class="link-arrow" aria-hidden="true">↗</span></span>
+              </a></li>
+              <li><a class="link-row" href="https://www.linkedin.com/in/philipmtaylor14/" target="_blank" rel="noopener">
+                LinkedIn <span class="link-meta"><span class="link-arrow" aria-hidden="true">↗</span></span>
+              </a></li>
+            </ul>
+          </div>
+        </section>
+
+        <section aria-label="Legal tools">
+          <h2 class="section-label">Tools</h2>
+          <ul class="link-list">
+            <li><a class="link-row" href="/bluebook-abbreviations.html">Bluebook Abbreviations
+              <span class="link-meta"><span class="link-cite">Tables 6 &amp; 10</span><span class="link-arrow" aria-hidden="true">→</span></span></a></li>
+            <li><a class="link-row" href="/date-calculator.html">Date Calculator
+              <span class="link-meta"><span class="link-cite">Calendar days</span><span class="link-arrow" aria-hidden="true">→</span></span></a></li>
+            <li><a class="link-row" href="/nj-court-rules.html">NJ Court Rules
+              <span class="link-meta"><span class="link-cite">R. 1:1 – 6:12</span><span class="link-arrow" aria-hidden="true">→</span></span></a></li>
+            <li><a class="link-row" href="/nj-motion-deadlines-calculator.html">NJ Motion Deadlines
+              <span class="link-meta"><span class="link-cite">R. 1:6-3</span><span class="link-arrow" aria-hidden="true">→</span></span></a></li>
+            <li><a class="link-row" href="/nj-rpc.html">NJ Rules of Professional Conduct
+              <span class="link-meta"><span class="link-cite">RPC</span><span class="link-arrow" aria-hidden="true">→</span></span></a></li>
+            <li><a class="link-row" href="/ny-response-deadline-calculator.html">NY Answer Deadlines
+              <span class="link-meta"><span class="link-cite">CPLR 320</span><span class="link-arrow" aria-hidden="true">→</span></span></a></li>
+            <li><a class="link-row" href="/ny-cplr.html">NY CPLR
+              <span class="link-meta"><span class="link-cite">Arts. 1 – 100</span><span class="link-arrow" aria-hidden="true">→</span></span></a></li>
+            <li><a class="link-row" href="/ny-motion-deadlines-calculator.html">NY Motion Deadlines
+              <span class="link-meta"><span class="link-cite">CPLR 2214</span><span class="link-arrow" aria-hidden="true">→</span></span></a></li>
+            <li><a class="link-row" href="/redline.html">Redline
+              <span class="link-meta"><span class="link-cite">.txt · .docx</span><span class="link-arrow" aria-hidden="true">→</span></span></a></li>
+            <li><a class="link-row all-tools" href="/tools.html">All Legal Tools
+              <span class="link-meta"><span class="link-arrow" aria-hidden="true">→</span></span></a></li>
+          </ul>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>This is a personal website. It is not the website of, and is not affiliated with or endorsed by, Windels Marx Lane &amp; Mittendorf, LLP. Nothing on this site is legal advice, and using this site or its tools does not create an attorney&ndash;client relationship.</p>
+      <p class="site-footer-copy">&copy; 2026 Philip M. Taylor</p>
+    </div>
+  </footer>
+
 </body>
 </html>
