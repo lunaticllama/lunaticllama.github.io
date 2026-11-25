@@ -102,7 +102,7 @@ body {
 }
 
 /* ── Main card (overlaps the navy header) ── */
-main.wrap { padding-bottom: 80px; }
+main.wrap { padding-bottom: 28px; }
 .card {
   margin-top: -60px;
   background: var(--white);
@@ -307,9 +307,11 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 .calc-note { margin: 18px 0 0; padding: 0 4px; font-size: 13px; color: var(--muted); line-height: 1.6; }
 
 /* ── Site footer: shared "not legal advice" notice on every tool page ── */
-.site-footer { border-top: 1px solid var(--line); background: var(--bg); padding: 22px 0 32px; }
-.site-footer p { max-width: 80ch; margin: 0; font-size: 12.5px; line-height: 1.65; color: var(--muted); }
+.site-footer { padding: 0 0 48px; }
+.site-footer .wrap { display: flex; flex-direction: column; gap: 10px; }
+.site-footer p { margin: 0; padding: 0 4px; font-size: 13px; line-height: 1.65; color: var(--muted); }
 .site-footer strong { color: var(--text-2); font-weight: 600; }
+.site-footer .site-footer-copy { margin-top: 4px; }
 .impermissible-box { display: none; background: var(--red-tint); border: 1px solid #F1C9C4; color: #7A2020; }
 .impermissible-box.visible { display: block; }
 .impermissible-box strong { color: var(--red); }
